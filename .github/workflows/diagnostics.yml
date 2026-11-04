@@ -11,8 +11,17 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: material-you-verification
-          run-id: 41856921539
+          name: Obsidian-Extended-Material-You-linux-x86_64
+          run-id: 41858556020
           github-token: ${{ github.token }}
-          path: diagnostics
-      - run: cat diagnostics/build/smoke/generation.log
+          path: artifacts
+      - name: Test packaged application
+        run: |
+          set -euo pipefail
+          mkdir runtime
+          tar -xzf artifacts/*.tar.gz -C runtime
+          cd runtime
+          mkdir smoke
+          timeout 240 ./obsidian --config "$PWD/smoke/CONFIG.txt" --options "$PWD/smoke/OPTIONS.txt" --log "$PWD/smoke/LOGS.txt" --batch "$PWD/smoke/test.wad" --verbose engine=idtech_1 game=doom2 port=boom length=single seed=12345 2>&1 | tee smoke/stdout.log
+          ls -lh smoke
+          python3 -c 'import struct; b=open("smoke/test.wad","rb").read(); magic,n,d=struct.unpack_from("<4sii",b); assert magic==b"PWAD" and n>0; print("Validated PWAD",len(b),n)'
