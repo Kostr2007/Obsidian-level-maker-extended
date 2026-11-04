@@ -288,6 +288,7 @@ add_custom_command(
           "${CMAKE_CURRENT_LIST_DIR}"
   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:qsavetex>"
           "${CMAKE_CURRENT_LIST_DIR}/tools"
+  VERBATIM
 )
 
 add_dependencies(obsidian qsavetex)

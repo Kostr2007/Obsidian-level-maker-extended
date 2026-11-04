@@ -13,10 +13,14 @@ jobs:
   qt6:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/Obsidian source(1)
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          path: Obsidian source(1)
       - name: Validate release metadata and publisher
         run: |
           python3 scripts/dev/release.py prepare
@@ -43,16 +47,16 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Obsidian-Extended-Qt6-linux-x86_64
-          path: build/Obsidian-Extended-Qt6-linux-x86_64.tar.gz
+          path: Obsidian source(1)/build/Obsidian-Extended-Qt6-linux-x86_64.tar.gz
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: qt6-verification
           path: |
-            build/qt/Testing/Temporary/LastTest.log
-            build/qt-smoke/qt-smoke.json
-            build/qt-ui-check/*.png
-            build/qt-ui-check/*/*.log
+            Obsidian source(1)/build/qt/Testing/Temporary/LastTest.log
+            Obsidian source(1)/build/qt-smoke/qt-smoke.json
+            Obsidian source(1)/build/qt-ui-check/*.png
+            Obsidian source(1)/build/qt-ui-check/*/*.log
 
   release:
     name: Publish versioned release

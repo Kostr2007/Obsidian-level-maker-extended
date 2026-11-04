@@ -14,7 +14,8 @@ qt_add_resources(obsidian-qt "interface" PREFIX "/ui"
   BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml)
 add_dependencies(obsidian-qt obsidian)
 add_custom_command(TARGET obsidian-qt POST_BUILD
-  COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:obsidian-qt>" "${CMAKE_SOURCE_DIR}")
+  COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:obsidian-qt>" "${CMAKE_SOURCE_DIR}"
+  VERBATIM)
 include(CTest)
 if(BUILD_TESTING)
   qt_add_executable(qt-core-tests tests/test_core.cpp)

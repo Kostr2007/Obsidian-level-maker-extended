@@ -62,6 +62,7 @@ else()
     COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/minilua
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/minilua
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/minilua
+    VERBATIM
   )
 
   add_custom_target(minilua ALL DEPENDS ${MINILUA_PATH})
@@ -335,6 +336,7 @@ add_custom_command(
   COMMAND ${MINILUA_PATH} ${DASM_PATH} ${DASM_FLAGS} -o ${BUILDVM_ARCH_H}
           ${VM_DASC_PATH}
   DEPENDS minilua
+  VERBATIM
 )
 add_custom_target(buildvm_arch_h ALL DEPENDS ${BUILDVM_ARCH_H})
 
@@ -395,6 +397,7 @@ else()
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm/CMakeLists.txt
     DEPENDS buildvm_arch_h
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/buildvm
+    VERBATIM
   )
 
   add_custom_target(buildvm ALL DEPENDS ${BUILDVM_PATH})
@@ -418,6 +421,7 @@ add_custom_command(
   COMMAND ${BUILDVM_PATH} -m ${LJVM_MODE} -o ${LJ_VM_S_PATH}
   DEPENDS buildvm
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+  VERBATIM
 )
 
 add_custom_target(lj_gen_vm_s ALL DEPENDS ${LJ_VM_S_PATH})
@@ -461,6 +465,7 @@ add_custom_command(
   COMMAND ${BUILDVM_PATH} -m vmdef -o ${LJ_VMDEF_PATH} ${LJ_LIB_SOURCES}
   DEPENDS buildvm ${LJ_LIB_SOURCE}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+  VERBATIM
 )
 
 add_custom_target(
@@ -477,6 +482,7 @@ add_custom_command(
   COMMAND ${BUILDVM_PATH} -m folddef -o ${LJ_FOLDDEF_PATH} ${LJ_FOLDDEF_SOURCE}
   DEPENDS ${BUILDVM_PATH}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+  VERBATIM
 )
 
 add_custom_target(lj_gen_folddef ALL DEPENDS ${LJ_FOLDDEF_PATH})
