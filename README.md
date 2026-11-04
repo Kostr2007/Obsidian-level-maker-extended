@@ -1,2 +1,3 @@
-# Obsidian-level-maker-extended
-A map generator for the Doom 1 and Doom 2 engines that has been expanded and redesigned
+# Obsidian Extended
+
+Native Material You redesign of OBSIDIAN Level Maker. The Material You workflow imports the pinned upstream source, builds the application and captures real screenshots.

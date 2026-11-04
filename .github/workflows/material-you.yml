@@ -1,0 +1,120 @@
+name: Material You
+on:
+  push:
+    branches: [main, codex/material-you]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  material-you:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import the pinned upstream snapshot on first run
+        if: github.event_name == 'push' && github.ref == 'refs/heads/codex/material-you'
+        run: |
+          if [ ! -f source_files/obsidian_main/main.cc ]; then
+            git fetch --depth=1 https://github.com/obsidian-level-maker/Obsidian.git f4c93451e10fd3ab13395dfb8e7b0416c1cd6633
+            git archive FETCH_HEAD | tar -x --exclude='.github'
+            git apply --check .extended/material-you.patch
+            git apply .extended/material-you.patch
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add .
+            git commit -m 'Import OBSIDIAN snapshot and implement native Material You interface'
+            git push origin HEAD:codex/material-you
+          fi
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ninja-build flex libfontconfig1-dev libxft-dev libxinerama-dev libxcursor-dev libgl1-mesa-dev libglu1-mesa-dev xvfb xdotool imagemagick
+      - name: Configure GUI
+        run: cmake -S . -B build/material -G Ninja -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_WAYLAND=OFF
+      - name: Build GUI
+        run: cmake --build build/material --parallel 2
+      - name: Generate and validate a Doom II map
+        run: |
+          mkdir -p build/smoke
+          timeout 240 ./obsidian --home "$PWD/build/smoke" --batch "$PWD/build/smoke/material-smoke.wad" game=doom2 port=limit_removing length=single seed=12345 > build/smoke/generation.log 2>&1
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+          p = Path('build/smoke/material-smoke.wad')
+          b = p.read_bytes()
+          magic, count, directory = struct.unpack_from('<4sii', b)
+          assert magic == b'PWAD' and count > 0
+          assert 12 <= directory and directory + count * 16 <= len(b)
+          names = [struct.unpack_from('<ii8s', b, directory + i*16)[2].rstrip(b'\0') for i in range(count)]
+          assert b'MAP01' in names, names
+          print(f'Validated {p}: {len(b)} bytes, {count} lumps, MAP01 present')
+          PY
+      - name: Capture the native GUI in both themes
+        run: |
+          Xvfb :99 -screen 0 1600x1000x24 &
+          export DISPLAY=:99
+          mkdir -p docs/material-you
+          for mode in dark light; do
+            mkdir -p "build/gui-$mode"
+            cp build/smoke/CONFIG.txt "build/gui-$mode/CONFIG.txt"
+            cp "theme/material-you-$mode.txt" "build/gui-$mode/THEME.txt"
+            ./obsidian --home "$PWD/build/gui-$mode" > "build/gui-$mode/launch.log" 2>&1 &
+            app_pid=$!
+            window_id=''
+            for attempt in $(seq 1 30); do
+              window_id=$(xdotool search --onlyvisible --name 'Obsidian Extended' 2>/dev/null | head -1 || true)
+              [ -z "$window_id" ] || break
+              sleep 1
+            done
+            test -n "$window_id"
+            sleep 3
+            import -window "$window_id" "docs/material-you/$mode.png"
+            xdotool windowfocus "$window_id" key ctrl+q
+            for attempt in $(seq 1 10); do
+              kill -0 "$app_pid" 2>/dev/null || break
+              sleep 1
+            done
+            if kill -0 "$app_pid" 2>/dev/null; then
+              kill "$app_pid"
+              echo 'GUI did not exit cleanly' >&2
+              exit 1
+            fi
+            grep -q "material_theme = $([ "$mode" = dark ] && echo 1 || echo 2)" "build/gui-$mode/THEME.txt"
+          done
+      - name: Preserve screenshots in the implementation branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/codex/material-you'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/material-you/dark.png docs/material-you/light.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Document the native dark and light Material You interface'
+            git push origin HEAD:codex/material-you
+          fi
+      - name: Package Linux build
+        run: |
+          mkdir -p build/package
+          cp -r obsidian addons data engines games language modules ports scripts theme tools LICENSE.txt AUTHORS.md README.md build/package/
+          tar -czf build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz -C build/package .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Obsidian-Extended-Material-You-linux-x86_64
+          path: build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz
+      - name: Build console-only configuration
+        run: |
+          cmake -S . -B build/console -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONSOLE_ONLY=ON
+          cmake --build build/console --parallel 2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: material-you-verification
+          path: |
+            docs/material-you/*.png
+            build/smoke/*.log
+            build/gui-*/*.log
