@@ -38,8 +38,9 @@ jobs:
           path: build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz
       - name: Generate and validate a Doom II map
         run: |
+          set -euo pipefail
           mkdir -p build/smoke
-          timeout 240 ./obsidian --config "$PWD/build/smoke/CONFIG.txt" --options "$PWD/build/smoke/OPTIONS.txt" --log "$PWD/build/smoke/LOGS.txt" --batch "$PWD/build/smoke/material-smoke.wad" --verbose engine=idtech_1 game=doom2 port=limit_removing length=single seed=12345 2>&1 | tee build/smoke/generation.log
+          timeout 240 ./obsidian --config "$PWD/build/smoke/CONFIG.txt" --options "$PWD/build/smoke/OPTIONS.txt" --log "$PWD/build/smoke/LOGS.txt" --batch "$PWD/build/smoke/material-smoke.wad" --verbose engine=idtech_1 game=doom2 port=boom length=single seed=12345 2>&1 | tee build/smoke/generation.log
           python3 - <<'PY'
           import struct
           from pathlib import Path
