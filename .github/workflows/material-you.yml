@@ -26,7 +26,7 @@ jobs:
       - name: Configure GUI
         run: cmake -S . -B build/material -G Ninja -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_WAYLAND=OFF
       - name: Build GUI
-        run: cmake --build build/material --parallel 2
+        run: cmake --build build/material --parallel 4
       - name: Package Linux build
         run: |
           mkdir -p build/package
@@ -90,6 +90,9 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin codex/material-you
+          git diff --quiet HEAD origin/codex/material-you -- source_files modules scripts engines games ports data theme
+          git rebase origin/codex/material-you
           git add docs/material-you/dark.png docs/material-you/light.png
           if ! git diff --cached --quiet; then
             git commit -m 'Document the native dark and light Material You interface'
@@ -98,7 +101,7 @@ jobs:
       - name: Build console-only configuration
         run: |
           cmake -S . -B build/console -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONSOLE_ONLY=ON
-          cmake --build build/console --parallel 2
+          cmake --build build/console --parallel 4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
