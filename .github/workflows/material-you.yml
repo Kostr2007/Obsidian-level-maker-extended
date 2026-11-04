@@ -1,7 +1,7 @@
 name: Material You
 on:
   push:
-    paths-ignore: ['docs/**', '.extended/**', '.github/workflows/diagnostics.yml']
+    paths-ignore: ['docs/**', '.extended/**']
     branches: [main, codex/material-you]
   pull_request:
     branches: [main]
@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event_name != 'pull_request' || github.head_ref != 'codex/material-you'
     timeout-minutes: 35
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -90,19 +88,6 @@ jobs:
             fi
             grep -q "material_theme = $([ "$mode" = dark ] && echo 1 || echo 2)" "build/gui-$mode/THEME.txt"
           done
-      - name: Preserve screenshots in the implementation branch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/codex/material-you'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin codex/material-you
-          git diff --quiet HEAD origin/codex/material-you -- source_files modules scripts engines games ports data theme
-          git rebase origin/codex/material-you
-          git add docs/material-you/dark.png docs/material-you/light.png
-          if ! git diff --cached --quiet; then
-            git commit -m 'Document the native dark and light Material You interface'
-            git push origin HEAD:codex/material-you
-          fi
       - name: Build console-only configuration
         run: |
           cmake -S . -B build/console -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONSOLE_ONLY=ON
