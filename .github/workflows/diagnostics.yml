@@ -1,0 +1,18 @@
+name: Generation diagnostics
+on:
+  push:
+    paths: [.github/workflows/diagnostics.yml]
+permissions:
+  actions: read
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: material-you-verification
+          run-id: 41856921539
+          github-token: ${{ github.token }}
+          path: diagnostics
+      - run: cat diagnostics/build/smoke/generation.log
