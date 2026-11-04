@@ -1,0 +1,5 @@
+-- Obsidian Extended: baseline Material 3, light
+material_theme = 2
+font_scaling = 18
+window_scaling = 0
+single_pane = 0

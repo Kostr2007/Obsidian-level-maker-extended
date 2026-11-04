@@ -1,0 +1,230 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "tidy",
+      "hidden": true,
+      "cacheVariables": {
+        "OBSIDIAN_TIDY": "ON"
+      }
+    },
+    {
+      "name": "sanitize",
+      "hidden": true,
+      "cacheVariables": {
+        "OBSIDIAN_SANITIZE": "ON"
+      }
+    },
+    {
+      "name": "warnings",
+      "hidden": true,
+      "cacheVariables": {
+        "OBSIDIAN_WARNINGS": "ON"
+      }
+    },
+    {
+      "name": "dev",
+      "binaryDir": "build",
+      "generator": "Ninja",
+      "inherits": "tidy",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-Wall"
+      }
+    },
+    {
+      "name": "dev-sanitize",
+      "inherits": ["dev", "sanitize"],
+      "binaryDir": "build/sanitize"
+    },
+    {
+      "name": "dev-console",
+      "inherits": ["dev"],
+      "binaryDir": "build/dev-console",
+      "cacheVariables": {
+        "CONSOLE_ONLY": "ON"
+      }
+    },
+    {
+      "name": "dist",
+      "description": "Release preset",
+      "binaryDir": "build/dist",
+      "generator": "Unix Makefiles",
+      "installDir": "${sourceDir}/install",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "profile",
+      "description": "Profiling preset",
+      "binaryDir": "build/profile",
+      "generator": "Ninja",
+      "installDir": "${sourceDir}/install",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "cross32",
+      "description": "Cross-compile to Windows",
+      "binaryDir": "build/cross32",
+      "generator": "Unix Makefiles",
+      "toolchainFile": "${sourceDir}/Toolchain-mingw32.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "cross64",
+      "description": "Cross-compile to Windows",
+      "binaryDir": "build/cross64",
+      "generator": "Unix Makefiles",
+      "toolchainFile": "${sourceDir}/Toolchain-mingw64.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "vscode+msvc2019",
+      "description": "Compile natively on Windows (Dasho)",
+      "binaryDir": "build/vscode",
+      "generator": "Visual Studio 16 2019",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "vscode+msvc2019+debug",
+      "description": "Compile natively on Windows (Dasho)",
+      "binaryDir": "build/vscode",
+      "generator": "Visual Studio 16 2019",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "OBSIDIAN_MSVC_DEBUG": "ON"
+      }
+    },
+    {
+      "name": "vscode+msvc2019+win32",
+      "description": "Compile natively on Windows (32-bit) (Dasho)",
+      "binaryDir": "build/vscode",
+      "generator": "Visual Studio 16 2019",
+      "architecture": "Win32",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "vscode+msvc2019-console",
+      "description": "Compile natively on Windows (CLI-only) (Dasho)",
+      "binaryDir": "build/vscode",
+      "generator": "Visual Studio 16 2019",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CONSOLE_ONLY": "ON"
+      }
+    },
+    {
+      "name": "vscode+msvc2019+win32-console",
+      "description": "Compile natively on Windows (CLI-only) (32-bit) (Dasho)",
+      "binaryDir": "build/vscode",
+      "generator": "Visual Studio 16 2019",
+      "architecture": "Win32",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CONSOLE_ONLY": "ON"
+      }
+    },
+    {
+      "name": "msvc",
+      "description": "Compile natively on Windows",
+      "binaryDir": "build/msvc",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "msvc-dev",
+      "description": "Compile natively on Windows for development",
+      "binaryDir": "build/msvc-dev",
+      "inherits": ["msvc", "warnings"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "msys",
+      "description": "Compile natively on Windows with MSYS2",
+      "binaryDir": "build/msys",
+      "generator": "MSYS Makefiles",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "jobs": 8
+    },
+    {
+      "name": "dev-sanitize",
+      "configurePreset": "dev-sanitize",
+      "jobs": 8
+    },
+    {
+      "name": "dev-console",
+      "configurePreset": "dev-console",
+      "jobs": 8
+    },
+    {
+      "name": "dist",
+      "configurePreset": "dist"
+    },
+    {
+      "name": "cross32",
+      "configurePreset": "cross32"
+    },
+    {
+      "name": "cross64",
+      "configurePreset": "cross64"
+    },
+    {
+      "name": "msvc",
+      "configuration": "Release",
+      "configurePreset": "msvc"
+    },
+    {
+      "name": "vscode+msvc2019",
+      "configuration": "Release",
+      "configurePreset": "vscode+msvc2019"
+    },
+    {
+      "name": "vscode+msvc2019+debug",
+      "configuration": "Debug",
+      "configurePreset": "vscode+msvc2019+debug"
+    },
+    {
+      "name": "vscode+msvc2019+win32",
+      "configuration": "Release",
+      "configurePreset": "vscode+msvc2019+win32"
+    },
+    {
+      "name": "vscode+msvc2019-console",
+      "configuration": "Release",
+      "configurePreset": "vscode+msvc2019-console"
+    },
+    {
+      "name": "vscode+msvc2019+win32-console",
+      "configuration": "Release",
+      "configurePreset": "vscode+msvc2019+win32"
+    },
+    {
+      "name": "msys",
+      "configurePreset": "msys"
+    }
+  ]
+}

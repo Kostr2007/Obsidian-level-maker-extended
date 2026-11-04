@@ -1,0 +1,104 @@
+name: Material You
+on:
+  push:
+    paths-ignore: ['docs/**', '.extended/**']
+    branches: [main, codex/material-you]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  material-you:
+    runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.head_ref != 'codex/material-you'
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ninja-build flex libfontconfig1-dev libxft-dev libxinerama-dev libxcursor-dev libgl1-mesa-dev libglu1-mesa-dev xvfb xdotool imagemagick
+      - name: Configure GUI
+        run: cmake -S . -B build/material -G Ninja -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_WAYLAND=OFF
+      - name: Build GUI
+        run: cmake --build build/material --parallel 4
+      - name: Package Linux build
+        run: |
+          mkdir -p build/package
+          cp -r obsidian addons data engines games language modules ports scripts theme tools LICENSE.txt AUTHORS.md README.md build/package/
+          tar -czf build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz -C build/package .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Obsidian-Extended-Material-You-linux-x86_64
+          path: build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz
+      - name: Generate and validate a Doom II map
+        run: |
+          set -euo pipefail
+          mkdir -p build/smoke
+          timeout 240 ./obsidian --config "$PWD/build/smoke/CONFIG.txt" --options "$PWD/build/smoke/OPTIONS.txt" --log "$PWD/build/smoke/LOGS.txt" --batch "$PWD/build/smoke/material-smoke.wad" --verbose engine=idtech_1 game=doom2 port=boom length=single seed=12345 2>&1 | tee build/smoke/generation.log
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+          p = Path('build/smoke/material-smoke.wad')
+          b = p.read_bytes()
+          magic, count, directory = struct.unpack_from('<4sii', b)
+          assert magic == b'PWAD' and count > 0
+          assert 12 <= directory and directory + count * 16 <= len(b)
+          names = [struct.unpack_from('<ii8s', b, directory + i*16)[2].rstrip(b'\0') for i in range(count)]
+          assert b'MAP01' in names, names
+          print(f'Validated {p}: {len(b)} bytes, {count} lumps, MAP01 present')
+          PY
+      - name: Capture the native GUI in both themes
+        run: |
+          Xvfb :99 -screen 0 1600x1000x24 &
+          export DISPLAY=:99
+          for attempt in $(seq 1 30); do
+            xdotool getdisplaygeometry >/dev/null 2>&1 && break
+            sleep 0.2
+          done
+          xdotool getdisplaygeometry
+          mkdir -p docs/material-you
+          for mode in dark light; do
+            mkdir -p "build/gui-$mode"
+            cp build/smoke/CONFIG.txt "build/gui-$mode/CONFIG.txt"
+            cp "theme/material-you-$mode.txt" "build/gui-$mode/THEME.txt"
+            ./obsidian --config "$PWD/build/gui-$mode/CONFIG.txt" --options "$PWD/build/gui-$mode/OPTIONS.txt" --theme "$PWD/build/gui-$mode/THEME.txt" --log "$PWD/build/gui-$mode/LOGS.txt" > "build/gui-$mode/launch.log" 2>&1 &
+            app_pid=$!
+            window_id=''
+            for attempt in $(seq 1 30); do
+              window_id=$(xdotool search --onlyvisible --name 'Obsidian Extended' 2>/dev/null | head -1 || true)
+              [ -z "$window_id" ] || break
+              sleep 1
+            done
+            test -n "$window_id"
+            sleep 3
+            import -window "$window_id" "docs/material-you/$mode.png"
+            xdotool windowfocus "$window_id" key ctrl+q
+            for attempt in $(seq 1 10); do
+              kill -0 "$app_pid" 2>/dev/null || break
+              sleep 1
+            done
+            if kill -0 "$app_pid" 2>/dev/null; then
+              kill "$app_pid"
+              echo 'GUI did not exit cleanly' >&2
+              exit 1
+            fi
+            grep -q "material_theme = $([ "$mode" = dark ] && echo 1 || echo 2)" "build/gui-$mode/THEME.txt"
+          done
+      - name: Build console-only configuration
+        run: |
+          cmake -S . -B build/console -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONSOLE_ONLY=ON
+          cmake --build build/console --parallel 4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: material-you-verification
+          path: |
+            docs/material-you/*.png
+            build/smoke/*.log
+            build/smoke/LOGS.txt
+            build/gui-*/*.log
+
