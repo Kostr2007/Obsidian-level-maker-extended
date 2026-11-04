@@ -1,6 +1,7 @@
 name: Material You
 on:
   push:
+    paths-ignore: ['docs/**', '.extended/**', '.github/workflows/diagnostics.yml']
     branches: [main, codex/material-you]
   pull_request:
     branches: [main]
@@ -26,10 +27,19 @@ jobs:
         run: cmake -S . -B build/material -G Ninja -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_WAYLAND=OFF
       - name: Build GUI
         run: cmake --build build/material --parallel 2
+      - name: Package Linux build
+        run: |
+          mkdir -p build/package
+          cp -r obsidian addons data engines games language modules ports scripts theme tools LICENSE.txt AUTHORS.md README.md build/package/
+          tar -czf build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz -C build/package .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Obsidian-Extended-Material-You-linux-x86_64
+          path: build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz
       - name: Generate and validate a Doom II map
         run: |
           mkdir -p build/smoke
-          timeout 240 ./obsidian --home "$PWD/build/smoke" --batch "$PWD/build/smoke/material-smoke.wad" game=doom2 port=limit_removing length=single seed=12345 > build/smoke/generation.log 2>&1
+          timeout 240 ./obsidian --config "$PWD/build/smoke/CONFIG.txt" --options "$PWD/build/smoke/OPTIONS.txt" --log "$PWD/build/smoke/LOGS.txt" --batch "$PWD/build/smoke/material-smoke.wad" --verbose engine=idtech_1 game=doom2 port=limit_removing length=single seed=12345 2>&1 | tee build/smoke/generation.log
           python3 - <<'PY'
           import struct
           from pathlib import Path
@@ -51,7 +61,7 @@ jobs:
             mkdir -p "build/gui-$mode"
             cp build/smoke/CONFIG.txt "build/gui-$mode/CONFIG.txt"
             cp "theme/material-you-$mode.txt" "build/gui-$mode/THEME.txt"
-            ./obsidian --home "$PWD/build/gui-$mode" > "build/gui-$mode/launch.log" 2>&1 &
+            ./obsidian --config "$PWD/build/gui-$mode/CONFIG.txt" --options "$PWD/build/gui-$mode/OPTIONS.txt" --theme "$PWD/build/gui-$mode/THEME.txt" --log "$PWD/build/gui-$mode/LOGS.txt" > "build/gui-$mode/launch.log" 2>&1 &
             app_pid=$!
             window_id=''
             for attempt in $(seq 1 30); do
@@ -84,15 +94,6 @@ jobs:
             git commit -m 'Document the native dark and light Material You interface'
             git push origin HEAD:codex/material-you
           fi
-      - name: Package Linux build
-        run: |
-          mkdir -p build/package
-          cp -r obsidian addons data engines games language modules ports scripts theme tools LICENSE.txt AUTHORS.md README.md build/package/
-          tar -czf build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz -C build/package .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Obsidian-Extended-Material-You-linux-x86_64
-          path: build/Obsidian-Extended-Material-You-linux-x86_64.tar.gz
       - name: Build console-only configuration
         run: |
           cmake -S . -B build/console -G Ninja -DCMAKE_BUILD_TYPE=Release -DCONSOLE_ONLY=ON
@@ -104,4 +105,6 @@ jobs:
           path: |
             docs/material-you/*.png
             build/smoke/*.log
+            build/smoke/LOGS.txt
             build/gui-*/*.log
+
