@@ -4,11 +4,14 @@ on:
     paths: [.github/workflows/diagnostics.yml]
 permissions:
   actions: read
-  contents: read
+  contents: write
 jobs:
   inspect:
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/material-you
       - uses: actions/download-artifact@v4
         with:
           name: Obsidian-Extended-Material-You-linux-x86_64
@@ -25,3 +28,48 @@ jobs:
           timeout 240 ./obsidian --config "$PWD/smoke/CONFIG.txt" --options "$PWD/smoke/OPTIONS.txt" --log "$PWD/smoke/LOGS.txt" --batch "$PWD/smoke/test.wad" --verbose engine=idtech_1 game=doom2 port=boom length=single seed=12345 2>&1 | tee smoke/stdout.log
           ls -lh smoke
           python3 -c 'import struct; b=open("smoke/test.wad","rb").read(); magic,n,d=struct.unpack_from("<4sii",b); assert magic==b"PWAD" and n>0; print("Validated PWAD",len(b),n)'
+      - name: Install capture utilities
+        run: sudo apt-get update -qq && sudo apt-get install -y xvfb xdotool imagemagick
+      - name: Inspect native themes
+        run: |
+          set -euxo pipefail
+          Xvfb :99 -screen 0 1600x1000x24 &
+          export DISPLAY=:99
+          cd runtime
+          mkdir -p ../docs/material-you
+          for mode in dark light; do
+            mkdir -p "gui-$mode"
+            cp smoke/CONFIG.txt "gui-$mode/CONFIG.txt"
+            cp "theme/material-you-$mode.txt" "gui-$mode/THEME.txt"
+            ./obsidian --config "$PWD/gui-$mode/CONFIG.txt" --options "$PWD/gui-$mode/OPTIONS.txt" --theme "$PWD/gui-$mode/THEME.txt" --log "$PWD/gui-$mode/LOGS.txt" > "gui-$mode/stdout.log" 2>&1 &
+            app_pid=$!
+            window_id=''
+            for attempt in $(seq 1 30); do
+              window_id=$(xdotool search --onlyvisible --name 'Obsidian Extended' 2>/dev/null | head -1 || true)
+              [ -z "$window_id" ] || break
+              sleep 1
+            done
+            cat "gui-$mode/stdout.log"
+            test -n "$window_id"
+            sleep 3
+            import -window "$window_id" "../docs/material-you/$mode.png"
+            xdotool windowfocus "$window_id" key ctrl+q
+            sleep 2
+            cat "gui-$mode/THEME.txt"
+            cat "gui-$mode/stdout.log"
+            if kill -0 "$app_pid" 2>/dev/null; then kill "$app_pid"; fi
+          done
+          cd ..
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/material-you/*.png
+          git commit -m 'Capture native Material You interface for visual review'
+          git push origin HEAD:codex/material-you
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-theme-inspection
+          path: |
+            docs/material-you/*.png
+            runtime/gui-*/*.txt
+            runtime/gui-*/*.log
