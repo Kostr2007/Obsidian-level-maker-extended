@@ -43,6 +43,25 @@ def github(path):
     return data
 
 
+def find_release(api, tag):
+    # GitHub's release-by-tag endpoint only returns published releases. Drafts
+    # must be discovered through the authenticated release listing.
+    release = github(f'{api}/releases/tags/{tag}')
+    if release:
+        return release
+    page = 1
+    while True:
+        releases = github(f'{api}/releases?per_page=100&page={page}')
+        if not isinstance(releases, list):
+            raise RuntimeError('Unable to list existing release drafts')
+        for release in releases:
+            if release['tag_name'] == tag:
+                return release
+        if len(releases) < 100:
+            return None
+        page += 1
+
+
 def publish(root, repository, assets):
     if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
         raise ValueError('Repository must have the form owner/name')
@@ -50,7 +69,7 @@ def publish(root, repository, assets):
     tag = 'v' + version
     sha = command('git', '-C', str(root), 'rev-parse', 'HEAD')
     api = f'repos/{repository}'
-    existing = github(f'{api}/releases/tags/{tag}')
+    existing = find_release(api, tag)
     if existing and not existing['draft']:
         print(f'Release {tag} already published; leaving it unchanged: {existing["html_url"]}')
         return
@@ -58,7 +77,7 @@ def publish(root, repository, assets):
         if not asset.is_file() or not asset.stat().st_size:
             raise ValueError(f'Missing or empty asset: {asset}')
     ref = github(f'{api}/git/ref/tags/{tag}')
-    if existing and not ref:
+    if existing and not ref and existing['target_commitish'] != sha:
         target = github(f'{api}/commits/{existing["target_commitish"]}')
         if not target or target['sha'] != sha:
             raise ValueError(f'Draft {tag} targets another commit; bump VERSION instead')

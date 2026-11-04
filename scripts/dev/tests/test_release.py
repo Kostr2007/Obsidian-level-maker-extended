@@ -50,7 +50,7 @@ class ReleaseTests(unittest.TestCase):
         run.assert_not_called()
 
     @patch.object(publisher, 'command', return_value='abc')
-    @patch.object(publisher, 'github', side_effect=[None, {'object': {'type': 'commit', 'sha': 'different'}}])
+    @patch.object(publisher, 'github', side_effect=[None, [], {'object': {'type': 'commit', 'sha': 'different'}}])
     @patch.object(publisher.subprocess, 'run')
     def test_conflicting_tag_cannot_publish_wrong_binary(self, run, api, command):
         with self.assertRaises(ValueError):
@@ -58,7 +58,7 @@ class ReleaseTests(unittest.TestCase):
         run.assert_not_called()
 
     @patch.object(publisher, 'command', return_value='abc')
-    @patch.object(publisher, 'github', side_effect=[None, None])
+    @patch.object(publisher, 'github', side_effect=[None, [], None])
     @patch.object(publisher.subprocess, 'run')
     def test_new_release_is_published_only_after_upload(self, run, api, command):
         publisher.publish(self.root, 'owner/repo', [self.asset])
@@ -70,7 +70,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue((self.root / 'build/release-notes.md').is_file())
 
     @patch.object(publisher, 'command', return_value='abc')
-    @patch.object(publisher, 'github', side_effect=[None, None])
+    @patch.object(publisher, 'github', side_effect=[None, [], None])
     @patch.object(publisher.subprocess, 'run')
     def test_failed_upload_keeps_release_unpublished(self, run, api, command):
         run.side_effect = [subprocess.CompletedProcess([], 0), subprocess.CalledProcessError(1, 'gh')]
@@ -84,6 +84,14 @@ class ReleaseTests(unittest.TestCase):
     def test_matching_draft_can_resume(self, run, api, command):
         publisher.publish(self.root, 'owner/repo', [self.asset])
         self.assertEqual([call.args[0][2] for call in run.call_args_list], ['edit', 'upload', 'edit'])
+
+    @patch.object(publisher, 'command', return_value='abc')
+    @patch.object(publisher, 'github', side_effect=[None, [{'draft': True, 'tag_name': 'v0.2.0', 'target_commitish': 'abc'}], None])
+    @patch.object(publisher.subprocess, 'run')
+    def test_unpublished_draft_is_found_when_tag_endpoint_returns_404(self, run, api, command):
+        publisher.publish(self.root, 'owner/repo', [self.asset])
+        self.assertEqual([call.args[0][2] for call in run.call_args_list], ['edit', 'upload', 'edit'])
+        api.assert_any_call('repos/owner/repo/releases?per_page=100&page=1')
 
     @patch.object(publisher.subprocess, 'run')
     def test_permission_error_is_not_treated_as_missing_release(self, run):
