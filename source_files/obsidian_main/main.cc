@@ -125,6 +125,7 @@ Fl_Boxtype button_style = FL_DOWN_BOX;
 #endif
 int color_scheme = 0;
 int material_theme = 1;
+int material_accent = 0;
 int font_theme = 0;
 int box_theme = 0;
 int button_theme = 0;

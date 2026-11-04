@@ -1,10 +1,12 @@
 # Obsidian Extended · Material You
 
-Первый этап редизайна [OBSIDIAN Level Maker](https://github.com/obsidian-level-maker/Obsidian) от [Kostr2007](https://github.com/Kostr2007). Нативный генератор карт Doom с оформлением в духе **Material You / Material Design 3**.
+Развитие нативного интерфейса [OBSIDIAN Level Maker](https://github.com/obsidian-level-maker/Obsidian) от [Kostr2007](https://github.com/Kostr2007). Нативный генератор карт Doom с оформлением в духе **Material You / Material Design 3**.
 
 ## Оформление
 
-- Тёмная тема по умолчанию и светлая тема с базовой фиолетовой палитрой M3.
+- Новое рабочее пространство: World, Gameplay, поиск по настройкам и адаптивный предпросмотр.
+- Светлая и тёмная схемы, четыре сохраняемые палитры: Violet, Sage, Ocean и Clay.
+- Кнопки с состояниями наведения и фокуса, обновлённые слайдеры и checkbox.
 - Скруглённые тональные карточки модулей и поля выбора, больше пространства между группами.
 - Контрастная основная кнопка Build, спокойная сетка предпросмотра и индикатор фокуса у полей выбора.
 - Переключение: **Appearance → Material You Dark / Material You Light / Classic and Custom**. Выбор сохраняется между запусками.
@@ -12,8 +14,13 @@
 
 ![Настоящее приложение: тёмная тема](docs/material-you/dark.png)
 ![Настоящее приложение: светлая тема](docs/material-you/light.png)
+![Палитра Sage: карта создана в интерфейсе](docs/material-you/sage.png)
 
-Это первый этап нативного редизайна на FLTK. Автоматического извлечения цвета из обоев, системного переключения темы и анимаций пока нет. Алгоритмы генерации и игровые модули взяты из указанного ниже upstream без изменений.
+Это нативный интерфейс на FLTK. Автоматического извлечения цвета из обоев, системного переключения темы и анимаций пока нет. Алгоритмы генерации и игровые модули взяты из указанного ниже upstream без изменений.
+
+Готовые сборки Ubuntu: [последний релиз](https://github.com/Kostr2007/Obsidian-level-maker-extended/releases/latest).
+История изменений: [CHANGELOG.md](CHANGELOG.md). Порядок выпуска версий:
+[RELEASING.md](docs/RELEASING.md).
 
 ## Сборка и запуск
 
@@ -21,10 +28,11 @@ Ubuntu / Debian:
 
 ```sh
 sudo apt install build-essential cmake ninja-build flex libfontconfig1-dev libxft-dev libxinerama-dev libxcursor-dev libgl1-mesa-dev libglu1-mesa-dev
-cmake -S . -B build/material -G Ninja -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_WAYLAND=OFF
-cmake --build build/material --parallel 2
+./scripts/dev/build-linux.sh
 ./obsidian
 ```
+
+Подробная инструкция для Ubuntu и описание нового интерфейса: [UBUNTU.md](docs/material-you/UBUNTU.md).
 
 Запускайте из каталога с `data`, `games`, `scripts` и остальными ресурсами. Для NixOS зависимости можно получить через `nix-shell -p cmake ninja gcc flex fontconfig libGL libGLU xorg.libX11 xorg.libXft xorg.libXinerama xorg.libXcursor xorg.libXrender`.
 

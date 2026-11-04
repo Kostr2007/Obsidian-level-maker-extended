@@ -154,6 +154,7 @@ extern Fl_Color BORDER_COLOR;
 extern int color_scheme;
 // 0: legacy theme, 1: Material dark, 2: Material light.
 extern int material_theme;
+extern int material_accent;
 extern int font_theme;
 extern int box_theme;
 extern int button_theme;

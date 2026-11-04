@@ -59,6 +59,7 @@ class UI_Game : public Fl_Group {
     bool SetButton(std::string button, std::string id);
 
     void SetAbortButton(bool abort);
+    void resize(int X, int Y, int W, int H) override;
 
    private:
     static void callback_Engine(Fl_Widget *, void *);

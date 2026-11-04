@@ -28,6 +28,7 @@
 #include "m_lua.h"
 #include "main.h"
 #include <iostream>
+#include <cctype>
 #include "sys_xoshiro.h"
 
 UI_Module::UI_Module(int X, int Y, int W, int H, std::string id,
@@ -256,14 +257,14 @@ void UI_Module::AddSliderOption(std::string opt, std::string label,
     rsl->prev_button->labelsize(rsl->prev_button->labelsize() * .80);
     rsl->prev_button->callback(callback_SliderPrevious, NULL);
 
-    rsl->mod_slider = new Fl_Hor_Slider(
+    rsl->mod_slider = new UI_MaterialSlider(
         (!single_pane ? rsl->x() + rsl->w() * .10 : rsl->x() + rsl->w() * .45),
         (!single_pane ? rsl->y() + rsl->mod_label->h() : rsl->y()),
         (!single_pane ? rsl->w() * .80
                       : rsl->w() * (rsl->nan_choices.size() > 0 ? .30 : .35)),
         kf_h(24), NULL);
     rsl->mod_slider->box(button_style);
-    rsl->mod_slider->visible_focus(0);
+    rsl->mod_slider->visible_focus(Material_Enabled());
     rsl->mod_slider->color(BUTTON_COLOR);
     rsl->mod_slider->selection_color(SELECTION);
     rsl->mod_slider->minimum(min);
@@ -1133,19 +1134,9 @@ bool UI_CustomMods::ShowModule(std::string id, bool new_shown) {
         return false;
     }
 
-    if ((M->visible() ? 1 : 0) == (new_shown ? 1 : 0)) {
-        return true;
-    }
-
-    // visibility definitely changed
-
-    if (new_shown) {
-        M->show();
-    } else {
-        M->hide();
-    }
-
-    PositionAll();
+    if (M->available == new_shown) return true;
+    M->available = new_shown;
+    Filter(filter_text);
 
     return true;
 }
@@ -1206,6 +1197,32 @@ bool UI_CustomMods::EnableMod(std::string id, bool enable) {
     }
 
     return true;
+}
+
+// Search only narrows the script-provided module set. Values and enabled
+// states are untouched, including while the engine or port changes.
+void UI_CustomMods::Filter(const std::string &text) {
+    filter_text = text;
+    auto lower = [](std::string value) {
+        for (char &c : value) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return value;
+    };
+    const std::string query = lower(text);
+    int matches = 0;
+    for (int i = 0; i < mod_pack->children(); ++i) {
+        auto *m = static_cast<UI_Module *>(mod_pack->child(i));
+        std::string haystack = m->id_name + " " + m->heading->label();
+        for (const auto &item : m->choice_map) haystack += " " + std::string(item.second->mod_label->label());
+        for (const auto &item : m->choice_map_slider) haystack += " " + std::string(item.second->mod_label->label());
+        for (const auto &item : m->choice_map_button) haystack += " " + std::string(item.second->mod_label->label());
+        if (m->available && lower(haystack).find(query) != std::string::npos) {
+            m->show(); ++matches;
+        } else m->hide();
+    }
+    mod_pack->copy_label(matches || text.empty() ? "" : _("No matching settings. Try another search."));
+    mod_pack->labelsize(small_font_size);
+    offset_y = 0;
+    PositionAll();
 }
 
 void UI_CustomMods::PositionAll(UI_Module *focus) {
@@ -1414,6 +1431,20 @@ void UI_Module::resize(int X, int Y, int W, int H) {
 
 // Normal FLTK resize except it will reset the scrollbar to the top
 void UI_CustomMods::resize(int X, int Y, int W, int H) {
+    if (Material_Enabled()) {
+        Fl_Widget::resize(X, Y, W, H);
+        mx = X; my = Y; mw = W - Fl::scrollbar_size(); mh = H;
+        sbar->resize(mx + mw, my, Fl::scrollbar_size(), mh);
+        mod_pack_group->Fl_Widget::resize(mx, my, mw, mh);
+        mod_pack->Fl_Widget::resize(mx, my, mw, mh);
+        for (int i = 0; i < mod_pack->children(); ++i) {
+            auto *m = static_cast<UI_Module *>(mod_pack->child(i));
+            static_cast<Fl_Widget *>(m)->resize(mx, m->y(), mw - 4, m->h());
+        }
+        offset_y = 0;
+        PositionAll();
+        return;
+    }
     int dx = X - x();
     int dy = Y - y();
     int dw = W - w();

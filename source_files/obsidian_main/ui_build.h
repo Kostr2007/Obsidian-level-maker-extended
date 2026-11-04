@@ -38,6 +38,7 @@ class UI_Build : public Fl_Group {
     Fl_Box *alt_disp;
     Fl_Box *status;
     Fl_Progress *progress;
+    Fl_Box *heading = nullptr;
 
    private:
     std::string status_label;

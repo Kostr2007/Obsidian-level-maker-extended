@@ -52,6 +52,9 @@ class UI_Module : public Fl_Group {
     UI_CustomCheckBox *mod_button;
 
     std::string id_name;
+    // Script visibility and search visibility are independent. Filtering must
+    // never make a module available to a game that does not support it.
+    bool available = false;
 
     // only used while positioning the options (as they are added)
     int cur_opt_y;
@@ -123,6 +126,7 @@ class UI_Module : public Fl_Group {
 };
 
 class UI_CustomMods : public Fl_Group {
+    std::string filter_text;
    public:
     Fl_Group *mod_pack;
 
@@ -185,6 +189,7 @@ class UI_CustomMods : public Fl_Group {
     void Locked(bool value);
 
     void SurpriseMe();
+    void Filter(const std::string &text);
 
     UI_Module *FindID(std::string id) const;
 

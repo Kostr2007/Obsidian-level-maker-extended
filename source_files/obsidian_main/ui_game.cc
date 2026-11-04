@@ -123,7 +123,9 @@ UI_Game::UI_Game(int X, int Y, int W, int H) : Fl_Group(X, Y, W, H) {
 
     cy += y_step;
 
-    build = new Fl_Button(button_x, cy, button_w, button_h, _("Build"));
+    build = Material_Enabled()
+        ? new UI_MaterialButton(button_x, cy, button_w, button_h, _("Create map"), true)
+        : new Fl_Button(button_x, cy, button_w, button_h, _("Build"));
     build->visible_focus(0);
     build->box(button_style);
     build->align(FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
@@ -138,8 +140,9 @@ UI_Game::UI_Game(int X, int Y, int W, int H) : Fl_Group(X, Y, W, H) {
     build->callback(build_callback, this);
     build->shortcut(FL_F + 2);
 
-    quit = new Fl_Button(X + W - (button_x - X) - button_w, cy, button_w, button_h,
-                         _("Quit"));
+    quit = Material_Enabled()
+        ? new UI_MaterialButton(X + W - (button_x - X) - button_w, cy, button_w, button_h, _("Quit"))
+        : new Fl_Button(X + W - (button_x - X) - button_w, cy, button_w, button_h, _("Quit"));
     quit->visible_focus(0);
     quit->box(button_style);
     quit->align(FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
@@ -150,6 +153,7 @@ UI_Game::UI_Game(int X, int Y, int W, int H) : Fl_Group(X, Y, W, H) {
     quit->shortcut(FL_COMMAND + 'q');
 
     end();
+    if (Material_Enabled()) resize(X, Y, W, H);
 }
 
 //
@@ -380,7 +384,7 @@ bool UI_Game::SetButton(std::string button, std::string id) {
 void UI_Game::SetAbortButton(bool abort) {
     if (abort) {
         quit->label(_("Cancel"));
-        quit->labelcolor(ABORT_COLOR);
+        quit->labelcolor(Material_Enabled() ? FONT_COLOR : ABORT_COLOR);
         quit->labelfont(use_system_fonts ? font_style : font_style | FL_BOLD);
 
         quit->callback(stop_callback, this);
@@ -414,3 +418,26 @@ void UI_Game::quit_callback(Fl_Widget *w, void *data) {
 }
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab
+
+void UI_Game::resize(int X, int Y, int W, int H) {
+    if (!Material_Enabled()) { Fl_Group::resize(X, Y, W, H); return; }
+    Fl_Widget::resize(X, Y, W, H);
+    const int pad = kf_w(16);
+    heading->copy_label(_("Game setup"));
+    heading->resize(X + pad, Y + kf_h(12), W - pad * 2, kf_h(28));
+    UI_RChoiceMenu *fields[] = {engine, game, port, length, theme};
+    UI_HelpLink *help[] = {engine_help, game_help, port_help, length_help, theme_help};
+    for (int i = 0; i < 5; ++i) {
+        const int yy = Y + kf_h(62) + i * kf_h(60);
+        fields[i]->align(FL_ALIGN_TOP_LEFT);
+        fields[i]->labelsize(small_font_size);
+        fields[i]->resize(X + pad, yy, W - pad * 2 - kf_w(24), kf_h(32));
+        help[i]->resize(X + W - pad - kf_w(22), yy, kf_w(22), kf_h(32));
+        help[i]->visible_focus(1);
+    }
+    const int by = Y + H - kf_h(108);
+    build->resize(X + pad, by, W - pad * 2, kf_h(46));
+    build->labelsize(FL_NORMAL_SIZE);
+    build->tooltip(_("Generate maps with these settings (F2)"));
+    quit->resize(X + pad, by + kf_h(54), W - pad * 2, kf_h(38));
+}

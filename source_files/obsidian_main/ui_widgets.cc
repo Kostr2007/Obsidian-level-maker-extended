@@ -269,7 +269,7 @@ UI_RButton::~UI_RButton() {
 UI_CustomCheckBox::UI_CustomCheckBox(int x, int y, int w, int h,
                                      std::string label)
     : Fl_Check_Button(x, y, w, h, label.empty() ? "" : label.c_str()) {
-    visible_focus(0);
+    visible_focus(Material_Enabled());
     box(FL_NO_BOX);
     down_box(button_style);
 }
@@ -281,6 +281,27 @@ UI_CustomCheckBox::~UI_CustomCheckBox() {}
 // Will also, in the absence of a down box, revert to drawing +/- instead.
 // This is for modules that expand into a series of options
 void UI_CustomCheckBox::draw() {
+    if (Material_Enabled() && down_box()) {
+        const int side = 18;
+        const int xx = x() + 3, yy = y() + (h() - side) / 2;
+        fl_color(WINDOW_BG);
+        fl_rectf(xx - 1, yy - 1, side + 2, side + 2);
+        fl_color(active_r() ? (value() ? SELECTION : BORDER_COLOR)
+                            : fl_inactive(BORDER_COLOR));
+        if (value()) {
+            fl_rounded_rectf(xx, yy, side, side, 4);
+            fl_color(Material_OnPrimary());
+            fl_line_style(FL_SOLID, 2);
+            fl_line(xx + 4, yy + 9, xx + 8, yy + 13, xx + 14, yy + 5);
+        } else {
+            fl_line_style(FL_SOLID, 2);
+            fl_rounded_rect(xx + 1, yy + 1, side - 2, side - 2, 3);
+        }
+        fl_line_style(0);
+        draw_label(x() + 28, y(), w() - 28, h());
+        if (Fl::focus() == this) draw_focus();
+        return;
+    }
     int W = labelsize();
     int bx = Fl::box_dx(box());  // box frame width
     int dx = bx + 2;             // relative position of check mark etc.
@@ -860,3 +881,75 @@ void UI_CustomMenu::draw() {
 }
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab
+
+UI_MaterialButton::UI_MaterialButton(int X, int Y, int W, int H,
+                                   const char *text, bool primary)
+    : Fl_Button(X, Y, W, H, text), primary_(primary) {
+    box(FL_NO_BOX);
+    visible_focus(1);
+    labelfont(font_style);
+    labelsize(FL_NORMAL_SIZE);
+}
+
+int UI_MaterialButton::handle(int event) {
+    if (event == FL_ENTER || event == FL_LEAVE) {
+        hover_ = event == FL_ENTER;
+        redraw();
+    }
+    return Fl_Button::handle(event);
+}
+
+void UI_MaterialButton::draw() {
+    Fl_Color bg = primary_ ? SELECTION : (value() ? BUTTON_COLOR : GAP_COLOR);
+    Fl_Color fg = primary_ ? Material_OnPrimary() : FONT_COLOR;
+    if (active_r() && (hover_ || (value() && type() == FL_NORMAL_BUTTON)))
+        bg = fl_color_average(bg, fg, 0.90f);
+    if (!active_r()) { bg = fl_inactive(bg); fg = fl_inactive(fg); }
+    fl_color(parent() ? parent()->color() : GAP_COLOR);
+    fl_rectf(x(), y(), w(), h());
+    fl_color(bg);
+    const int diameter = std::min(w(), h());
+    fl_pie(x(), y(), diameter, h(), 0, 360);
+    fl_rectf(x() + diameter / 2, y(), w() - diameter, h());
+    fl_pie(x() + w() - diameter, y(), diameter, h(), 0, 360);
+    labelcolor(fg);
+    draw_label();
+    if (Fl::focus() == this) {
+        fl_color(SELECTION);
+        fl_line_style(FL_SOLID, 2);
+        fl_rounded_rect(x() + 2, y() + 2, w() - 4, h() - 4, h() / 2);
+        fl_line_style(0);
+    }
+}
+
+UI_MaterialSlider::UI_MaterialSlider(int X, int Y, int W, int H, const char *label)
+    : Fl_Hor_Slider(X, Y, W, H, label) {
+    slider_size(0.08);
+    visible_focus(1);
+}
+
+void UI_MaterialSlider::draw() {
+    if (!Material_Enabled()) { Fl_Hor_Slider::draw(); return; }
+    fl_color(WINDOW_BG);
+    fl_rectf(x(), y(), w(), h());
+    const int inner = w() - Fl::box_dw(box());
+    const int knob = std::max(int(slider_size() * inner + 0.5),
+                              (h() - Fl::box_dh(box())) / 2 + 1);
+    const double range = maximum() - minimum();
+    const double ratio = range ? (value() - minimum()) / range : 0.0;
+    const int thumb = x() + Fl::box_dx(box()) + knob / 2 +
+        int((inner - knob) * std::max(0.0, std::min(1.0, ratio)) + 0.5);
+    const int cy = y() + h() / 2;
+    fl_color(active_r() ? BUTTON_COLOR : fl_inactive(BUTTON_COLOR));
+    fl_rounded_rectf(x() + 2, cy - 4, w() - 4, 8, 3);
+    fl_color(active_r() ? SELECTION : fl_inactive(SELECTION));
+    if (thumb > x() + 3) fl_rounded_rectf(x() + 2, cy - 4, thumb - x() - 2, 8, 3);
+    fl_color(WINDOW_BG);
+    fl_rectf(thumb - 5, y() + 1, 10, h() - 2);
+    fl_color(active_r() ? SELECTION : fl_inactive(SELECTION));
+    fl_rounded_rectf(thumb - 2, y() + 2, 4, h() - 4, 1);
+    if (Fl::focus() == this) {
+        fl_color(SELECTION);
+        fl_rounded_rect(x(), y(), w(), h(), 8);
+    }
+}

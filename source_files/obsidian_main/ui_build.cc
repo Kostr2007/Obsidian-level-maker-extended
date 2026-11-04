@@ -34,6 +34,12 @@ UI_Build::UI_Build(int X, int Y, int W, int H, const char *label)
     // clang-format on
 
     status_label = "0";
+    if (Material_Enabled()) {
+        heading = new Fl_Box(X, Y, W, 30, _("Live preview"));
+        heading->labelfont(font_style | FL_BOLD);
+        heading->labelsize(header_font_size);
+        heading->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    }
 
     int pad = kf_w(12);
 
@@ -67,6 +73,7 @@ UI_Build::UI_Build(int X, int Y, int W, int H, const char *label)
     alt_disp->labelcolor(Material_Enabled() ? FONT_COLOR : FL_WHITE);
     alt_disp->labelsize(header_font_size);
     alt_disp->labelfont(font_style);
+    if (Material_Enabled()) alt_disp->copy_label(_("Your world will appear here\nwhen generation begins."));
 
     cy += mini_map->h() + kf_h(4);
 
@@ -89,6 +96,7 @@ UI_Build::UI_Build(int X, int Y, int W, int H, const char *label)
     resizable(mini_map);
 
     end();
+    if (Material_Enabled()) resize(X, Y, W, H);
 }
 
 UI_Build::~UI_Build() {}
@@ -96,6 +104,25 @@ UI_Build::~UI_Build() {}
 // Same as regular Fl_Group resize with the exception of calling the minimap to
 // redraw afterwards
 void UI_Build::resize(int X, int Y, int W, int H) {
+    if (Material_Enabled()) {
+        Fl_Widget::resize(X, Y, W, H);
+        const int pad = kf_w(16);
+        heading->resize(X + pad, Y + kf_h(12), W - pad * 2, kf_h(28));
+        const int map_y = Y + kf_h(52);
+        const int map_h = H - kf_h(164);
+        mini_map->resize(X + pad, map_y, W - pad * 2, map_h);
+        if (mini_map->image()) mini_map->image()->scale(mini_map->w(), mini_map->h(), 1, 1);
+        seed_disp->resize(X + pad + 4, map_y + 4, W - pad * 2 - 8, map_h - 8);
+        name_disp->resize(X + pad + 4, map_y + 4, W - pad * 2 - 8, map_h - 8);
+        alt_disp->resize(X + pad + 8, map_y + 24, W - pad * 2 - 16, map_h - 48);
+        alt_disp->labelsize(small_font_size);
+        status->resize(X + pad, Y + H - kf_h(90), W - pad * 2, kf_h(40));
+        status->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+        status->labelsize(small_font_size);
+        progress->resize(X + pad, Y + H - kf_h(42), W - pad * 2, kf_h(22));
+        progress->labelsize(small_font_size);
+        return;
+    }
     int dx = X - x();
     int dy = Y - y();
     int dw = W - w();

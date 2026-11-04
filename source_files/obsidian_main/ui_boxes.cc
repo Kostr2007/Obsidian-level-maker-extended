@@ -581,7 +581,7 @@ Fl_Boxtype Material_ControlBox() {
 }
 Fl_Color Material_OnPrimary() {
     return material_theme == 2 ? fl_rgb_color(255, 255, 255)
-                               : fl_rgb_color(56, 30, 114);
+                               : fl_rgb_color(22, 32, 35);
 }
 
 static void material_card(int x, int y, int w, int h, Fl_Color c) {
@@ -589,7 +589,7 @@ static void material_card(int x, int y, int w, int h, Fl_Color c) {
     fl_color(GAP_COLOR);
     fl_rectf(x, y, w, h);
     fl_color(Fl::draw_box_active() ? c : fl_inactive(c));
-    fl_rounded_rectf(x, y, w, h, std::min(18, std::min(w, h) / 2));
+    fl_rounded_rectf(x, y, w, h, std::min(18, (std::min(w, h) - 1) / 2));
 }
 
 static void material_control(int x, int y, int w, int h, Fl_Color c) {
@@ -597,7 +597,7 @@ static void material_control(int x, int y, int w, int h, Fl_Color c) {
     fl_color(WINDOW_BG);
     fl_rectf(x, y, w, h);
     fl_color(Fl::draw_box_active() ? c : fl_inactive(c));
-    fl_rounded_rectf(x, y, w, h, std::min(12, std::min(w, h) / 2));
+    fl_rounded_rectf(x, y, w, h, std::min(12, (std::min(w, h) - 1) / 2));
 }
 
 static void material_pressed(int x, int y, int w, int h, Fl_Color c) {
@@ -613,6 +613,24 @@ void Material_Setup() {
     GAP_COLOR = light ? fl_rgb_color(254, 247, 255) : fl_rgb_color(20, 18, 24);
     BUTTON_COLOR = light ? fl_rgb_color(232, 222, 248) : fl_rgb_color(54, 48, 65);
     BORDER_COLOR = light ? fl_rgb_color(121, 116, 126) : fl_rgb_color(147, 143, 153);
+    // Curated tonal schemes. These are deliberately named presets, not a
+    // substitute for Material Color Utilities' dynamic color generation.
+    if (material_accent == 1) { // Sage
+        SELECTION = light ? fl_rgb_color(56, 106, 78) : fl_rgb_color(157, 213, 174);
+        BUTTON_COLOR = light ? fl_rgb_color(212, 232, 216) : fl_rgb_color(43, 64, 51);
+        WINDOW_BG = light ? fl_rgb_color(237, 243, 236) : fl_rgb_color(27, 34, 29);
+        GAP_COLOR = light ? fl_rgb_color(246, 251, 243) : fl_rgb_color(16, 22, 18);
+    } else if (material_accent == 2) { // Ocean
+        SELECTION = light ? fl_rgb_color(42, 99, 138) : fl_rgb_color(157, 203, 239);
+        BUTTON_COLOR = light ? fl_rgb_color(213, 229, 246) : fl_rgb_color(43, 58, 74);
+        WINDOW_BG = light ? fl_rgb_color(237, 241, 247) : fl_rgb_color(27, 32, 39);
+        GAP_COLOR = light ? fl_rgb_color(247, 249, 255) : fl_rgb_color(16, 20, 26);
+    } else if (material_accent == 3) { // Clay
+        SELECTION = light ? fl_rgb_color(145, 76, 51) : fl_rgb_color(255, 181, 156);
+        BUTTON_COLOR = light ? fl_rgb_color(255, 219, 206) : fl_rgb_color(79, 53, 44);
+        WINDOW_BG = light ? fl_rgb_color(249, 237, 231) : fl_rgb_color(40, 30, 27);
+        GAP_COLOR = light ? fl_rgb_color(255, 248, 245) : fl_rgb_color(28, 18, 15);
+    }
     GRADIENT_COLOR = WINDOW_BG;
 
     // Keep the existing theme editor and exported RGB files in sync with the roles.

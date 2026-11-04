@@ -103,6 +103,7 @@ void UI_MiniMap::MapFinish() {
     }
 
     cur_image = new Fl_RGB_Image(pixels, map_W, map_H);
+    if (Material_Enabled()) cur_image->scale(w(), h(), 1, 1);
 
     image(cur_image);
     redraw();

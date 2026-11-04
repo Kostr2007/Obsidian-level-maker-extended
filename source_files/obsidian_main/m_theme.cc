@@ -135,6 +135,8 @@ std::filesystem::path Theme_AskLoadFilename() {
 static void Parse_Theme_Option(std::string name, std::string value) {
     if (StringCaseCmp(name, "material_theme") == 0) {
         material_theme = CLAMP(0, StringToInt(value), 2);
+    } else if (StringCaseCmp(name, "material_accent") == 0) {
+        material_accent = CLAMP(0, StringToInt(value), 3);
     } else if (StringCaseCmp(name, "window_scaling") == 0) {
         window_scaling = StringToInt(value);
         window_scaling = CLAMP(0, window_scaling, 5);
@@ -250,6 +252,7 @@ bool Theme_Options_Load(std::filesystem::path filename) {
 
     // Files predating Extended retain their original appearance.
     material_theme = 0;
+    material_accent = 0;
     int error_count = 0;
 
     for (std::string line; std::getline(option_fp, line);) {
@@ -288,6 +291,7 @@ bool Theme_Options_Save(std::filesystem::path filename) {
     option_fp << "-- Based on OBLIGE Level Maker (C) 2006-2017 Andrew Apted\n";
     option_fp << "-- " << OBSIDIAN_WEBSITE << "\n\n";
 
+    option_fp << "material_accent = " << NumToString(material_accent) << "\n";
     option_fp << "material_theme = " << NumToString(material_theme) << "\n";
     option_fp << "window_scaling      = " << NumToString(window_scaling)
               << "\n";

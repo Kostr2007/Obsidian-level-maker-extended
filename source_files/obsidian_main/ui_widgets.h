@@ -34,6 +34,24 @@
 #include "FL/Fl_Repeat_Button.H"
 #include "FL/Fl_Menu_Button.H"
 
+// Shared Material controls. Drawing is separate from FLTK's input handling so
+// keyboard shortcuts, slider stepping and callbacks keep their native behavior.
+class UI_MaterialButton : public Fl_Button {
+    bool hover_ = false;
+    bool primary_;
+   public:
+    UI_MaterialButton(int X, int Y, int W, int H, const char *label,
+                      bool primary = false);
+    int handle(int event) override;
+    void draw() override;
+};
+
+class UI_MaterialSlider : public Fl_Hor_Slider {
+   public:
+    UI_MaterialSlider(int X, int Y, int W, int H, const char *label = nullptr);
+    void draw() override;
+};
+
 //
 // DESCRIPTION:
 //   A sub-classed Fl_Choice widget which remembers an 'id'

@@ -26,6 +26,7 @@
 #include "ui_build.h"
 #include "ui_game.h"
 #include "ui_module.h"
+#include "FL/Fl_Input.H"
 
 // support for scaling up the GUI
 extern int KF;  // Kromulent Factor : -1 .. 3
@@ -49,7 +50,7 @@ class UI_MainWin : public Fl_Double_Window {
     UI_Build *build_box;
 
     UI_CustomMods *left_mods;
-    UI_CustomMods *right_mods;
+    UI_CustomMods *right_mods = nullptr;
 
    public:
     UI_MainWin(int W, int H, const char *title);
@@ -58,8 +59,21 @@ class UI_MainWin : public Fl_Double_Window {
     static void CalcWindowSize(int *W, int *H);
 
     void Locked(bool value);
+    void resize(int X, int Y, int W, int H) override;
+    int handle(int event) override;
 
    private:
+    Fl_Group *rail = nullptr;
+    Fl_Box *workspace_title = nullptr;
+    Fl_Box *workspace_hint = nullptr;
+    Fl_Box *section_title = nullptr;
+    Fl_Input *search = nullptr;
+    UI_MaterialButton *nav[3] = {};
+    int section = 0;
+    void LayoutMaterial();
+    void SelectSection(int value);
+    static void section_CB(Fl_Widget *, void *);
+    static void search_CB(Fl_Widget *, void *);
     static void menu_do_about(Fl_Widget *w, void *data);
     static void menu_do_tutorial(Fl_Widget *w, void *data);
     static void menu_do_view_logs(Fl_Widget *w, void *data);

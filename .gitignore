@@ -65,3 +65,7 @@ CMakeUserPresets.json
 
 # clangd config
 .clangd
+
+# Python development helpers
+__pycache__/
+*.py[cod]
