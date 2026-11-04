@@ -10,6 +10,7 @@ permissions:
 jobs:
   material-you:
     runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.head_ref != 'codex/material-you'
     timeout-minutes: 35
     permissions:
       contents: write
@@ -17,20 +18,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Import the pinned upstream snapshot on first run
-        if: github.event_name == 'push' && github.ref == 'refs/heads/codex/material-you'
-        run: |
-          if [ ! -f source_files/obsidian_main/main.cc ]; then
-            git fetch --depth=1 https://github.com/obsidian-level-maker/Obsidian.git f4c93451e10fd3ab13395dfb8e7b0416c1cd6633
-            git archive FETCH_HEAD | tar -x --exclude='.github'
-            git apply --check .extended/material-you.patch
-            git apply .extended/material-you.patch
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add .
-            git commit -m 'Import OBSIDIAN snapshot and implement native Material You interface'
-            git push origin HEAD:codex/material-you
-          fi
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
