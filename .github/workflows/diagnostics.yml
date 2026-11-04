@@ -35,6 +35,11 @@ jobs:
           set -euxo pipefail
           Xvfb :99 -screen 0 1600x1000x24 &
           export DISPLAY=:99
+          for attempt in $(seq 1 30); do
+            xdotool getdisplaygeometry >/dev/null 2>&1 && break
+            sleep 0.2
+          done
+          xdotool getdisplaygeometry
           cd runtime
           mkdir -p ../docs/material-you
           for mode in dark light; do
