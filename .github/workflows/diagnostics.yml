@@ -67,6 +67,7 @@ jobs:
           cd ..
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git pull --rebase origin codex/material-you
           git add docs/material-you/*.png
           git commit -m 'Capture native Material You interface for visual review'
           git push origin HEAD:codex/material-you
