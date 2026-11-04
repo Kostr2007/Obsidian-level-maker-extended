@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+#include "../backend.h"
+#include "../configuration.h"
+#include "../wadpreview.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QSignalSpy>
+#include <QTemporaryDir>
+#include <QtEndian>
+#include <QtTest>
+
+class CoreTests : public QObject {
+    Q_OBJECT
+    QString engine = qEnvironmentVariable("OBSIDIAN_TEST_ENGINE");
+    QString data = qEnvironmentVariable("OBSIDIAN_TEST_DATA");
+    static void write(const QString &path, const QByteArray &value) {
+        QFile file(path); QVERIFY(file.open(QIODevice::WriteOnly)); QCOMPARE(file.write(value),value.size());
+    }
+    static void integer(QByteArray &bytes, quint32 value, int width = 4) {
+        for (int i=0; i<width; ++i) bytes.append(char(value >> (i*8)));
+    }
+    static QByteArray wad(const QList<QPair<QByteArray,QByteArray>> &lumps) {
+        QByteArray payload, directory;
+        for (const auto &l : lumps) {
+            integer(directory,12+payload.size()); integer(directory,l.second.size());
+            directory += l.first.leftJustified(8,'\0',true); payload += l.second;
+        }
+        QByteArray out("PWAD"); integer(out,lumps.size()); integer(out,12+payload.size());
+        return out+payload+directory;
+    }
+private slots:
+    void configurationRoundTrip() {
+        const QByteArray input = "-- legacy\nengine = idtech_1\ngame = doom2\nseed = 18446744073709551615\nfloat_size = 42\nfuture_key = custom value\n@custom = 1\n  detail = rare\n  future_option = retained\n";
+        Configuration config, result; QString error;
+        QVERIFY2(config.parse(input,&error),qPrintable(error));
+        QVERIFY(result.parse(config.serialize(),&error));
+        QCOMPARE(result.general,config.general); QCOMPARE(result.modules,config.modules); QCOMPARE(result.enabled,config.enabled);
+        QCOMPARE(result.value("ui_arch","float_size"),QString("42"));
+        QCOMPARE(result.value("custom","future_option"),QString("retained"));
+    }
+    void invalidConfigIsTransactional() {
+        Configuration c; c.general["game"] = "doom2"; QString error;
+        QVERIFY(!c.parse("not an assignment",&error));
+        QCOMPARE(c.general.value("game"),QString("doom2")); QVERIFY(!error.isEmpty());
+        QVERIFY(!Configuration::safeValue("42\n@bad = 1"));
+        QVERIFY(!c.parse("  orphan = 4",&error));
+    }
+    void binaryWad() {
+        QTemporaryDir dir; QByteArray vertices,line;
+        integer(vertices,0,2);integer(vertices,0,2);integer(vertices,100,2);integer(vertices,0,2);
+        integer(line,0,2);integer(line,1,2);line.append(QByteArray(10,'\0'));
+        auto bytes=wad({{"MAP01",{}},{"VERTEXES",vertices},{"LINEDEFS",line}});
+        const auto path=dir.path()+"/map.wad";write(path,bytes);
+        auto map=MapGeometry::read(path); QCOMPARE(map.lines.size(),1);QCOMPARE(map.lines[0].length(),100.0);
+        write(path,wad({{"MAP01",{}},{"VERTEXES",vertices},{"LINEDEFS",line+QByteArray(2,'\0')},{"BEHAVIOR",{}}}));
+        QCOMPARE(MapGeometry::read(path).lines.size(),1); // Hexen binary stride.
+        // A line referring outside VERTEXES must not be drawn or crash.
+        line[2]=char(5);write(path,wad({{"MAP01",{}},{"VERTEXES",vertices},{"LINEDEFS",line}}));
+        QVERIFY(MapGeometry::read(path).lines.isEmpty());
+        bytes[8]=char(255);bytes[9]=char(255);bytes[10]=char(255);bytes[11]=char(255);write(path,bytes);
+        QVERIFY(MapGeometry::read(path).lines.isEmpty());
+    }
+    void udmfWad() {
+        QTemporaryDir dir; const auto path=dir.path()+"/udmf.wad";
+        write(path,wad({{"MAP01",{}},{"TEXTMAP","namespace=\"ZDoom\";\nvertex { x=-10.5; y=2; } vertex { x=12; y=40; } linedef { v1=0; v2=1; }"},{"ENDMAP",{}}}));
+        auto map=MapGeometry::read(path);QCOMPARE(map.lines.size(),1);QCOMPARE(map.lines[0].x1(),-10.5);
+    }
+    void schemaAndGeneration() {
+        QVERIFY2(QFile::exists(engine),qPrintable(engine));QTemporaryDir state,output;
+        Backend backend(engine,data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        QCOMPARE(backend.value("","game"),QString("doom2"));
+        const auto modules = backend.schema().value("modules").toList();QVERIFY(modules.size()>10);
+        bool architecture=false;
+        for (const auto &entry : modules) {
+            const auto m=entry.toMap();
+            if (m.value("id")=="ui_arch") { architecture=true;QVERIFY(m.value("available").toBool()); }
+        }
+        QVERIFY(architecture);
+        backend.setOption("ui_arch","float_size","30");QCOMPARE(backend.value("ui_arch","float_size"),QString("30"));
+        backend.setOption("ui_arch","float_size","99999");QCOMPARE(backend.value("ui_arch","float_size"),QString("30"));
+        backend.chooseOutput(QUrl::fromLocalFile(output.path()));backend.setGeneral("seed","12345");
+        QSignalSpy finished(&backend,&Backend::generationFinished);backend.generate();
+        QTRY_COMPARE_WITH_TIMEOUT(finished.count(),1,90000);
+        QVERIFY2(finished[0][0].toBool(),qPrintable(backend.log()));
+        QVERIFY(QDir(backend.resultFolder()).exists());QVERIFY(!MapGeometry::read(backend.previewFile()).lines.isEmpty());
+        QVERIFY(QFile::exists(backend.resultFolder()+"/CONFIG.txt"));
+        QCOMPARE(backend.value("","seed"),QString("12345"));
+        QFile log(backend.resultFolder()+"/LOGS.txt"); QVERIFY(log.open(QIODevice::ReadOnly));
+        QVERIFY(log.readAll().contains("seed = 12345"));
+        const auto firstResult = backend.resultFolder();
+        QFile firstConfig(firstResult+"/CONFIG.txt"); QVERIFY(firstConfig.open(QIODevice::ReadOnly));
+        const auto firstInput = firstConfig.readAll();
+        backend.generate();
+        QTRY_COMPARE_WITH_TIMEOUT(finished.count(),2,90000);
+        QVERIFY2(finished[1][0].toBool(),qPrintable(backend.log()));
+        QVERIFY(firstResult != backend.resultFolder());
+        QVERIFY(QDir(firstResult).exists());
+        QFile secondConfig(backend.resultFolder()+"/CONFIG.txt"); QVERIFY(secondConfig.open(QIODevice::ReadOnly));
+        QCOMPARE(secondConfig.readAll(), firstInput);
+        QFile secondLog(backend.resultFolder()+"/LOGS.txt"); QVERIFY(secondLog.open(QIODevice::ReadOnly));
+        QVERIFY(secondLog.readAll().contains("seed = 12345"));
+        QVERIFY(!MapGeometry::read(backend.previewFile()).lines.isEmpty());
+        // Geometry equality is not a frontend contract: the pre-Qt engine
+        // already varies with a full config. See docs/qt6/ENGINE_NOTES.md.
+
+    }
+    void dependencyRefreshAndPresetImport() {
+        QTemporaryDir state;Backend backend(engine,data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        const auto preset=state.path()+"/import.txt";
+        write(preset,"engine = idtech_1\ngame = doom2\nport = limit_enforcing\nlength = single\nseed = 12345\nfuture_unknown = retained\n");
+        backend.importConfig(QUrl::fromLocalFile(preset));
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
+        QCOMPARE(backend.value("","port"),QString("limit_enforcing"));
+        QCOMPARE(backend.value("","seed"),QString("12345"));
+        for (const auto &entry : backend.schema().value("modules").toList()) {
+            const auto m=entry.toMap();if(m.value("id")=="ui_arch")QVERIFY(!m.value("available").toBool());
+        }
+        const auto exported=state.path()+"/export.txt";backend.exportConfig(QUrl::fromLocalFile(exported));
+        QFile file(exported);QVERIFY(file.open(QIODevice::ReadOnly));QVERIFY(file.readAll().contains("future_unknown = retained"));
+    }
+    void cancellationPreservesExistingResults() {
+        QTemporaryDir state,output;const auto existing=output.path()+"/existing.wad";write(existing,"KEEP");
+        Backend backend(engine,data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        backend.chooseOutput(QUrl::fromLocalFile(output.path()));backend.setGeneral("length","game");
+        QSignalSpy finished(&backend,&Backend::generationFinished);backend.generate();
+        QVERIFY(backend.busy());backend.cancel();
+        QTRY_COMPARE_WITH_TIMEOUT(finished.count(),1,10000);QVERIFY(!finished[0][0].toBool());
+        QFile file(existing);QVERIFY(file.open(QIODevice::ReadOnly));QCOMPARE(file.readAll(),QByteArray("KEEP"));
+        QCOMPARE(QDir(output.path()).entryList(QDir::AllEntries|QDir::Hidden|QDir::NoDotAndDotDot),QStringList{"existing.wad"});
+    }
+    void missingWorkerReportsFailure() {
+        QTemporaryDir state;Backend backend(state.path()+"/missing-worker",data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && backend.status().contains("Не удалось"),5000);
+        QVERIFY(backend.schema().isEmpty());QVERIFY(!backend.busy());
+    }
+};
+QTEST_MAIN(CoreTests)
+#include "test_core.moc"

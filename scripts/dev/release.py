@@ -89,11 +89,11 @@ def publish(root, repository, assets):
             raise ValueError(f'{tag} already points at another commit; bump VERSION instead')
     notes_file = root / 'build/release-notes.md'
     notes_file.parent.mkdir(parents=True, exist_ok=True)
-    notes += f'\nИнструкция установки Ubuntu: https://github.com/{repository}/blob/{tag}/docs/material-you/UBUNTU.md\n'
+    notes += f'\nИнструкция установки Ubuntu: https://github.com/{repository}/blob/{tag}/docs/qt6/UBUNTU.md\n'
     notes_file.write_text(notes, encoding='utf-8')
     if not existing:
         subprocess.run(['gh', 'release', 'create', tag, '--repo', repository,
-                        '--target', sha, '--title', f'Obsidian Extended {version} — Material Workspace',
+                        '--target', sha, '--title', f'Obsidian Extended {version} — Qt 6',
                         '--notes-file', str(notes_file), '--draft'], check=True)
     else:
         subprocess.run(['gh', 'release', 'edit', tag, '--repo', repository,

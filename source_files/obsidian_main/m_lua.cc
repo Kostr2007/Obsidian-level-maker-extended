@@ -20,6 +20,7 @@
 //----------------------------------------------------------------------
 
 #include "m_lua.h"
+#include "lib_argv.h"
 
 #include <algorithm>
 #ifdef WIN32
@@ -1086,6 +1087,10 @@ int gui_at_level(lua_State *L) {
     int index = luaL_checkinteger(L, 2);
     int total = luaL_checkinteger(L, 3);
 
+    if (argv::Find(0, "qt-events") >= 0) {
+        fmt::print("@@OBSIDIAN level {} {}\n", index, total);
+        fflush(stdout);
+    }
     Main::ProgStatus(fmt::format("{} {}", _("Making"), name).c_str());
 #ifndef CONSOLE_ONLY
     if (main_win) {
@@ -1099,6 +1104,10 @@ int gui_at_level(lua_State *L) {
 //
 int gui_prog_step(lua_State *L) {
     const char *name = luaL_checkstring(L, 1);
+    if (argv::Find(0, "qt-events") >= 0) {
+        fmt::print("@@OBSIDIAN step {}\n", name);
+        fflush(stdout);
+    }
 #ifndef CONSOLE_ONLY
     if (main_win) {
         main_win->build_box->Prog_Step(name);
@@ -2015,6 +2024,11 @@ void ob_print_reference() {
     }
     fmt::print("\nA copy of this output can be found at {}\n",
                reference_file.generic_string());
+}
+
+bool ob_export_ui(const std::string &path) {
+    std::array<std::string, 2> params = {path, ""};
+    return Script_CallFunc("ob_export_ui", 0, params.data());
 }
 
 void ob_print_reference_json() {

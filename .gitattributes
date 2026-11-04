@@ -1,0 +1,2 @@
+# Preserve the upstream Lua bridge's CRLF line endings when checking patches.
+source_files/obsidian_main/m_lua.cc whitespace=cr-at-eol

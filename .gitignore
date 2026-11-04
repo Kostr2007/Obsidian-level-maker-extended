@@ -69,3 +69,7 @@ CMakeUserPresets.json
 # Python development helpers
 __pycache__/
 *.py[cod]
+
+# Qt console worker
+/obsidian-engine
+/obsidian-engine.exe

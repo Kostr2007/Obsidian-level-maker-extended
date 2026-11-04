@@ -1,148 +1,34 @@
+# Compiling Obsidian Extended
 
-# COMPILING Obsidian
+The standard desktop build uses **Qt 6.4+** and a separate console worker.
+See [Ubuntu instructions](docs/qt6/UBUNTU.md) for dependencies and runtime QML modules.
 
-## Haiku OS Dependencies (Builds in console-only mode, tested with R1/Beta 3)
-1. CMake
-   * HaikuDepot package: `cmake`
-
-## BSD Dependencies
-1. CMake Utilities:
-   * package: `cmake`
-
-2. Xorg:
-   * package: `xorg` (`xorg-libraries` on its own doesn't seem sufficient)
-
-3. Wayland:
-   * Wayland support for FLTK 1.4 is in a state of flux; instructions and
-     dependencies can be found in the source_files/fltk/README.Wayland.txt file
-
-The C++ compiler/toolchain should already be present on a typical BSD install
-
-## Linux Dependencies (MSYS has some differences; see MSYS Cross-Compilation section below)
-
-1. C++ compiler and associated tools
-   * packages: `g++` `binutils`
-   * if compiling with clang: `clang`
-   * compiler and toolchain need C++17 capabilities
-
-2. GNU make
-   * package: `make`
-
-3. CMake Utilities:
-   * package: `cmake`
-
-4. Development libraries
-   * package: `libfontconfig1-dev`
-   * recommended if using X11 for better fonts: `libxft-dev`
-   * Wayland support for FLTK 1.4 is in a state of flux; instructions and
-     dependencies can be found in the source_files/fltk/README.Wayland.txt file
-
-5. FLEX
-   * package: `flex`
-
-### Optional
-
-6. Code formatting tools
-   * package: `clang-tidy`
-   * python package (install with pip): `cmakelang`
-
-## Linux/BSD/Haiku OS Compilation
-
-Assuming all those dependencies are met, then the following steps
-will build the Obsidian binary.
-
-* Before you run any other command, please check the output of the following
-command. (The '>' is just the prompt)
-
-```
-> cmake --version
+```sh
+./scripts/dev/build-linux.sh
+ctest --test-dir build/qt --output-on-failure --no-tests=error -R '^qt-core$'
+./obsidian
 ```
 
-* If you see a version that is at least 3.19.0, then follow that up with these commands:
+To build the generator alone, without Qt or FLTK:
 
-```
-> cmake --preset dist
-> cmake --build --preset dist (-j# optional, with # being the number of cores you'd like to use)
-```
-
-* Otherwise, use these commands:
-
-```
-> cmake -B build -DCMAKE_BUILD_TYPE=Release
-> cmake --build build (-j# optional, with # being the number of cores you'd like to use)
-> strip ./obsidian (if desired)
+```sh
+cmake -S . -B build/console -G Ninja -DCONSOLE_ONLY=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build/console --parallel 4
 ```
 
-Then, Obsidian can be launched with:
+This standalone target retains the original executable name `obsidian`; do not
+use its output in a Qt package. The Qt build produces both `obsidian` and
+`obsidian-engine`. `scripts/dev/package-linux.sh` packages the Qt application
+with its worker and resources.
 
-```
-> ./obsidian
-```
+## Historical FLTK interface
 
-## Windows Cross-Compilation on Linux using MinGW
-
-You will need the `mingw-w64` package as well (or your distro's equivalent).
-
-* Before you run any other command, please check the output of the following
-command. (The '>' is just the prompt)
-
-```
-> cmake --version
+```sh
+cmake -S . -B build/fltk -G Ninja -DOBSIDIAN_QT=OFF -DCMAKE_BUILD_TYPE=Release -DOPTION_USE_WAYLAND=OFF
+cmake --build build/fltk --parallel 4
 ```
 
-* If you see a version that is at least 3.19.0, then follow that up with these commands:
-
-```
-> cmake --preset cross64 (use cross32 for a 32-bit build)
-> cmake --build --preset cross64 (-j# optional, with # being the number of cores you'd like to use)
-```
-
-* Otherwise, use these commands:
-
-```
-> cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./Toolchain_mingw64.cmake (use Toolchain_mingw32.cmake for a 32-bit build)
-> cmake --build build (-j# optional, with # being the number of cores you'd like to use)
-```
-
-Then, Obsidian can be launched (in Windows, or with Wine) with:
-
-```
-> ./obsidian.exe
-```
-
-## Windows Cross-Compilation using MSYS
-You will need to install the following on top of the regular MSYS Mingw64 install:
-   * package: `mingw-w64-(arch)-clang-tools-extra`
-   * package: `mingw-w64-(arch)-cmake`
-
-Similar to the above directions:
-
-```
-> cmake -B build -G "MSYS Makefiles"
-> cmake --build build (-j# optional, with # being the number of cores you'd like to use)
-```
-
-Then, Obsidian can be launched (in Windows) with:
-
-```
-> obsidian.exe
-```
-
-## Windows Compilation using Visual Studio
-
-Obsidian now supports compilation on native Windows. You will need Visual
-Studio 2022 installed to perform the build.
-
-* Clone and open the repository using Visual Studio.
-* Ensure the "msvc" preset is selected in the following dropdown.
-
-![](images/msvc-cmake-preset.png)
-
-* Hit "Build" (F7 by default) and wait for the magic to happen.
-* DO NOT run Obsidian from within Visual Studio! It won't work properly.
-  Instead, open the Obsidian folder in the file explorer and run your brand new
-  `obsidian.exe`.
-
-# INSTALLING Obsidian
-
-This is a work-in-progress; needs to be revisited after the CMake conversion is finalized
+Additional dependencies and old platform notes are retained in
+[COMPILING_FLTK.md](docs/legacy/COMPILING_FLTK.md). Those commands predate the Qt
+migration and require `OBSIDIAN_QT=OFF`. Windows/macOS Qt deployment is not yet
+validated; the packaged target is Ubuntu 24.04+ x86_64.

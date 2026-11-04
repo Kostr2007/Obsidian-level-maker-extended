@@ -293,6 +293,8 @@ static void ShowInfo() {
         "  -h --help                 Show this help message\n"
         "  -p --printref             Print reference of all keys and values to "
         "REFERENCE.txt\n"
+        "     --export-ui FILE       Export Qt UI metadata and exit\n"
+        "     --qt-events            Stream generation progress to stdout\n"
         "     --printref-json        Print reference of all keys and values in "
         "JSON format\n"
         "  -u --update <section> <key> <value>\n"
@@ -368,6 +370,14 @@ static bool Verify_InstallDir(const std::filesystem::path &path) {
 void Determine_InstallDir()
 {
     install_dir = std::filesystem::u8path(PHYSFS_getBaseDir());
+    if (const int data_arg = argv::Find(0, "data-dir"); data_arg >= 0) {
+        if (data_arg + 1 >= argv::list.size() || argv::IsOption(data_arg + 1) ||
+            !Verify_InstallDir(std::filesystem::u8path(argv::list[data_arg + 1]))) {
+            fmt::print(stderr, "Invalid or missing --data-dir (scripts/obsidian.lua required)\n");
+            exit(EXIT_FAILURE);
+        }
+        install_dir = std::filesystem::u8path(argv::list[data_arg + 1]);
+    }
 }
 
 void Determine_ConfigFile() {
@@ -1382,7 +1392,7 @@ hardrestart:;
         update_kv.value = argv::list[update_arg + 3];
     }
 
-    if (argv::Find(0, "printref-json") >= 0) {
+    if (argv::Find(0, "printref-json") >= 0 || argv::Find(0, "export-ui") >= 0) {
         batch_mode = true;
 #if defined WIN32 && !defined CONSOLE_ONLY
         if (AllocConsole()) {
@@ -1567,6 +1577,17 @@ softrestart:;
         }
 
         Cookie_ParseArguments();
+
+        if (const int schema_arg = argv::Find(0, "export-ui"); schema_arg >= 0) {
+            if (schema_arg + 1 >= argv::list.size() || argv::IsOption(schema_arg + 1)) {
+                fmt::print(stderr, "Missing filename for --export-ui\n");
+                Main::Detail::Shutdown(false);
+                return EXIT_FAILURE;
+            }
+            const bool ok = ob_export_ui(argv::list[schema_arg + 1]);
+            Main::Detail::Shutdown(false);
+            return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+        }
 
         if (argv::Find('u', "update") >= 0) {
             switch (update_kv.section) {

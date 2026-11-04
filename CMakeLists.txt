@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.12..3.20)
 
+option(OBSIDIAN_QT "Build the Qt 6 desktop interface" ON)
+if(OBSIDIAN_QT AND NOT CONSOLE_ONLY AND NOT HAIKU)
+  set(BUILD_QT_FRONTEND ON)
+  # The worker uses the existing console engine, with no FLTK dependency.
+  set(CONSOLE_ONLY ON)
+endif()
+
 include(cmake/CPM.cmake)
 
 add_subdirectory(source_files/filename_formatter EXCLUDE_FROM_ALL)
@@ -17,11 +24,15 @@ add_subdirectory(source_files/slump EXCLUDE_FROM_ALL)
 add_subdirectory(source_files/spdlog EXCLUDE_FROM_ALL)
 add_subdirectory(source_files/zdbsp EXCLUDE_FROM_ALL)
 
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" OBSIDIAN_EXTENDED_VERSION LIMIT_COUNT 1)
+
 project(
   obsidian
   LANGUAGES C CXX
-  VERSION 0.1.0
+  VERSION ${OBSIDIAN_EXTENDED_VERSION}
 )
+
+include(CTest)
 
 string(TIMESTAMP BUILD_TIMESTAMP "%Y.%m.%d" UTC)
 add_compile_definitions(OBSIDIAN_TIMESTAMP="${BUILD_TIMESTAMP}")
@@ -194,6 +205,10 @@ else()
     source_files/obsidian_main/vis_buffer.cc
     source_files/obsidian_main/vis_occlude.cc
   )
+endif()
+
+if(BUILD_QT_FRONTEND)
+  set_target_properties(obsidian PROPERTIES OUTPUT_NAME "obsidian-engine")
 endif()
 
 target_include_directories(
@@ -411,3 +426,8 @@ install(
   DESTINATION ${INSTALL_BASEDIR}
   CONFIGURATIONS Release
 )
+
+if(BUILD_QT_FRONTEND)
+  add_subdirectory(source_files/qt_frontend)
+  install(TARGETS obsidian-qt RUNTIME DESTINATION ${INSTALL_BASEDIR})
+endif()

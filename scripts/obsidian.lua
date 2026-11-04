@@ -2635,3 +2635,9 @@ function ob_build_cool_shit()
 
   return "ok"
 end
+
+-- Kept separate from the generation algorithms: machine-readable Qt UI schema.
+function ob_export_ui(path)
+  local exporter = assert(loadfile(gui.get_install_dir() .. "/scripts/qt_schema.lua"))()
+  exporter(path)
+end
