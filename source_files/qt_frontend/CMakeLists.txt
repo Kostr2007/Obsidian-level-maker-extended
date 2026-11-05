@@ -6,13 +6,22 @@ add_library(obsidian-qt-core STATIC
   backend.cpp backend.h presentation.cpp presentation.h)
 qt_add_resources(obsidian-qt-core "studio" PREFIX "/studio"
   BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES studio-catalog.json)
+qt_add_resources(obsidian-qt-core "gameplay" PREFIX "/gameplay"
+  BASE "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay" FILES
+  "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/lighting-low.png"
+  "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/lighting-high.png"
+  "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/steepness-low.png"
+  "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/steepness-high.png"
+  "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/monsters-low.png"
+  "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/monsters-high.png")
 target_link_libraries(obsidian-qt-core PUBLIC Qt6::Quick)
 target_compile_features(obsidian-qt-core PUBLIC cxx_std_17)
 qt_add_executable(obsidian-qt main.cpp)
 set_target_properties(obsidian-qt PROPERTIES OUTPUT_NAME obsidian)
 target_compile_definitions(obsidian-qt PRIVATE OBSIDIAN_EXTENDED_VERSION="${PROJECT_VERSION}")
 target_link_libraries(obsidian-qt PRIVATE obsidian-qt-core Qt6::QuickControls2)
-set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml ParameterDiagram.qml)
+set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml GameplayComparison.qml
+  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml)
 qt_add_resources(obsidian-qt "interface" PREFIX "/ui"
   BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${STUDIO_QML})
 add_dependencies(obsidian-qt obsidian)

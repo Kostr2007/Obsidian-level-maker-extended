@@ -5,6 +5,9 @@
 #include <QQmlContext>
 #include <QQmlExpression>
 #include <QQuickStyle>
+#include <QImage>
+#include <QQuickItem>
+#include <QQuickWindow>
 #include <QSet>
 #include "../configuration.h"
 #include "../wadpreview.h"
@@ -20,6 +23,13 @@ class CoreTests : public QObject {
     Q_OBJECT
     QString engine = qEnvironmentVariable("OBSIDIAN_TEST_ENGINE");
     QString data = qEnvironmentVariable("OBSIDIAN_TEST_DATA");
+    static QQuickItem *visualItem(QQuickItem *parent, const QString &name) {
+        if (!parent) return nullptr;
+        if (parent->objectName()==name) return parent;
+        for (auto *child:parent->childItems())
+            if(auto *result=visualItem(child,name))return result;
+        return nullptr;
+    }
     static void write(const QString &path, const QByteArray &value) {
         QFile file(path); QVERIFY(file.open(QIODevice::WriteOnly)); QCOMPARE(file.write(value),value.size());
     }
@@ -46,7 +56,7 @@ private slots:
         QCOMPARE(control.value("category").toString(),QString("extensions"));
         QCOMPARE(control.value("value").toString(),QString("abc"));
         QCOMPARE(control.value("title").toString(),QString("Future option"));
-        QVERIFY(control.value("diagram").toString().isEmpty());
+        QVERIFY(control.value("comparison").toString().isEmpty());
     }
     void studioNavigationAndSearch() {
         QTemporaryDir state; Backend backend(engine,data,state.path());
@@ -64,6 +74,22 @@ private slots:
             return result;
         };
         window->setProperty("width",1440);
+        auto *nativeWindow=qobject_cast<QQuickWindow*>(window);
+        auto *search=visualItem(nativeWindow->contentItem(),"parameterSearch");
+        QVERIFY(search);
+        search->forceActiveFocus();
+        for(const auto c:QByteArray("zzzz-no-option"))QTest::keyClick(nativeWindow,c);
+        QCOMPARE(window->property("query").toString(),QString("zzzz-no-option"));
+        QTest::keyClick(nativeWindow,Qt::Key_A,Qt::ControlModifier);
+        QTest::keyClick(nativeWindow,Qt::Key_Backspace);
+        for(const auto c:QByteArray("float_mons")) {
+            QTest::keyClick(nativeWindow,c);
+            QCoreApplication::processEvents();
+            QVERIFY(search->hasActiveFocus());
+        }
+        QCOMPARE(window->property("query").toString(),QString("float_mons"));
+        QCOMPARE(evaluate("inspected.comparison").toString(),QString("monsters"));
+        window->setProperty("query",QString());
         QSet<QString> expected;
         for(const auto &entry:backend.schema().value("modules").toList()) {
             const auto m=entry.toMap();if(!m.value("available").toBool())continue;
@@ -86,15 +112,36 @@ private slots:
         window->setProperty("query","room_heights");
         QCOMPARE(evaluate("selectedModules(false)[0].id").toString(),QString("misc"));
         QCOMPARE(evaluate("selectedModules(false)[0].options.length").toInt(),1);
-        QCOMPARE(evaluate("selectedModules(false)[0].options[0].diagram").toString(),QString("height"));
+        QVERIFY(evaluate("selectedModules(false)[0].options[0].comparison").toString().isEmpty());
         window->setProperty("query","zzzz-no-option");
         QCOMPARE(evaluate("selectedModules(false).length").toInt(),0);
         window->setProperty("query","");window->setProperty("section","geometry");
         const int basic=evaluate("optionCount(false)").toInt();
         QVERIFY(basic>0);QVERIFY(evaluate("optionCount(true)").toInt()>basic);
         evaluate("refreshInspection()");
-        QCOMPARE(evaluate("inspected.diagram").toString(),QString("size"));
-        window->setProperty("width",1050);QVERIFY(!window->property("wide").toBool());
+        QVERIFY(!evaluate("inspected.id").toString().isEmpty());
+        for (const auto &example : {"lighting", "steepness", "monsters"}) {
+            const auto key = QString(example)=="lighting" ? "float_overall_lighting_mult" : QString(example)=="steepness" ? "steepness" : "float_mons";
+            window->setProperty("query",key);
+            QCOMPARE(evaluate("inspected.comparison").toString(),QString(example));
+            auto *gallery=visualItem(qobject_cast<QQuickWindow*>(window)->contentItem(),"gameplayComparison");
+            QVERIFY(gallery);
+            QTRY_COMPARE(gallery->property("example").toString(),QString(example));
+            QTRY_VERIFY(gallery->isVisible());
+            for (int i=0;i<2;++i) {
+                auto *thumbnail=visualItem(gallery,"comparisonThumbnail"+QString::number(i));
+                QVERIFY(thumbnail);
+                QTRY_COMPARE(thumbnail->property("status").toInt(),1); // Image.Ready.
+                QImage image(":/gameplay/"+QString(example)+(i?"-high.png":"-low.png"));
+                QCOMPARE(image.size(),QSize(1280,720));
+            }
+            QVERIFY(QMetaObject::invokeMethod(gallery,"enlarge"));
+            auto *dialog=gallery->findChild<QObject*>("comparisonDialog");QVERIFY(dialog);
+            QTRY_VERIFY(dialog->property("visible").toBool());
+            QVERIFY(QMetaObject::invokeMethod(dialog,"close"));
+        }
+        window->setProperty("query","");
+        window->setProperty("width",1050);QTRY_VERIFY_WITH_TIMEOUT(!window->property("wide").toBool(),3000);
         window->setProperty("height",600);backend.setDark(false);
         QTest::qWait(100);
         backend.setGeneral("port","limit_enforcing");

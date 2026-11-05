@@ -23,6 +23,7 @@ jobs:
           path: Obsidian source(1)
       - name: Validate release metadata and publisher
         run: |
+          python3 scripts/dev/capture-gameplay.py --verify-assets
           python3 scripts/dev/release.py prepare
           python3 -m unittest discover -s scripts/dev/tests -v
       - name: Install Qt 6 build and QML runtime dependencies
@@ -42,6 +43,8 @@ jobs:
         run: ./obsidian --smoke-output "$PWD/build/qt-smoke"
       - name: Exercise the real Qt window in both themes
         run: python3 scripts/dev/check-qt.py
+      - name: Exercise the optional macOS-inspired design sample
+        run: python3 scripts/dev/check-design-preview.py
       - name: Package verified Qt build
         run: ./scripts/dev/package-linux.sh
       - uses: actions/upload-artifact@v4
@@ -57,6 +60,9 @@ jobs:
             Obsidian source(1)/build/qt-smoke/qt-smoke.json
             Obsidian source(1)/build/qt-ui-check/*.png
             Obsidian source(1)/build/qt-ui-check/*/*.log
+            Obsidian source(1)/build/design-preview-check/*.png
+            Obsidian source(1)/build/design-preview-check/*/*.png
+            Obsidian source(1)/build/design-preview-check/*/*.log
 
   release:
     name: Publish versioned release

@@ -10,6 +10,7 @@ ScrollView {
     property string moduleId: ""
     property string moduleTitle: ""
     property bool showPreview: true
+    rightPadding: 12
     contentWidth: availableWidth
     clip: true
     ScrollBar.vertical.active: true
@@ -44,12 +45,12 @@ ScrollView {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
         }
-        ParameterDiagram {
-            kind: inspector.option ? inspector.option.diagram : ""
-            visible: kind.length > 0
+        GameplayComparison {
+            example: inspector.option ? inspector.option.comparison : ""
+            visible: supported
         }
         Label {
-            text: inspector.option ? (inspector.option.summary || "Подробности этого параметра приведены в справке генератора ниже.") : "Выберите параметр кнопкой «?» или перейдите к его полю с клавиатуры. Здесь появятся объяснение и схема."
+            text: inspector.option ? (inspector.option.summary || "Подробности этого параметра приведены в справке генератора ниже.") : "Выберите параметр кнопкой «?» или перейдите к его полю с клавиатуры. Здесь появятся объяснение и пример."
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
             lineHeight: 1.2

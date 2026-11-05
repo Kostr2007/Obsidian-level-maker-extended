@@ -43,13 +43,19 @@ int main(int argc, char **argv) {
     parser.addOption({"engine","Path to the console worker","file"});
     parser.addOption({"data-dir","Directory containing scripts, games and data","directory",QCoreApplication::applicationDirPath()});
     parser.addOption({"state-dir","Directory for Qt settings and autosaved configuration","directory"});
+    parser.addOption({"design-preview","Launch the isolated macOS-inspired design sample"});
     parser.addOption({"smoke-output","Generate one map, write a report and exit (uses isolated settings)","directory"});
     parser.process(app);
     std::unique_ptr<QTemporaryDir> smokeState;
     QString state = parser.value("state-dir");
     if (state.isEmpty()) {
         if (parser.isSet("smoke-output")) { smokeState = std::make_unique<QTemporaryDir>(); state = smokeState->path(); }
-        else state = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+        else state = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + (parser.isSet("design-preview") ? "/design-preview" : "");
+    }
+    if (parser.isSet("design-preview") && !QFile::exists(state + "/interface.ini")) {
+        QDir().mkpath(state);
+        QSettings preferences(state + "/interface.ini", QSettings::IniFormat);
+        preferences.setValue("dark", false);
     }
     QQuickStyle::setStyle("Fusion");
     qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
@@ -79,7 +85,7 @@ int main(int argc, char **argv) {
         });
         QTimer::singleShot(120000,&app,[&app] { app.exit(1); });
     }
-    qml.load(QUrl("qrc:/ui/Main.qml"));
+    qml.load(QUrl(parser.isSet("design-preview") ? "qrc:/ui/prototype/Preview.qml" : "qrc:/ui/Main.qml"));
     if (qml.rootObjects().isEmpty()) return 1;
     return app.exec();
 }

@@ -48,7 +48,7 @@ ColumnLayout {
             implicitWidth: 36
             Accessible.name: "Справка: " + editor.option.title
             ToolTip.visible: hovered
-            ToolTip.text: "Показать пояснение и схему"
+            ToolTip.text: "Показать пояснение и пример"
             onClicked: editor.explain(true)
         }
     }

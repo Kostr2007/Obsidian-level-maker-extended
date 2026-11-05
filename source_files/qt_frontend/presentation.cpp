@@ -6,6 +6,7 @@
 
 static QVariantMap catalog() {
     Q_INIT_RESOURCE(studio);
+    Q_INIT_RESOURCE(gameplay);
     QFile file(":/studio/studio-catalog.json");
     if (!file.open(QIODevice::ReadOnly)) qFatal("Studio catalog is missing");
     const auto doc = QJsonDocument::fromJson(file.readAll());
@@ -31,7 +32,7 @@ QVariantMap studioPresentation(QVariantMap schema) {
             option["category"] = info.value("category",category);
             option["title"] = info.value("title",option.value("text"));
             option["summary"] = info.value("summary",QString());
-            option["diagram"] = info.value("diagram",QString());
+            option["comparison"] = info.value("comparison",QString());
             option["related"] = info.value("related",QString());
             option["advanced"] = !info.value("basic",false).toBool();
             controls.append(option);

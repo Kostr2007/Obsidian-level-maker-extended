@@ -36,6 +36,13 @@ ApplicationWindow {
     property bool wide: width >= 1200
     property bool quitting: false
     property string query: ""
+    onQueryChanged: {
+        if (query.trim()) {
+            let groups = selectedModules(false);
+            if (groups.length && groups[0].options.length)
+                inspect(groups[0].options[0], groups[0], false);
+        }
+    }
     property bool advanced: false
     property var inspected: null
     property string inspectedModule: ""
@@ -579,11 +586,17 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 TextField {
                     id: search
+                    objectName: "parameterSearch"
                     Layout.fillWidth: true
                     placeholderText: "Найти параметр во всех разделах…  Ctrl+F"
                     text: window.query
                     selectByMouse: true
-                    onTextEdited: window.query = text
+                    onTextEdited: {
+                        window.query = text;
+                        // Replacing matching delegates can otherwise transfer focus
+                        // to a newly-created editor while the user is still typing.
+                        forceActiveFocus();
+                    }
                     Accessible.name: "Поиск параметров"
                 }
                 ToolButton {

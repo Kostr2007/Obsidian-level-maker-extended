@@ -35,6 +35,13 @@
 Нужны Qt 6.4+, CMake, Ninja, C++17 и FLEX. Основная сборка не использует FLTK.
 В архиве запускайте `./start.sh`, сохраняя бинарники и ресурсы вместе.
 
+## Тестовый образец нового дизайна
+
+В этой ветке доступен отдельный macOS-inspired образец на том же Qt backend:
+`./obsidian --design-preview`. Обычный запуск открывает Studio.
+[Аудит, дизайн-система, запуск и ограничения](docs/qt6/MACOS_PREVIEW.md).
+[Игровые PNG-примеры параметров](docs/artwork/gameplay/README.md).
+
 ## Разработка
 
 [Аудит и устройство Studio](docs/qt6/STUDIO_AUDIT.md) · [Архитектура Qt](docs/qt6/ARCHITECTURE.md) · [Компиляция](COMPILING.md) ·

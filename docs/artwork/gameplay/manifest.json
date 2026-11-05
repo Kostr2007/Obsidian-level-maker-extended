@@ -1,0 +1,82 @@
+{
+  "engine": "UZDoom 5.0.3",
+  "iwad": "Freedoom Phase 2 0.13.0",
+  "iwad_sha256": "92e73a81f75a03e29984e293da040928ddafd1cbad26a629489073a46e475347",
+  "camera": {
+    "x": 0,
+    "y": -192,
+    "angle": 90
+  },
+  "renderer": "vid_rendermode=0, vid_preferbackend=0, 1280x720",
+  "frozen": true,
+  "postprocessing": "none; native screenshot command, no crop or retouch",
+  "independent_monsters_high_recapture": "identical decoded RGB pixels",
+  "images": {
+    "lighting-low": {
+      "dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "3f05f15d89d7e1b789dbc7c81e37a0d19f4557ad16f3af66275cf065462aedc3",
+      "scene_sha256": "1759eacf1b93c0894ab45c5ab2a9eada67a18dd3c92f0bf6d81520848be52908",
+      "light": 144,
+      "step": 0,
+      "guards": 3
+    },
+    "lighting-high": {
+      "dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "45cd239e42a4597772afbc36c403c95d70dd15d46847de863fe0e4841dd2bcf3",
+      "scene_sha256": "671f98d87c0817ef0e21f053b1e4057288dd5b6f17f08f438f5921719d569825",
+      "light": 208,
+      "step": 0,
+      "guards": 3
+    },
+    "steepness-low": {
+      "dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "ca519bdcd0b460da12d058e6518e07d07b9f82df6ec6261c351aa816c911d9e6",
+      "scene_sha256": "6e88d8e40af8fe6b8b38bfdf43734741f34411e0f996081e508fe923f14e2a7f",
+      "light": 192,
+      "step": 8,
+      "guards": 0
+    },
+    "steepness-high": {
+      "dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "486f192e74e86953de0185db5e1839dfa57eea366c5977e405327ac9ddee2ba9",
+      "scene_sha256": "9252cfa5cbe786aa1b8b650b1ee59ddd94965dc193a8206068b0a05168eacb73",
+      "light": 192,
+      "step": 24,
+      "guards": 0
+    },
+    "monsters-low": {
+      "dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "cdba2eccd264cf7d78e4f2bd976685fd9cbef7022d8609be58ba385822e0f243",
+      "scene_sha256": "903fb349e9a80449eacf1b648b8076666d6739200f1fc1e4f49ef207ca53dabc",
+      "light": 192,
+      "step": 0,
+      "guards": 3
+    },
+    "monsters-high": {
+      "dimensions": [
+        1280,
+        720
+      ],
+      "sha256": "162ee9bb3c889b10f6da34d130940982ca701235397e43046d743ae465d93411",
+      "scene_sha256": "bee4a41037e24054cf9ca547f9c37d7028460af3e11f7defca12ca007703404a",
+      "light": 192,
+      "step": 0,
+      "guards": 9
+    }
+  }
+}

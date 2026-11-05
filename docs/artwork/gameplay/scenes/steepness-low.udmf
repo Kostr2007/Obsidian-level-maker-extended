@@ -1,0 +1,313 @@
+namespace="ZDoom";
+vertex { x=-384; y=-256; }
+vertex { x=-384; y=-128; }
+vertex { x=-288; y=-128; }
+vertex { x=-288; y=-256; }
+vertex { x=-256; y=-128; }
+vertex { x=-256; y=-256; }
+vertex { x=256; y=-128; }
+vertex { x=256; y=-256; }
+vertex { x=288; y=-128; }
+vertex { x=288; y=-256; }
+vertex { x=384; y=-128; }
+vertex { x=384; y=-256; }
+vertex { x=-384; y=0; }
+vertex { x=-288; y=0; }
+vertex { x=-256; y=0; }
+vertex { x=256; y=0; }
+vertex { x=288; y=0; }
+vertex { x=384; y=0; }
+vertex { x=-288; y=128; }
+vertex { x=-256; y=128; }
+vertex { x=256; y=128; }
+vertex { x=288; y=128; }
+vertex { x=-384; y=128; }
+vertex { x=-384; y=256; }
+vertex { x=-288; y=256; }
+vertex { x=-256; y=256; }
+vertex { x=256; y=256; }
+vertex { x=288; y=256; }
+vertex { x=384; y=256; }
+vertex { x=384; y=128; }
+vertex { x=-288; y=384; }
+vertex { x=-256; y=384; }
+vertex { x=256; y=384; }
+vertex { x=288; y=384; }
+vertex { x=-384; y=384; }
+vertex { x=-384; y=512; }
+vertex { x=-288; y=512; }
+vertex { x=-256; y=512; }
+vertex { x=256; y=512; }
+vertex { x=288; y=512; }
+vertex { x=384; y=512; }
+vertex { x=384; y=384; }
+vertex { x=-288; y=640; }
+vertex { x=-256; y=640; }
+vertex { x=256; y=640; }
+vertex { x=288; y=640; }
+vertex { x=-384; y=640; }
+vertex { x=-384; y=768; }
+vertex { x=-288; y=768; }
+vertex { x=-256; y=768; }
+vertex { x=256; y=768; }
+vertex { x=288; y=768; }
+vertex { x=384; y=768; }
+vertex { x=384; y=640; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=0; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=8; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=8; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=8; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=8; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=8; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=16; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=16; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=16; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=24; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=24; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=24; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=24; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=24; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=32; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=32; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=32; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=40; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=40; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=40; heightceiling=288; texturefloor="FLOOR4_8"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=40; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sector { heightfloor=40; heightceiling=288; texturefloor="FLAT5_4"; textureceiling="CEIL3_5"; lightlevel=192; }
+sidedef { sector=0; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=0; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=0; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=0; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=1; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=1; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=1; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=1; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=2; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=2; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=2; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=2; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=3; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=3; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=3; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=3; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=4; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=4; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=4; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=4; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=5; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=5; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=5; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=5; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=6; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=6; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=6; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=6; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=7; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=7; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=7; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=7; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=8; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=8; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=8; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=8; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=9; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=9; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=9; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=9; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=10; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=10; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=10; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=10; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=11; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=11; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=11; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=11; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=12; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=12; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=12; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=12; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=13; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=13; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=13; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=13; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=14; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=14; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=14; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=14; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=15; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=15; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=15; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=15; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=16; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=16; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=16; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=16; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=17; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=17; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=17; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=17; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=18; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=18; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=18; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=18; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=19; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=19; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=19; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=19; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=20; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=20; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=20; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=20; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=21; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=21; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=21; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=21; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=22; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=22; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=22; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=22; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=23; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=23; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=23; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=23; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=24; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=24; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=24; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=24; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=25; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=25; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=25; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=25; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=26; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=26; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=26; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=26; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=27; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=27; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=27; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=27; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=28; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=28; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=28; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=28; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=29; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=29; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=29; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=29; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=30; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=30; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=30; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=30; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=31; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=31; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=31; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=31; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=32; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=32; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=32; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=32; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=33; texturemiddle="-"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=33; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=33; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+sidedef { sector=33; texturemiddle="STARTAN2"; texturetop="STARTAN2"; texturebottom="STEP1"; }
+linedef { v1=0; v2=1; sidefront=0; blocking=true; }
+linedef { v1=1; v2=2; sidefront=1; blocking=false; sideback=23; twosided=true; }
+linedef { v1=2; v2=3; sidefront=2; blocking=false; sideback=4; twosided=true; }
+linedef { v1=3; v2=0; sidefront=3; blocking=true; }
+linedef { v1=2; v2=4; sidefront=5; blocking=false; sideback=27; twosided=true; }
+linedef { v1=4; v2=5; sidefront=6; blocking=false; sideback=8; twosided=true; }
+linedef { v1=5; v2=3; sidefront=7; blocking=true; }
+linedef { v1=4; v2=6; sidefront=9; blocking=false; sideback=31; twosided=true; }
+linedef { v1=6; v2=7; sidefront=10; blocking=false; sideback=12; twosided=true; }
+linedef { v1=7; v2=5; sidefront=11; blocking=true; }
+linedef { v1=6; v2=8; sidefront=13; blocking=false; sideback=35; twosided=true; }
+linedef { v1=8; v2=9; sidefront=14; blocking=false; sideback=16; twosided=true; }
+linedef { v1=9; v2=7; sidefront=15; blocking=true; }
+linedef { v1=8; v2=10; sidefront=17; blocking=false; sideback=39; twosided=true; }
+linedef { v1=10; v2=11; sidefront=18; blocking=true; }
+linedef { v1=11; v2=9; sidefront=19; blocking=true; }
+linedef { v1=1; v2=12; sidefront=20; blocking=true; }
+linedef { v1=12; v2=13; sidefront=21; blocking=true; }
+linedef { v1=13; v2=2; sidefront=22; blocking=false; sideback=24; twosided=true; }
+linedef { v1=13; v2=14; sidefront=25; blocking=false; sideback=43; twosided=true; }
+linedef { v1=14; v2=4; sidefront=26; blocking=false; sideback=28; twosided=true; }
+linedef { v1=14; v2=15; sidefront=29; blocking=false; sideback=47; twosided=true; }
+linedef { v1=15; v2=6; sidefront=30; blocking=false; sideback=32; twosided=true; }
+linedef { v1=15; v2=16; sidefront=33; blocking=false; sideback=51; twosided=true; }
+linedef { v1=16; v2=8; sidefront=34; blocking=false; sideback=36; twosided=true; }
+linedef { v1=16; v2=17; sidefront=37; blocking=true; }
+linedef { v1=17; v2=10; sidefront=38; blocking=true; }
+linedef { v1=13; v2=18; sidefront=40; blocking=true; }
+linedef { v1=18; v2=19; sidefront=41; blocking=false; sideback=59; twosided=true; }
+linedef { v1=19; v2=14; sidefront=42; blocking=false; sideback=44; twosided=true; }
+linedef { v1=19; v2=20; sidefront=45; blocking=false; sideback=63; twosided=true; }
+linedef { v1=20; v2=15; sidefront=46; blocking=false; sideback=48; twosided=true; }
+linedef { v1=20; v2=21; sidefront=49; blocking=false; sideback=67; twosided=true; }
+linedef { v1=21; v2=16; sidefront=50; blocking=true; }
+linedef { v1=22; v2=23; sidefront=52; blocking=true; }
+linedef { v1=23; v2=24; sidefront=53; blocking=true; }
+linedef { v1=24; v2=18; sidefront=54; blocking=false; sideback=56; twosided=true; }
+linedef { v1=18; v2=22; sidefront=55; blocking=true; }
+linedef { v1=24; v2=25; sidefront=57; blocking=false; sideback=75; twosided=true; }
+linedef { v1=25; v2=19; sidefront=58; blocking=false; sideback=60; twosided=true; }
+linedef { v1=25; v2=26; sidefront=61; blocking=false; sideback=79; twosided=true; }
+linedef { v1=26; v2=20; sidefront=62; blocking=false; sideback=64; twosided=true; }
+linedef { v1=26; v2=27; sidefront=65; blocking=false; sideback=83; twosided=true; }
+linedef { v1=27; v2=21; sidefront=66; blocking=false; sideback=68; twosided=true; }
+linedef { v1=27; v2=28; sidefront=69; blocking=true; }
+linedef { v1=28; v2=29; sidefront=70; blocking=true; }
+linedef { v1=29; v2=21; sidefront=71; blocking=true; }
+linedef { v1=24; v2=30; sidefront=72; blocking=true; }
+linedef { v1=30; v2=31; sidefront=73; blocking=false; sideback=91; twosided=true; }
+linedef { v1=31; v2=25; sidefront=74; blocking=false; sideback=76; twosided=true; }
+linedef { v1=31; v2=32; sidefront=77; blocking=false; sideback=95; twosided=true; }
+linedef { v1=32; v2=26; sidefront=78; blocking=false; sideback=80; twosided=true; }
+linedef { v1=32; v2=33; sidefront=81; blocking=false; sideback=99; twosided=true; }
+linedef { v1=33; v2=27; sidefront=82; blocking=true; }
+linedef { v1=34; v2=35; sidefront=84; blocking=true; }
+linedef { v1=35; v2=36; sidefront=85; blocking=true; }
+linedef { v1=36; v2=30; sidefront=86; blocking=false; sideback=88; twosided=true; }
+linedef { v1=30; v2=34; sidefront=87; blocking=true; }
+linedef { v1=36; v2=37; sidefront=89; blocking=false; sideback=107; twosided=true; }
+linedef { v1=37; v2=31; sidefront=90; blocking=false; sideback=92; twosided=true; }
+linedef { v1=37; v2=38; sidefront=93; blocking=false; sideback=111; twosided=true; }
+linedef { v1=38; v2=32; sidefront=94; blocking=false; sideback=96; twosided=true; }
+linedef { v1=38; v2=39; sidefront=97; blocking=false; sideback=115; twosided=true; }
+linedef { v1=39; v2=33; sidefront=98; blocking=false; sideback=100; twosided=true; }
+linedef { v1=39; v2=40; sidefront=101; blocking=true; }
+linedef { v1=40; v2=41; sidefront=102; blocking=true; }
+linedef { v1=41; v2=33; sidefront=103; blocking=true; }
+linedef { v1=36; v2=42; sidefront=104; blocking=true; }
+linedef { v1=42; v2=43; sidefront=105; blocking=false; sideback=123; twosided=true; }
+linedef { v1=43; v2=37; sidefront=106; blocking=false; sideback=108; twosided=true; }
+linedef { v1=43; v2=44; sidefront=109; blocking=false; sideback=127; twosided=true; }
+linedef { v1=44; v2=38; sidefront=110; blocking=false; sideback=112; twosided=true; }
+linedef { v1=44; v2=45; sidefront=113; blocking=false; sideback=131; twosided=true; }
+linedef { v1=45; v2=39; sidefront=114; blocking=true; }
+linedef { v1=46; v2=47; sidefront=116; blocking=true; }
+linedef { v1=47; v2=48; sidefront=117; blocking=true; }
+linedef { v1=48; v2=42; sidefront=118; blocking=false; sideback=120; twosided=true; }
+linedef { v1=42; v2=46; sidefront=119; blocking=true; }
+linedef { v1=48; v2=49; sidefront=121; blocking=true; }
+linedef { v1=49; v2=43; sidefront=122; blocking=false; sideback=124; twosided=true; }
+linedef { v1=49; v2=50; sidefront=125; blocking=true; }
+linedef { v1=50; v2=44; sidefront=126; blocking=false; sideback=128; twosided=true; }
+linedef { v1=50; v2=51; sidefront=129; blocking=true; }
+linedef { v1=51; v2=45; sidefront=130; blocking=false; sideback=132; twosided=true; }
+linedef { v1=51; v2=52; sidefront=133; blocking=true; }
+linedef { v1=52; v2=53; sidefront=134; blocking=true; }
+linedef { v1=53; v2=45; sidefront=135; blocking=true; }
+thing { x=0; y=-192; height=0; angle=90; type=1; skill1=true; skill2=true; skill3=true; skill4=true; skill5=true; single=true; coop=true; dm=true; }

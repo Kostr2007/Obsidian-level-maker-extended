@@ -1,0 +1,113 @@
+# macOS-inspired: работающий тестовый образец
+
+## 1. Аудит до изменений интерфейса
+
+Аудит завершён 2026-11-05, основа — Studio 0.4.0 и подготовленная интеграция
+игровых PNG. Используется **Qt Quick / QML**, не Qt Widgets. `main.cpp` выбирает
+Fusion, регистрирует WadView и передаёт Backend через context property. Main.qml
+содержит навигацию, формы, диалоги и сочетания клавиш. ActionButton, Surface,
+OptionEditor, GameSetup и StudioInspector — переиспользуемые компоненты.
+
+Backend запускает существующий C++/Lua engine отдельным QProcess; генерация,
+совместимость, CONFIG, отмена и файловая запись отделены от оформления.
+Схема уже содержит presentation metadata с категориями и пояснениями. Проверены
+эти границы, структура Main.qml, компоненты и свойства backend. Полный аудит
+генератора не повторялся: см. STUDIO_AUDIT.md.
+
+Проблемы исходной композиции для нового направления: одинаковая визуальная
+важность разных панелей, дублирующие заголовки, широкие контролы на всю строку,
+основная команда в нижней панели, мало связи между выбранным полем и справкой.
+
+## 2. Решения и дизайн-система
+
+- Content first: формы занимают центр; инспектор объясняет выбранный параметр,
+  настоящие игровые PNG сохраняют пропорции. Источник снимков подписан.
+- Sidebar отвечает за категории, toolbar — за команды, inspector — за детали.
+  Разделы не дублируются в toolbar. См. [Sidebars](https://developer.apple.com/design/human-interface-guidelines/sidebars),
+  [Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars).
+- «Создать карту» находится в верхней toolbar; статус и путь результата — внизу.
+  Системное оформление окна остаётся у Linux/Qt, без нарисованных traffic lights.
+  См. [Windows](https://developer.apple.com/design/human-interface-guidelines/windows)
+  и [Designing for macOS](https://developer.apple.com/design/human-interface-guidelines/designing-for-macos).
+- Типографика: системный доступный шрифт платформы, 13 px основной текст,
+  11–12 px пояснения, 26 px заголовок. Без SF Pro и SF Symbols. Иконки — собственные
+  простые stroke paths. Цвет не является единственным признаком выбора.
+- Шаг отступов 4 px: 8/12 внутри элементов, 20/24 между группами. Контролы 30–34 px;
+  категории 34 px. Группы округлены на 10 px, кнопки — на 6 px.
+- Светлая тема: canvas #f5f5f7, sidebar #ececef, surface #ffffff,
+  text #202124, secondary #60616a, separator #d8d8df, accent #0069d9.
+- Тёмная: canvas #202023, sidebar #29292d, surface #2c2c30,
+  text #f0f0f3, secondary #b1b1bb, separator #48484f, accent #4da3ff.
+- Состояния: focus ring 2 px, hover отдельный фон, pressed приглушение,
+  disabled с пониженным контрастом; подписи остаются. Qt controls сохраняют роли,
+  input, клавиатуру и Accessible.name; кастомизируются фон и содержимое.
+- Движение: только 100 ms смена цветов кнопок, с выключателем «Меньше анимации»;
+  никаких blur shaders и непрерывных анимаций. Основа —
+  [Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
+  и [Layout](https://developer.apple.com/design/human-interface-guidelines/layout).
+- [Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/liquid-glass)
+  рассматривается как разделение содержимого и слоя управления, а не требование
+  повторять нативный материал на Linux. Закрытые AppKit/SwiftUI API не используются.
+
+Общие основания: [HIG](https://developer.apple.com/design/human-interface-guidelines/)
+и [Design principles](https://developer.apple.com/design/human-interface-guidelines/design-principles).
+Официальные страницы прочитаны через публичный DocC JSON Apple; это не буквальная
+копия нативного macOS UI. Ресурсы UI Kit Apple не включены в приложение.
+
+## 3. Границы образца
+
+Новый QML загружается по `--design-preview`. Основной Studio остаётся обычным
+запуском. Если не указан --state-dir, образец использует отдельный каталог
+`QStandardPaths::AppConfigLocation/design-preview`, чтобы эксперименты с темой
+и значениями не меняли рабочие пресеты Studio.
+
+Образец показывает основные встроенные параметры из реальной схемы. Дополнительные
+модули со своими переключателями остаются в полном Studio; это первый образец,
+а не завершённая миграция всех экранов. Генерация, seed, папка результатов,
+импорт/экспорт, игра/порт, поиск, справка, светлая/тёмная тема и клавиатура работают
+с настоящим Backend. Принятие дизайна и перенос всех экранов — следующий этап.
+
+## Запуск и проверка
+
+```sh
+./scripts/dev/build-linux.sh
+./obsidian --design-preview
+# Или из распакованного Linux-пакета:
+./start.sh --design-preview
+```
+
+В меню команд можно скрыть sidebar/инспектор, изменить тему, увеличить текст
+и отключить смену цветов с анимацией. Ctrl++ увеличивает текст до 125%, Ctrl+0
+возвращает исходный размер. В режиме образца поддержаны F2, Ctrl+F/G/I/Q,
+Alt+1…4. Полный набор Studio остаётся в стандартном режиме запуска.
+
+Для автоматической проверки нужны Xvfb, xdotool и ImageMagick:
+
+```sh
+python3 scripts/dev/check-design-preview.py
+python3 scripts/dev/check-qt.py
+QT_QUICK_BACKEND=software ctest --test-dir build/qt --output-on-failure --no-tests=error -R '^qt-core$'
+python3 scripts/dev/capture-gameplay.py --verify-assets
+```
+
+Проверяется реальная генерация из обеих тем и при QT_SCALE_FACTOR=1.5,
+выходной WAD и сохранённый seed, поиск, окно результата, инспектор, параметры
+игры и выход с клавиатуры. Отдельно снимаются минимальное окно 900×540,
+увеличенный текст и окно справки. QML warnings/errors считаются ошибкой.
+При визуальной проверке исправлены focus signal, горизонтальное переполнение,
+implicitWidth loop диалога и перекрытие текста полосой прокрутки.
+Проверен Linux/Xvfb с software renderer; это не тест screen reader,
+нативного macOS, физического Retina-дисплея или стабильности FPS на любой GPU.
+
+## Ресурсы Apple
+
+Проверены официальные [Apple Design Resources](https://developer.apple.com/design/resources/#macos-apps).
+Ссылка на Figma UI Kit вернула 403 в этой среде, Sketch landing page доступна.
+Сам набор и его лицензия не загружались; разрешение на включение ресурсов
+в Qt/Linux-приложение не установлено. Поэтому образец использует собственные
+иконки и системный шрифт, без ресурсов Apple. Размеры, цвета и длительности
+в DesignTokens — решения проекта, а не приписанные HIG обязательные значения.
+
+Финальные скриншоты: [design-preview/README.md](design-preview/README.md).
+Во всех трёх финальных запусках light/dark/hidpi `launch.log` пуст.
+В образце успешно созданы три настоящие WAD-карты из этих режимов.
