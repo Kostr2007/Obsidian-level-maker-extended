@@ -3,15 +3,18 @@ qt_standard_project_setup()
 add_library(obsidian-qt-core STATIC
   configuration.cpp configuration.h
   wadpreview.cpp wadpreview.h
-  backend.cpp backend.h)
+  backend.cpp backend.h presentation.cpp presentation.h)
+qt_add_resources(obsidian-qt-core "studio" PREFIX "/studio"
+  BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES studio-catalog.json)
 target_link_libraries(obsidian-qt-core PUBLIC Qt6::Quick)
 target_compile_features(obsidian-qt-core PUBLIC cxx_std_17)
 qt_add_executable(obsidian-qt main.cpp)
 set_target_properties(obsidian-qt PROPERTIES OUTPUT_NAME obsidian)
 target_compile_definitions(obsidian-qt PRIVATE OBSIDIAN_EXTENDED_VERSION="${PROJECT_VERSION}")
 target_link_libraries(obsidian-qt PRIVATE obsidian-qt-core Qt6::QuickControls2)
+set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml ParameterDiagram.qml)
 qt_add_resources(obsidian-qt "interface" PREFIX "/ui"
-  BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml)
+  BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${STUDIO_QML})
 add_dependencies(obsidian-qt obsidian)
 add_custom_command(TARGET obsidian-qt POST_BUILD
   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:obsidian-qt>" "${CMAKE_SOURCE_DIR}"
@@ -19,7 +22,9 @@ add_custom_command(TARGET obsidian-qt POST_BUILD
 include(CTest)
 if(BUILD_TESTING)
   qt_add_executable(qt-core-tests tests/test_core.cpp)
-  target_link_libraries(qt-core-tests PRIVATE obsidian-qt-core Qt6::Test)
+  target_link_libraries(qt-core-tests PRIVATE obsidian-qt-core Qt6::Test Qt6::QuickControls2)
+  qt_add_resources(qt-core-tests "testinterface" PREFIX "/ui"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${STUDIO_QML})
   add_dependencies(qt-core-tests obsidian)
   add_test(NAME qt-core COMMAND qt-core-tests)
   set_tests_properties(qt-core PROPERTIES

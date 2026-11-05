@@ -1,0 +1,562 @@
+{
+  "modules": {
+    "ui_reject_options": {
+      "category": "project",
+      "title": "Построение REJECT"
+    },
+    "ui_udmf_map_options": {
+      "category": "project",
+      "title": "Формат карты"
+    },
+    "ui_zdoom_map_options": {
+      "category": "project",
+      "title": "Формат и построение карты"
+    },
+    "ui_arch_wolf_3d": {
+      "category": "geometry",
+      "title": "Структура Wolfenstein"
+    },
+    "ui_slump_arch": {
+      "category": "geometry",
+      "title": "Структура SLUMP"
+    },
+    "ui_arch": {
+      "category": "geometry",
+      "title": "Структура уровня"
+    },
+    "ui_mons": {
+      "category": "combat",
+      "title": "Противники и столкновения"
+    },
+    "ui_mons_wolf_3d": {
+      "category": "combat",
+      "title": "Противники Wolfenstein"
+    },
+    "ui_slump_mons": {
+      "category": "combat",
+      "title": "Противники SLUMP"
+    },
+    "historical_versions": {
+      "category": "project"
+    },
+    "alt_shape_grammars": {
+      "category": "geometry"
+    },
+    "slump_all_nazis": {
+      "category": "combat"
+    },
+    "ui_pickups": {
+      "category": "resources",
+      "title": "Снаряжение и награды"
+    },
+    "misc_wolf_3d": {
+      "category": "geometry"
+    },
+    "misc": {
+      "category": "geometry",
+      "title": "Расширенная архитектура"
+    },
+    "misc_slump": {
+      "category": "geometry"
+    },
+    "prefab_control": {
+      "category": "geometry",
+      "title": "Готовые элементы уровня"
+    },
+    "prefab_control_generic": {
+      "category": "geometry"
+    },
+    "sky_generator_heretic": {
+      "category": "appearance"
+    },
+    "sky_generator": {
+      "category": "appearance"
+    },
+    "gzdoom_marine_closets": {
+      "category": "combat"
+    },
+    "procedural_gotcha_zdoom": {
+      "category": "combat"
+    },
+    "procedural_gotcha": {
+      "category": "combat"
+    },
+    "armaetus_epic_textures": {
+      "category": "appearance"
+    },
+    "modded_game_extras": {
+      "category": "extensions"
+    },
+    "zdoom_ambient_sound": {
+      "category": "appearance"
+    },
+    "fauna_module": {
+      "category": "appearance"
+    },
+    "zdoom_specials": {
+      "category": "extensions"
+    },
+    "zdoom_specials_heretic": {
+      "category": "extensions"
+    },
+    "iwad_mode": {
+      "category": "appearance"
+    },
+    "jokewad_module": {
+      "category": "appearance"
+    },
+    "chex3_mon_control": {
+      "category": "combat"
+    },
+    "chex3_weapon_control": {
+      "category": "resources"
+    },
+    "doom_item_control": {
+      "category": "resources"
+    },
+    "doom_mon_control": {
+      "category": "combat"
+    },
+    "doom_weapon_control": {
+      "category": "resources"
+    },
+    "hacx_mon_control": {
+      "category": "combat"
+    },
+    "hacx_weapon_control": {
+      "category": "resources"
+    },
+    "harmony_mon_control": {
+      "category": "combat"
+    },
+    "harmony_weapon_control": {
+      "category": "resources"
+    },
+    "heretic_mon_control": {
+      "category": "combat"
+    },
+    "heretic_weapon_control": {
+      "category": "resources"
+    },
+    "hexen_item_control": {
+      "category": "resources"
+    },
+    "hexen_mon_control": {
+      "category": "combat"
+    },
+    "quake_mon_control": {
+      "category": "combat"
+    },
+    "quake_weapon_control": {
+      "category": "resources"
+    },
+    "stealth_mons": {
+      "category": "combat"
+    },
+    "stealth_mon_control": {
+      "category": "combat"
+    },
+    "zdoom_marines": {
+      "category": "combat"
+    },
+    "zdoom_marine_control": {
+      "category": "combat"
+    },
+    "theme_ctl_doom1": {
+      "category": "appearance"
+    },
+    "theme_ctl_doom2": {
+      "category": "appearance"
+    },
+    "theme_ctl_heretic": {
+      "category": "appearance"
+    },
+    "edge_music_swapper": {
+      "category": "appearance"
+    },
+    "megawad_swapper": {
+      "category": "appearance"
+    },
+    "music_swapper": {
+      "category": "appearance"
+    },
+    "debugger": {
+      "category": "extensions",
+      "title": "Диагностика генератора"
+    },
+    "compress_output": {
+      "category": "project",
+      "title": "Упаковка в PK3"
+    },
+    "export_map": {
+      "category": "project",
+      "title": "Экспорт .MAP"
+    }
+  },
+  "options": {
+    "ui_arch/float_size": {
+      "title": "Размер уровня",
+      "summary": "Задаёт масштаб уровня. Это внутренний размер генератора, а не число комнат. Большие карты требуют больше времени; для очень больших уровней учитывайте ограничения формата.",
+      "diagram": "size",
+      "related": "Связано с размером комнат, форматом карты и пределами размера.",
+      "basic": true
+    },
+    "ui_arch/float_level_lower_bound": {
+      "title": "Нижняя граница размера",
+      "summary": "Нижний предел для смешанного, прогрессивного и эпизодического размера уровня.",
+      "diagram": "",
+      "related": "Используется соответствующими режимами «Размер уровня».",
+      "basic": false
+    },
+    "ui_arch/float_level_upper_bound": {
+      "title": "Верхняя граница размера",
+      "summary": "Верхний предел для смешанного, прогрессивного и эпизодического размера уровня.",
+      "diagram": "",
+      "related": "Для постоянного числового размера не определяет размер карты.",
+      "basic": false
+    },
+    "ui_arch/outdoors": {
+      "title": "Открытые пространства",
+      "summary": "Меняет предпочтение генератора к открытым областям. Точное количество зависит от темы и структуры уровня.",
+      "diagram": "outdoors",
+      "related": "Связано с парками, пещерами и темой мира.",
+      "basic": true
+    },
+    "ui_arch/caves": {
+      "title": "Пещеры",
+      "summary": "Меняет предпочтение к пещерным областям с неровными очертаниями.",
+      "diagram": "caves",
+      "related": "",
+      "basic": true
+    },
+    "ui_arch/liquids": {
+      "title": "Жидкости",
+      "summary": "Меняет частоту областей с жидкостью. Тип жидкости и её урон определяются темой и выбранными элементами уровня.",
+      "diagram": "liquids",
+      "related": "",
+      "basic": true
+    },
+    "ui_arch/hallways": {
+      "title": "Коридоры",
+      "summary": "Меняет предпочтение к коридорным соединениям между помещениями.",
+      "diagram": "corridors",
+      "related": "",
+      "basic": true
+    },
+    "ui_arch/teleporters": {
+      "title": "Телепорты",
+      "summary": "Меняет частоту телепортов. Аварийные соединения генератора управляются отдельной настройкой.",
+      "diagram": "teleports",
+      "related": "Телепорты при аварийном расширении уровня — отдельный параметр.",
+      "basic": true
+    },
+    "ui_arch/steepness": {
+      "title": "Перепады высоты",
+      "summary": "Меняет перепады между лестницами, лифтами и переходами. Это не высота потолка и не настройка прыжка.",
+      "diagram": "vertical",
+      "related": "Высота помещений находится в модуле «Расширенная архитектура».",
+      "basic": true
+    },
+    "ui_arch/float_overall_lighting_mult": {
+      "title": "Множитель освещения",
+      "summary": "Умножает значения из таблиц освещения при выборе яркости помещений.",
+      "diagram": "lighting",
+      "related": "Минимальная и максимальная яркость задаются отдельно.",
+      "basic": true,
+      "category": "appearance"
+    },
+    "ui_arch/mixin_type": {
+      "title": "Смешение тем",
+      "summary": "Определяет, как другие темы примешиваются к выбранной теме мира.",
+      "diagram": "",
+      "related": "",
+      "basic": true,
+      "category": "appearance"
+    },
+    "ui_arch/bool_prebuilt_levels": {
+      "title": "Готовые уровни",
+      "summary": "Разрешает готовые карты для особых случаев, например финального босса.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_arch/zdoom_vista": {
+      "title": "Бездонные виды",
+      "summary": "Управляет показом бездонных видов; режим Sky-gen Smart учитывает фон неба.",
+      "diagram": "",
+      "related": "",
+      "basic": false,
+      "category": "appearance"
+    },
+    "ui_arch/zdoom_skybox": {
+      "title": "Трёхмерное небо ZDoom",
+      "summary": "Управляет 3D skybox для поддерживаемых портов.",
+      "diagram": "",
+      "related": "",
+      "basic": false,
+      "category": "appearance"
+    },
+    "ui_arch/bool_allow_teleporter_emergency_breaks": {
+      "title": "Аварийные телепорты",
+      "summary": "Разрешает генератору использовать телепорт, если обычное расширение уровня заблокировано. Отключение может обрезать уровень или вызвать ошибку.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/float_mons": {
+      "title": "Количество монстров",
+      "summary": "Меняет насыщенность уровня противниками. Значение 1.0 — стандартное количество; это множитель, а не точное число врагов.",
+      "diagram": "monsters",
+      "related": "Оружие, боеприпасы, сила монстров и размер карты также влияют на сложность.",
+      "basic": true
+    },
+    "ui_mons/float_strength": {
+      "title": "Сила состава противников",
+      "summary": "Смещает выбор типов противников к более слабым или сильным. Не является множителем здоровья каждого монстра.",
+      "diagram": "strength",
+      "related": "Количество монстров регулируется отдельно.",
+      "basic": true
+    },
+    "ui_mons/mon_variety": {
+      "title": "Разнообразие монстров",
+      "summary": "Меняет число разных типов противников в комнатах. При NONE весь уровень использует один тип.",
+      "diagram": "variety",
+      "related": "",
+      "basic": true
+    },
+    "ui_mons/bool_pistol_starts": {
+      "title": "Старт со стандартным оружием",
+      "summary": "Генератор рассчитывает снаряжение для прохождения каждой карты со стартовым оружием, без добычи с предыдущих карт.",
+      "diagram": "",
+      "related": "Это правило расчёта ресурсов движка, а не доказательство проходимости.",
+      "basic": true
+    },
+    "ui_mons/bool_quiet_start": {
+      "title": "Спокойный старт",
+      "summary": "Делает стартовую комнату преимущественно безопасной: убирает противников и внешние окна. Для Procedural Gotchas есть исключение для окон.",
+      "diagram": "",
+      "related": "",
+      "basic": true
+    },
+    "ui_mons/bosses": {
+      "title": "Встречи с боссами",
+      "summary": "Меняет вероятность и сложность встреч с боссами.",
+      "diagram": "strength",
+      "related": "",
+      "basic": true
+    },
+    "ui_mons/traps": {
+      "title": "Ловушки",
+      "summary": "Меняет частоту засад и ловушек. Их состав и способ появления регулируются отдельно.",
+      "diagram": "traps",
+      "related": "Связано с количеством монстров в ловушках и типом ловушки.",
+      "basic": true
+    },
+    "ui_mons/trap_qty": {
+      "title": "Монстры в ловушках",
+      "summary": "Меняет количество противников в засадах.",
+      "diagram": "monsters",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/cage_qty": {
+      "title": "Монстры в клетках",
+      "summary": "Меняет количество противников в клетках.",
+      "diagram": "monsters",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/cages": {
+      "title": "Клетки",
+      "summary": "Меняет частоту клеток с противниками.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/secret_monsters": {
+      "title": "Монстры в секретах",
+      "summary": "Разрешает противников в секретных комнатах; по умолчанию они отсутствуют.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/float_ramp_up": {
+      "title": "Рост силы по ходу игры",
+      "summary": "Меняет скорость роста силы противников между уровнями.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/float_mix_it_up_lower_range": {
+      "title": "Нижняя граница количества",
+      "summary": "Граница количества монстров для смешанного и прогрессивного режимов. Значения — множители стандартной насыщенности.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_mons/float_mix_it_up_upper_range": {
+      "title": "Верхняя граница количества",
+      "summary": "Граница количества монстров для смешанного и прогрессивного режимов. Значения — множители стандартной насыщенности.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "ui_pickups/ammo": {
+      "title": "Боеприпасы",
+      "summary": "Меняет количество боеприпасов, размещаемых генератором.",
+      "diagram": "ammo",
+      "related": "Итоговая сложность также зависит от состава противников и стартового оружия.",
+      "basic": true
+    },
+    "ui_pickups/health": {
+      "title": "Лечение",
+      "summary": "Меняет количество предметов лечения.",
+      "diagram": "health",
+      "related": "Итоговая сложность также зависит от состава противников и стартового оружия.",
+      "basic": true
+    },
+    "ui_pickups/items": {
+      "title": "Броня и прочие предметы",
+      "summary": "Меняет количество брони и прочих предметов.",
+      "diagram": "items",
+      "related": "Итоговая сложность также зависит от состава противников и стартового оружия.",
+      "basic": true
+    },
+    "ui_pickups/weapons": {
+      "title": "Оружие",
+      "summary": "Меняет количество размещаемого оружия.",
+      "diagram": "weapons",
+      "related": "Итоговая сложность также зависит от состава противников и стартового оружия.",
+      "basic": true
+    },
+    "ui_pickups/secrets": {
+      "title": "Секреты",
+      "summary": "Меняет частоту секретных областей. Их награды регулируются отдельно.",
+      "diagram": "secrets",
+      "related": "Итоговая сложность также зависит от состава противников и стартового оружия.",
+      "basic": true
+    },
+    "ui_pickups/secrets_bonus": {
+      "title": "Награды в секретах",
+      "summary": "Добавляет содержимое в секретные комнаты; вместимость зависит от их размера.",
+      "diagram": "items",
+      "related": "Итоговая сложность также зависит от состава противников и стартового оружия.",
+      "basic": true
+    },
+    "misc/room_heights": {
+      "title": "Высота помещений",
+      "summary": "Short ограничивает высоту областей 128 единицами; Tall удваивает исходную высоту. Normal сохраняет стандартное поведение.",
+      "diagram": "height",
+      "related": "",
+      "basic": false
+    },
+    "misc/room_size_multiplier": {
+      "title": "Размер отдельных комнат",
+      "summary": "Меняет площадь комнат. Размер всего уровня задаётся отдельно.",
+      "diagram": "rooms",
+      "related": "",
+      "basic": false
+    },
+    "misc/room_area_multiplier": {
+      "title": "Области внутри комнаты",
+      "summary": "Меняет число областей в комнатах: разные высоты пола или потолка.",
+      "diagram": "",
+      "related": "",
+      "basic": false
+    },
+    "misc/float_linear_mode": {
+      "title": "Линейные уровни",
+      "summary": "Увеличивает долю линейных уровней. Даже при отключённых телепортах генератор иногда использует их для продолжения маршрута.",
+      "diagram": "linear",
+      "related": "",
+      "basic": false
+    },
+    "misc/parks": {
+      "category": "appearance"
+    },
+    "misc/natural_parks": {
+      "category": "appearance"
+    },
+    "misc/park_detail": {
+      "category": "appearance"
+    },
+    "misc/windows": {
+      "category": "appearance"
+    },
+    "misc/passable_windows": {
+      "category": "appearance"
+    },
+    "misc/fences": {
+      "category": "appearance"
+    },
+    "misc/beams": {
+      "category": "appearance"
+    },
+    "misc/porches": {
+      "category": "appearance"
+    },
+    "misc/scenics": {
+      "category": "appearance"
+    },
+    "misc/float_minimum_brightness": {
+      "category": "appearance"
+    },
+    "misc/float_maximum_brightness": {
+      "category": "appearance"
+    },
+    "misc/bool_road_markings": {
+      "category": "appearance"
+    },
+    "misc/street_traffic": {
+      "category": "appearance"
+    },
+    "misc/bool_exit_signs": {
+      "category": "appearance"
+    },
+    "prefab_control/point_prob": {
+      "category": "appearance"
+    },
+    "prefab_control/wall_prob": {
+      "category": "appearance"
+    },
+    "prefab_control/group_wall_prob": {
+      "category": "appearance"
+    },
+    "prefab_control/float_single_room_theme": {
+      "category": "appearance"
+    },
+    "prefab_control/float_limit_wall_groups": {
+      "category": "appearance"
+    },
+    "prefab_control/bool_foreshadowing_exit": {
+      "category": "appearance"
+    },
+    "prefab_control/bool_peered_exits": {
+      "category": "appearance"
+    },
+    "prefab_control/bool_fab_match_theme": {
+      "category": "appearance"
+    },
+    "prefab_control/pf_crushers": {
+      "category": "combat"
+    },
+    "prefab_control/pf_sight_ambushes": {
+      "category": "combat"
+    },
+    "prefab_control/pf_damaging_halls": {
+      "category": "combat"
+    },
+    "debugger/title_screen_source": {
+      "category": "appearance"
+    },
+    "debugger/bool_sub_titles": {
+      "category": "appearance"
+    },
+    "debugger/bool_whole_names_only": {
+      "category": "appearance"
+    },
+    "debugger/bool_scale_items_with_map_size": {
+      "category": "resources"
+    }
+  }
+}

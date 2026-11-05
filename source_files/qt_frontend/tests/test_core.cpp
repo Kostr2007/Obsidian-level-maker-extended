@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "../backend.h"
+#include "../presentation.h"
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QQmlExpression>
+#include <QQuickStyle>
+#include <QSet>
 #include "../configuration.h"
 #include "../wadpreview.h"
 #include <QFile>
@@ -30,6 +36,71 @@ class CoreTests : public QObject {
         return out+payload+directory;
     }
 private slots:
+    void studioUnknownAddonPreservesSettings() {
+        QVariantMap option{{"id","future"},{"text","Future option"},{"kind","choice"},{"value","abc"},{"default","abc"}};
+        QVariantMap module{{"id","new_addon"},{"text","New addon"},{"available",true},{"options",QVariantList{option}}};
+        const auto result = studioPresentation({{"modules",QVariantList{module}}});
+        const auto decorated = result.value("modules").toList()[0].toMap();
+        QCOMPARE(decorated.value("category").toString(),QString("extensions"));
+        const auto control = decorated.value("options").toList()[0].toMap();
+        QCOMPARE(control.value("category").toString(),QString("extensions"));
+        QCOMPARE(control.value("value").toString(),QString("abc"));
+        QCOMPARE(control.value("title").toString(),QString("Future option"));
+        QVERIFY(control.value("diagram").toString().isEmpty());
+    }
+    void studioNavigationAndSearch() {
+        QTemporaryDir state; Backend backend(engine,data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        QQuickStyle::setStyle("Fusion");
+        qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/Main.qml"));
+        QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window = qml.rootObjects().first();
+        auto evaluate = [&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression);
+            auto result=script.evaluate();
+            if(script.hasError())qWarning()<<script.error();
+            return result;
+        };
+        window->setProperty("width",1440);
+        QSet<QString> expected;
+        for(const auto &entry:backend.schema().value("modules").toList()) {
+            const auto m=entry.toMap();if(!m.value("available").toBool())continue;
+            for(const auto &entry:m.value("options").toList()) {
+                const auto o=entry.toMap();if(o.value("kind")=="header")continue;
+                expected.insert(m.value("id").toString()+"/"+o.value("id").toString());
+            }
+        }
+        window->setProperty("advanced",true);
+        QSet<QString> found;
+        for(const auto &category:{"project","geometry","combat","resources","appearance","extensions"}) {
+            window->setProperty("section",category);
+            const auto ids=evaluate("selectedModules(false).map(function(m){return m.options.map(function(o){return m.id+'/'+o.id}).join('\\n')}).join('\\n')").toString().split('\n',Qt::SkipEmptyParts);
+            for(const auto &id:ids) { QVERIFY2(!found.contains(id),qPrintable(id));found.insert(id); }
+        }
+        QCOMPARE(found,expected); // Every available parameter appears exactly once across categories.
+        window->setProperty("advanced",false);window->setProperty("section","resources");
+        window->setProperty("query","float_size");
+        QCOMPARE(evaluate("selectedModules(false)[0].options[0].id").toString(),QString("float_size"));
+        window->setProperty("query","room_heights");
+        QCOMPARE(evaluate("selectedModules(false)[0].id").toString(),QString("misc"));
+        QCOMPARE(evaluate("selectedModules(false)[0].options.length").toInt(),1);
+        QCOMPARE(evaluate("selectedModules(false)[0].options[0].diagram").toString(),QString("height"));
+        window->setProperty("query","zzzz-no-option");
+        QCOMPARE(evaluate("selectedModules(false).length").toInt(),0);
+        window->setProperty("query","");window->setProperty("section","geometry");
+        const int basic=evaluate("optionCount(false)").toInt();
+        QVERIFY(basic>0);QVERIFY(evaluate("optionCount(true)").toInt()>basic);
+        evaluate("refreshInspection()");
+        QCOMPARE(evaluate("inspected.diagram").toString(),QString("size"));
+        window->setProperty("width",1050);QVERIFY(!window->property("wide").toBool());
+        window->setProperty("height",600);backend.setDark(false);
+        QTest::qWait(100);
+        backend.setGeneral("port","limit_enforcing");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
+        QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
+    }
     void configurationRoundTrip() {
         const QByteArray input = "-- legacy\nengine = idtech_1\ngame = doom2\nseed = 18446744073709551615\nfloat_size = 42\nfuture_key = custom value\n@custom = 1\n  detail = rare\n  future_option = retained\n";
         Configuration config, result; QString error;

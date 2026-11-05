@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
         if (parser.isSet("smoke-output")) { smokeState = std::make_unique<QTemporaryDir>(); state = smokeState->path(); }
         else state = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     }
-    QQuickStyle::setStyle("Material");
+    QQuickStyle::setStyle("Fusion");
     qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
     Backend backend(parser.isSet("engine") ? parser.value("engine") : enginePath(),parser.value("data-dir"),state);
     QQmlApplicationEngine qml;

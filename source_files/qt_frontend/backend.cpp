@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "backend.h"
+#include "presentation.h"
 #include "wadpreview.h"
 #include <QDateTime>
 #include <QDesktopServices>
@@ -59,7 +60,7 @@ Backend::~Backend() {
         if (process->state() != QProcess::NotRunning) { process->kill(); process->waitForFinished(2000); }
 }
 bool Backend::dark() const { return m_preferences->value("dark",true).toBool(); }
-QString Backend::accent() const { return m_preferences->value("accent","#80cbc4").toString(); }
+QString Backend::accent() const { return m_preferences->value("accent","#72a7ff").toString(); }
 void Backend::setDark(bool value) { m_preferences->setValue("dark",value); emit preferencesChanged(); }
 void Backend::setAccent(const QString &value) {
     if (!QColor(value).isValid()) return;
@@ -110,7 +111,7 @@ void Backend::schemaFinished(int code, QProcess::ExitStatus status) {
         QFile logs(m_schemaDir->path()+"/LOGS.txt"); if (logs.open(QIODevice::ReadOnly)) appendLog(QString::fromUtf8(logs.readAll()).right(20000));
         fail("Не удалось получить настройки генератора. Подробности в журнале."); return;
     }
-    m_schema = doc.object().toVariantMap();
+    m_schema = studioPresentation(doc.object().toVariantMap());
     const auto general = doc.object()["config"].toObject();
     for (auto i = general.begin(); i != general.end(); ++i) m_config.general[i.key()] = i.value().toString();
     for (const auto &entry : doc.object()["modules"].toArray()) {

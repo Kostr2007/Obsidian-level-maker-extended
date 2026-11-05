@@ -4,9 +4,8 @@ import QtQuick.Controls
 
 Frame {
     background: Rectangle {
-        radius: 18
-        color: backend.dark ? "#202b30" : "#eef4f1"
-        border.width: 1
-        border.color: backend.dark ? "#34464a" : "#d2dfda"
+        radius: 6
+        color: backend.dark ? "#20252e" : "#ffffff"
+        border.color: backend.dark ? "#353d49" : "#d8dee7"
     }
 }

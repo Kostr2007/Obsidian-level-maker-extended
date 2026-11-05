@@ -70,6 +70,11 @@ def main():
                 command('xdotool', 'key', 'alt+1')
                 time.sleep(.2)
                 command('import', '-window', window, str(OUT / f'qt-{mode}-small.png'))
+                command('xdotool', 'key', 'ctrl+i')
+                time.sleep(.3)
+                command('import', '-window', window, str(state / 'inspector-dialog.png'))
+                command('xdotool', 'key', 'Escape')
+                time.sleep(.3)
                 command('xdotool', 'key', 'ctrl+g')
                 time.sleep(.2)
                 command('import', '-window', window, str(state / 'game-dialog.png'))
@@ -79,7 +84,7 @@ def main():
                 app.wait(timeout=10)
                 assert app.returncode == 0
                 diagnostics = (state / 'launch.log').read_text()
-                for error in ('Binding loop', 'ReferenceError', 'TypeError', 'failed to load component'):
+                for error in ('Binding loop', 'ReferenceError', 'TypeError', 'Cannot assign', 'is not a function', 'failed to load component'):
                     assert error not in diagnostics, diagnostics
                 saved = (state / 'CONFIG.txt').read_text()
                 assert 'seed = 12345' in saved and 'port = boom' in saved
