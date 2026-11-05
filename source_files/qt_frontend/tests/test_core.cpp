@@ -73,11 +73,20 @@ private slots:
             if(script.hasError())qWarning()<<script.error();
             return result;
         };
-        window->setProperty("width",1440);
         auto *nativeWindow=qobject_cast<QQuickWindow*>(window);
+        QVERIFY(nativeWindow);
+        // Qt 6.4 must finish creating/exposing the native surface before
+        // keyboard injection processes pending geometry and layout events.
+        nativeWindow->show();
+        QVERIFY(QTest::qWaitForWindowExposed(nativeWindow));
+        nativeWindow->requestActivate();
+        QTRY_VERIFY(nativeWindow->isActive());
+        window->setProperty("width",1440);
+        QTest::qWait(100); // Complete the initial resize/layout before editing delegates.
         auto *search=visualItem(nativeWindow->contentItem(),"parameterSearch");
         QVERIFY(search);
         search->forceActiveFocus();
+        QTRY_VERIFY(search->hasActiveFocus());
         for(const auto c:QByteArray("zzzz-no-option"))QTest::keyClick(nativeWindow,c);
         QCOMPARE(window->property("query").toString(),QString("zzzz-no-option"));
         QTest::keyClick(nativeWindow,Qt::Key_A,Qt::ControlModifier);
