@@ -160,6 +160,70 @@ private slots:
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
     }
+    void previewGameDialogCapture() {
+        // A test-only capture entry point: no application debug API is needed.
+        QTemporaryDir state; QVERIFY(state.isValid());
+        write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
+        Backend backend(engine,data,state.path());
+        backend.setDark(qEnvironmentVariable("OBSIDIAN_CAPTURE_MODE")=="dark");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml"));
+        QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first()); QVERIFY(window);
+        window->show(); QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate(); QTRY_VERIFY(window->isActive());
+        QQmlExpression go(qml.rootContext(),window,"go('project')"); go.evaluate(); QVERIFY(!go.hasError());
+        QTRY_COMPARE(window->property("section").toString(),QString("project"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
+        QTRY_VERIFY(tokens->property("fontsReady").toBool());
+        QCOMPARE(tokens->property("textScale").toReal(),1.0);
+        auto *combo=visualItem(window->contentItem(),"gameChoice_engine"); QVERIFY(combo);
+        auto *popup=combo->property("popup").value<QObject*>(); QVERIFY(popup);
+        auto *dialog=window->findChild<QObject*>("gameDialog"); QVERIFY(dialog);
+        combo->forceActiveFocus(); QTest::keyClick(window,Qt::Key_Space);
+        QTRY_VERIFY(popup->property("opened").toBool());
+        QTest::keyClick(window,Qt::Key_Escape);
+        // Escape starts an exit transition. A shortcut sent while the popup
+        // is still visible is consumed; wait for actual closure, not a delay.
+        QTRY_VERIFY(!popup->property("visible").toBool());
+        QTest::keyClick(window,Qt::Key_G,Qt::ControlModifier);
+        QTRY_VERIFY(dialog->property("opened").toBool());
+        QCOMPARE(dialog->property("opacity").toReal(),1.0);
+        const auto destination=qEnvironmentVariable("OBSIDIAN_CAPTURE_DIR");
+        if(!destination.isEmpty()) {
+            // Wait for a rendered frame after opened, then recheck actual state.
+            QSignalSpy frame(window,&QQuickWindow::frameSwapped); window->update();
+            QVERIFY(frame.wait(5000));
+            QVERIFY(dialog->property("visible").toBool());
+            QVERIFY(dialog->property("opened").toBool());
+            const auto image=window->grabWindow(); QVERIFY(!image.isNull());
+            QCOMPARE(image.size(),QSize(qRound(window->width()*window->devicePixelRatio()),
+                                       qRound(window->height()*window->devicePixelRatio())));
+            QVERIFY(image.save(destination+"/game-dialog.png"));
+            QJsonObject evidence{
+                {"captureSource","QtTest QQuickWindow::grabWindow (separate test process)"},
+                {"qml","qrc:/ui/prototype/Preview.qml"},
+                {"logicalWidth",window->width()},{"logicalHeight",window->height()},
+                {"pixelWidth",image.width()},{"pixelHeight",image.height()},
+                {"devicePixelRatio",window->devicePixelRatio()},
+                {"dark",backend.dark()},{"textScale",tokens->property("textScale").toReal()},
+                {"section",window->property("section").toString()},
+                {"popupVisible",popup->property("visible").toBool()},
+                {"dialogVisible",dialog->property("visible").toBool()},
+                {"dialogOpened",dialog->property("opened").toBool()},
+                {"dialogOpacity",dialog->property("opacity").toReal()},
+                {"engine",backend.value("","engine")},{"game",backend.value("","game")},
+                {"port",backend.value("","port")},{"length",backend.value("","length")},
+                {"seed",backend.value("","seed")}};
+            write(destination+"/game-dialog-state.json",QJsonDocument(evidence).toJson());
+        }
+        QTest::keyClick(window,Qt::Key_Escape);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+    }
     void previewResourcesAndMotion() {
         QTemporaryDir state; Backend backend(engine,data,state.path());
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);

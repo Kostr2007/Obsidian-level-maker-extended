@@ -15,7 +15,7 @@
 | `visual_critic` | high | high, принят инструментом | UNVERIFIED |
 | `functional_tester` | medium | medium, принят инструментом | UNVERIFIED |
 | `accessibility_critic` | medium | medium, принят инструментом | UNVERIFIED |
-| `ui_builder` | medium | medium назначен планом; запуск фиксируется в отчёте реализации | UNVERIFIED |
+| `ui_builder` | medium | medium, принят инструментом | UNVERIFIED |
 | Координатор | high по WORKFLOW | Текущий уровень собственной сессии не меняется этим API | UNVERIFIED |
 
 Проверены доступные средства наблюдения:

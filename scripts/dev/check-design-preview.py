@@ -5,6 +5,8 @@ Pass --motion to additionally record real transitions with ffmpeg; normal CI doe
 not require video tools. State assertions for keyboard/motion live in QtTest.
 """
 import argparse
+from datetime import datetime, timezone
+import json
 import os
 from pathlib import Path
 import shutil
@@ -111,10 +113,11 @@ def typography_captures(window, state, mode, env, processes=()):
     keys('Tab', 'Tab', 'space', env=env)
     time.sleep(.3)
     capture(window, state / 'engine-popup.png', env, processes=processes)
-    keys('Escape', 'ctrl+g', env=env)
-    time.sleep(.4)
-    capture(window, state / 'game-dialog.png', env, processes=processes)
-    keys('Escape', 'alt+2', 'ctrl+f', env=env)
+    keys('Escape', env=env)
+    time.sleep(.25)
+    # The game-dialog shot is produced by the QObject-asserted QtTest capture
+    # after this app exits. X11 key delivery alone cannot prove modal state.
+    keys('alt+2', 'ctrl+f', env=env)
     time.sleep(.2)
     command('xdotool', 'type', '--clearmodifiers', 'float_mons', env=env)
     time.sleep(.5)
@@ -160,6 +163,38 @@ def popup_captures(window, state, mode, env, processes, record=False):
         motion_clip(window,state/'dialog-reduced-motion.mp4',lambda:keys('ctrl+g',env=env),env)
         keys('Escape',env=env);time.sleep(.2)
         keys('ctrl+shift+m',env=env)
+
+
+def game_dialog_capture(state, mode, env, processes=()):
+    """Capture the same production QML in QtTest with real popup state guards."""
+    test = ROOT / 'build/qt/source_files/qt_frontend/qt-core-tests'
+    if not test.is_file():
+        raise RuntimeError('Dialog capture needs QtTest: run ./scripts/dev/build-linux.sh '
+                           '(with BUILD_TESTING=ON). Missing ' + str(test))
+    # Never let a failed test leave an older image that looks like fresh evidence.
+    for name in ('game-dialog.png', 'game-dialog-state.json'):
+        (state / name).unlink(missing_ok=True)
+    capture_env = env.copy()
+    capture_env.update(OBSIDIAN_TEST_ENGINE=str(ROOT / 'build/qt/obsidian-engine'),
+                       OBSIDIAN_TEST_DATA=str(ROOT), OBSIDIAN_CAPTURE_DIR=str(state),
+                       OBSIDIAN_CAPTURE_MODE=mode)
+    with (state / 'game-dialog-test.log').open('w') as log:
+        result = subprocess.run([str(test), 'previewGameDialogCapture'], env=capture_env,
+                                stdout=log, stderr=subprocess.STDOUT, timeout=60)
+    check_processes(processes)
+    if result.returncode:
+        raise RuntimeError('QtTest dialog state/capture failed:\n' +
+                           (state / 'game-dialog-test.log').read_text())
+    # These are outputs of the assertions above, never inferred from PNG pixels.
+    for name in ('game-dialog.png', 'game-dialog-state.json'):
+        if not (state / name).is_file():
+            raise RuntimeError('QtTest did not produce ' + str(state / name))
+    sidecar = state / 'game-dialog-state.json'
+    evidence = json.loads(sidecar.read_text())
+    evidence.update(sourceCommit=command('git', 'rev-parse', 'HEAD'),
+                    sourceWorktreeDirty=bool(command('git', 'status', '--porcelain')),
+                    capturedAt=datetime.now(timezone.utc).isoformat(), mode=mode)
+    sidecar.write_text(json.dumps(evidence, indent=2) + '\n')
 
 
 def main():
@@ -275,7 +310,8 @@ def main():
                     assert error not in diagnostics, diagnostics
                 config = (state / 'CONFIG.txt').read_text()
                 assert 'seed = 12345' in config and 'port = boom' in config
-                print(f'{mode}: WAD generation, Freedoom gallery, keyboard selection, grid/list, search, resize and dialogs passed', flush=True)
+                game_dialog_capture(state, mode, env, processes=((display.process, OUT / 'xvfb.log'),))
+                print(f'{mode}: WAD generation, Freedoom gallery, keyboard selection, grid/list, search and resize passed; game dialog state/capture passed in QtTest', flush=True)
             finally:
                 if app.poll() is None:
                     app.terminate()
