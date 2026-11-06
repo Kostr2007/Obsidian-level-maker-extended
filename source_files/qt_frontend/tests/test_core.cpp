@@ -6,6 +6,8 @@
 #include <QQmlExpression>
 #include <QQuickStyle>
 #include <QImage>
+#include <QFontInfo>
+#include <QRawFont>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QSet>
@@ -171,6 +173,114 @@ private slots:
         window->requestActivate();QTRY_VERIFY(window->isActive());
         window->setWidth(1440);window->setHeight(900);QTest::qWait(150);
         QTRY_VERIFY(!window->property("motionActive").toBool());
+        // Bundled optical faces must be used instead of a platform fallback, including Cyrillic.
+        auto *tokens=window->findChild<QObject*>("designTokens");QVERIFY(tokens);
+        QTRY_VERIFY_WITH_TIMEOUT(tokens->property("fontsReady").toBool(),10000);
+        const auto bodyFont=tokens->property("bodyFont").value<QFont>();
+        const auto titleFont=tokens->property("titleFont").value<QFont>();
+        const auto brandFont=tokens->property("brandFont").value<QFont>();
+        const auto sectionFont=tokens->property("sectionFont").value<QFont>();
+        const auto captionFont=tokens->property("captionFont").value<QFont>();
+        QCOMPARE(QFontInfo(bodyFont).family(),QString("Inter"));
+        QCOMPARE(QFontInfo(titleFont).family(),QString("Inter Display"));
+        QVERIFY(titleFont.pixelSize()>brandFont.pixelSize());
+        QVERIFY(brandFont.pixelSize()>bodyFont.pixelSize());
+        QCOMPARE(sectionFont.pixelSize(),bodyFont.pixelSize());
+        QVERIFY(sectionFont.weight()>bodyFont.weight());
+        QVERIFY(captionFont.pixelSize()<bodyFont.pixelSize());
+        const auto rawBody=QRawFont::fromFont(bodyFont);
+        for(const auto letter:QString::fromUtf8("Размер уровня Ёё 0123456789"))
+            QVERIFY2(rawBody.supportsCharacter(letter),qPrintable(QString(letter)));
+        tokens->setProperty("textScale",1.25);
+        QTRY_VERIFY(tokens->property("bodyFont").value<QFont>().pixelSize()>bodyFont.pixelSize());
+        QTRY_VERIFY(tokens->property("captionFont").value<QFont>().pixelSize()>captionFont.pixelSize());
+        tokens->setProperty("textScale",1.0);
+
+        auto evaluate=[&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression);
+            const auto result=script.evaluate();
+            if(script.hasError())qWarning()<<script.error();
+            return result;
+        };
+        evaluate("go('project')");
+        QTRY_COMPARE(window->property("section").toString(),QString("project"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        auto *length=visualItem(window->contentItem(),"gameChoice_length");QVERIFY(length);
+        const auto beforeLength=backend.value("","length");
+        const auto choices=backend.schema().value("choices").toMap().value("length").toList();
+        const int beforeIndex=length->property("currentIndex").toInt();
+        QVERIFY(choices.size()>1);QVERIFY(beforeIndex>=0);
+        const bool increase=beforeIndex+1<choices.size();
+        const int afterIndex=beforeIndex+(increase?1:-1);
+        auto *popup=length->property("popup").value<QObject*>();QVERIFY(popup);
+        length->forceActiveFocus();QTRY_VERIFY(length->hasActiveFocus());
+        QTest::keyClick(window,Qt::Key_Space);
+        QTRY_VERIFY(popup->property("visible").toBool());
+        QTest::keyClick(window,increase?Qt::Key_Down:Qt::Key_Up);
+        QTest::keyClick(window,Qt::Key_Escape);
+        QTRY_VERIFY(!popup->property("visible").toBool());
+        QCOMPARE(backend.value("","length"),beforeLength); // Dismissal never applies the highlighted choice.
+        length->forceActiveFocus();
+        QTest::keyClick(window,Qt::Key_Space);
+        QTRY_VERIFY(popup->property("visible").toBool());
+        QTest::keyClick(window,increase?Qt::Key_Down:Qt::Key_Up);
+        QTest::keyClick(window,Qt::Key_Return);
+        QTRY_VERIFY(!popup->property("visible").toBool());
+        QTRY_COMPARE(backend.value("","length"),choices[afterIndex].toMap().value("id").toString());
+        backend.setGeneral("length",beforeLength);
+        QTRY_COMPARE(backend.value("","length"),beforeLength);
+        auto dialogButton=[&](QObject *dialog,const QString &name) {
+            auto *footer=dialog->property("footer").value<QObject*>();
+            if(!footer)return static_cast<QQuickItem*>(nullptr);
+            QQmlExpression script(QQmlEngine::contextForObject(footer),footer,"standardButton(Dialog."+name+")");
+            const auto result=script.evaluate();
+            if(script.hasError())qWarning()<<script.error();
+            return qobject_cast<QQuickItem*>(result.value<QObject*>());
+        };
+        QTest::keyClick(window,Qt::Key_G,Qt::ControlModifier);
+        auto *gameDialog=window->findChild<QObject*>("gameDialog");QVERIFY(gameDialog);
+        QTRY_VERIFY(gameDialog->property("visible").toBool());
+        auto *ok=dialogButton(gameDialog,"Ok");QVERIFY(ok);
+        QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,ok->mapToScene(ok->boundingRect().center()).toPoint());
+        QTRY_VERIFY(!gameDialog->property("visible").toBool());
+        evaluate("inspect(backend.schema.modules.filter(function(m){return m.id==='ui_mons'})[0].options.filter(function(o){return o.id==='float_mons'})[0], 'ui_mons', false)");
+        auto *comparison=visualItem(window->contentItem(),"gameplayComparison");QVERIFY(comparison);
+        QTRY_COMPARE(comparison->property("example").toString(),QString("monsters"));
+        QVERIFY(QMetaObject::invokeMethod(comparison,"enlarge"));
+        auto *comparisonDialog=comparison->findChild<QObject*>("comparisonDialog");QVERIFY(comparisonDialog);
+        QTRY_VERIFY(comparisonDialog->property("visible").toBool());
+        auto *close=dialogButton(comparisonDialog,"Close");QVERIFY(close);
+        QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,close->mapToScene(close->boundingRect().center()).toPoint());
+        QTRY_VERIFY(!comparisonDialog->property("visible").toBool());
+        // A closed comparison still resizes: 900px crosses its two-column
+        // breakpoint. Qt 6.4 previously crashed here after the dialog closed.
+        evaluate("go('resources')");
+        QTRY_COMPARE(window->property("section").toString(),QString("resources"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        for(int pass=0;pass<2;++pass) {
+            window->setWidth(900);window->setHeight(540);
+            QTest::qWait(100);
+            QTRY_VERIFY(!window->property("motionActive").toBool());
+            QVERIFY(window->isVisible());
+            auto *card=visualItem(window->contentItem(),"resourceCard_ammo");QVERIFY(card);
+            card->forceActiveFocus();QTRY_VERIFY(card->hasActiveFocus());
+            QTest::keyClick(window,Qt::Key_Right);
+            QTRY_COMPARE(window->property("currentResourceId").toString(),QString("health"));
+            QTest::keyClick(window,Qt::Key_Left);
+            QTRY_COMPARE(window->property("currentResourceId").toString(),QString("ammo"));
+            window->setWidth(1440);window->setHeight(900);
+            QTest::qWait(100);
+            QTRY_VERIFY(!window->property("motionActive").toBool());
+        }
+        evaluate("go('geometry')");
+        QTRY_COMPARE(window->property("section").toString(),QString("geometry"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        auto *pageTitle=visualItem(window->contentItem(),"pageTitle");QVERIFY(pageTitle);
+        QCOMPARE(pageTitle->property("font").value<QFont>().family(),titleFont.family());
+        auto *ordinaryRow=visualItem(window->contentItem(),"optionRow_ui_arch_outdoors");QVERIFY(ordinaryRow);
+        auto *sliderRow=visualItem(window->contentItem(),"optionRow_ui_arch_float_size");QVERIFY(sliderRow);
+        QTRY_VERIFY(ordinaryRow->height()>=44 && ordinaryRow->height()<=50);
+        QVERIFY(sliderRow->height()>ordinaryRow->height());
         const auto ammoBefore=backend.value("ui_pickups","ammo");
         const auto healthBefore=backend.value("ui_pickups","health");
         QTest::keyClick(window,Qt::Key_3,Qt::AltModifier);

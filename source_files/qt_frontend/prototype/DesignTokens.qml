@@ -2,6 +2,63 @@
 import QtQuick
 
 QtObject {
+    objectName: "designTokens"
+    readonly property FontLoader regularFace: FontLoader {
+        source: "qrc:/fonts/Inter-Regular.ttf"
+    }
+    readonly property FontLoader mediumFace: FontLoader {
+        source: "qrc:/fonts/Inter-Medium.ttf"
+    }
+    readonly property FontLoader semiboldFace: FontLoader {
+        source: "qrc:/fonts/Inter-SemiBold.ttf"
+    }
+    readonly property FontLoader displayFace: FontLoader {
+        source: "qrc:/fonts/InterDisplay-SemiBold.ttf"
+    }
+    readonly property bool fontsReady: regularFace.status === FontLoader.Ready && mediumFace.status === FontLoader.Ready && semiboldFace.status === FontLoader.Ready && displayFace.status === FontLoader.Ready
+    readonly property font bodyFont: Qt.font({
+        family: regularFace.name,
+        pixelSize: bodySize,
+        weight: Font.Normal
+    })
+    readonly property font valueFont: bodyFont
+    readonly property font captionFont: Qt.font({
+        family: regularFace.name,
+        pixelSize: smallSize,
+        weight: Font.Normal
+    })
+    readonly property font navigationFont: Qt.font({
+        family: mediumFace.name,
+        pixelSize: bodySize,
+        weight: Font.Medium
+    })
+    readonly property font sectionFont: Qt.font({
+        family: semiboldFace.name,
+        pixelSize: bodySize,
+        weight: Font.DemiBold
+    })
+    readonly property font titleFont: Qt.font({
+        family: displayFace.name,
+        pixelSize: Math.round(26 * textScale),
+        weight: Font.DemiBold
+    })
+    readonly property font brandFont: Qt.font({
+        family: displayFace.name,
+        pixelSize: Math.round(18 * textScale),
+        weight: Font.DemiBold
+    })
+    readonly property font detailFont: Qt.font({
+        family: semiboldFace.name,
+        pixelSize: Math.round(18 * textScale),
+        weight: Font.DemiBold
+    })
+    readonly property font monoFont: Qt.font({
+        family: "monospace",
+        pixelSize: smallSize,
+        weight: Font.Normal
+    })
+    readonly property int controlHeight: Math.max(30, Math.round(30 * textScale))
+
     property bool dark: backend.dark
     property bool reduceMotion: false
     property real textScale: 1
@@ -23,5 +80,5 @@ QtObject {
     readonly property color selectionText: dark ? "#f0f0f3" : "#202124"
     readonly property color hover: dark ? "#38383e" : "#e6e6eb"
     readonly property int bodySize: Math.round(13 * textScale)
-    readonly property int smallSize: Math.round(11 * textScale)
+    readonly property int smallSize: Math.round(12 * textScale)
 }

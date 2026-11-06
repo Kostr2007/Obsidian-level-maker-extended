@@ -132,7 +132,7 @@ ColumnLayout {
                             Layout.alignment: gallery.viewMode === "list" ? Qt.AlignLeft : Qt.AlignHCenter
                             Layout.maximumWidth: parent.width
                             color: card.chosen ? gallery.tokens.accentText : gallery.tokens.text
-                            font.pixelSize: gallery.tokens.bodySize
+                            font: gallery.tokens.bodyFont
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             leftPadding: 6
@@ -155,7 +155,7 @@ ColumnLayout {
                             }
                             Layout.fillWidth: true
                             horizontalAlignment: gallery.viewMode === "list" ? Text.AlignLeft : Text.AlignHCenter
-                            font.pixelSize: gallery.tokens.smallSize
+                            font: gallery.tokens.captionFont
                             color: gallery.tokens.secondary
                             elide: Text.ElideRight
                         }
@@ -167,7 +167,7 @@ ColumnLayout {
     Label {
         visible: !gallery.compatible
         text: "Игровые миниатюры Freedoom доступны для семейства Doom. Параметры выбранной игры остаются доступны ниже."
-        font.pixelSize: gallery.tokens.smallSize
+        font: gallery.tokens.captionFont
         color: gallery.tokens.secondary
         Layout.fillWidth: true
         wrapMode: Text.WordWrap

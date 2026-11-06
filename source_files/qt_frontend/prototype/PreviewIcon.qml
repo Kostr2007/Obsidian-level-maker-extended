@@ -36,7 +36,11 @@ Canvas {
             c.arc(x, y, r, 0, 2 * Math.PI);
             c.stroke();
         }
-        if (name === "grid") {
+        if (name === "info") {
+            circle(12, 12, 8);
+            path([[12, 11], [12, 17]], false);
+            circle(12, 7.5, .4);
+        } else if (name === "grid") {
             for (let y = 4; y <= 14; y += 10)
                 for (let x = 4; x <= 14; x += 10)
                     c.strokeRect(x, y, 6, 6);

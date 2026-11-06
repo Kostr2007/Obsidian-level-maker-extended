@@ -16,8 +16,7 @@ ApplicationWindow {
     minimumHeight: 520
     visible: true
     title: "Obsidian · Design Preview"
-    font.family: Qt.application.font.family
-    font.pixelSize: design.bodySize
+    font: design.bodyFont
     color: design.canvas
     palette.window: design.canvas
     palette.windowText: design.text
@@ -153,7 +152,7 @@ ApplicationWindow {
         for (let m of (backend.schema.modules || []))
             if (m.available && m.isUi)
                 for (let o of m.options)
-                    if (o.category === section && o.kind !== "header") {
+                    if (o.category === section && o.kind !== "header" && (advanced || !o.advanced)) {
                         inspect(o, m.id, false);
                         return;
                     }
@@ -318,6 +317,13 @@ ApplicationWindow {
     }
     Menu {
         id: commands
+        padding: 6
+        font: design.bodyFont
+        background: Rectangle {
+            radius: 10
+            color: design.surface
+            border.color: design.line
+        }
         MenuItem {
             text: "Создать карту  ·  F2"
             enabled: createButton.enabled
@@ -402,24 +408,29 @@ ApplicationWindow {
         title: "Папка результатов"
         onAccepted: backend.chooseOutput(selectedFolder)
     }
-    Dialog {
+    PreviewDialog {
         id: gameDialog
+        tokens: design
+        objectName: "gameDialog"
         title: "Игра и формат"
         anchors.centerIn: Overlay.overlay
         modal: true
         width: Math.min(680, window.width - 48)
-        height: Math.min(400, window.height - 48)
+        height: Math.min(window.height - 48, gameDialogSetup.implicitHeight + gameDialog.chromeHeight)
         standardButtons: Dialog.Ok
         contentItem: ScrollView {
             id: gameScroll
             contentWidth: availableWidth
             GameSetup {
+                id: gameDialogSetup
+                tokens: design
                 width: gameScroll.availableWidth
             }
         }
     }
-    Dialog {
+    PreviewDialog {
         id: exitDialog
+        tokens: design
         width: Math.min(440, window.width - 48)
         height: 180
         title: "Отменить генерацию и выйти?"
@@ -434,8 +445,9 @@ ApplicationWindow {
             text: "Готовые результаты сохранятся."
         }
     }
-    Dialog {
+    PreviewDialog {
         id: inspectorDialog
+        tokens: design
         objectName: "inspectorDialog"
         title: "Пояснение параметра"
         anchors.centerIn: Overlay.overlay
@@ -459,33 +471,34 @@ ApplicationWindow {
                 width: helpScroll.availableWidth
                 spacing: 16
                 Label {
-                    text: "Об этом параметре"
-                    font.pixelSize: design.smallSize
+                    text: !window.inspected && window.section === "project" ? "О проекте" : "Об этом параметре"
+                    font: design.captionFont
                     color: design.secondary
                 }
                 Label {
                     objectName: "resourceDetailTitle"
-                    text: window.inspected ? window.inspected.title : "Выберите параметр"
-                    font.pixelSize: Math.round(20 * design.textScale)
-                    font.weight: Font.DemiBold
+                    text: window.inspected ? window.inspected.title : window.section === "project" ? "Игра и совместимость" : "Выберите параметр"
+                    font: design.detailFont
                     color: design.text
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                 }
                 Label {
-                    text: window.inspected ? (window.inspected.summary || window.inspected.tooltip) : "Нажмите «?» рядом с настройкой."
+                    text: window.inspected ? (window.inspected.summary || window.inspected.tooltip) : window.section === "project" ? "Движок, игра и порт определяют доступные возможности генератора. После изменения дождитесь обновления параметров." : "Нажмите кнопку информации рядом с названием."
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     color: design.secondary
-                    font.pixelSize: design.bodySize
+                    font: design.bodyFont
                     lineHeight: 1.15
                 }
                 AssetPreview {
+                    tokens: design
                     textScale: design.textScale
                     optionId: window.inspectedModule === "ui_pickups" && window.inspected ? window.inspected.id : ""
                     visible: available
                 }
                 GameplayComparison {
+                    tokens: design
                     example: window.inspected ? window.inspected.comparison : ""
                     visible: supported
                 }
@@ -495,7 +508,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     color: design.secondary
-                    font.pixelSize: design.smallSize
+                    font: design.captionFont
                 }
                 Rectangle {
                     Layout.fillWidth: true
@@ -503,21 +516,24 @@ ApplicationWindow {
                     color: design.line
                 }
                 Label {
+                    visible: !!window.inspected
                     text: "Текущее значение"
-                    font.pixelSize: design.smallSize
+                    font: design.captionFont
                     color: design.secondary
                 }
                 Label {
+                    visible: !!window.inspected
                     text: {
                         backend.revision;
                         return window.inspected ? backend.value(window.inspectedModule, window.inspected.id) : "—";
                     }
-                    font.pixelSize: 20
+                    font: design.sectionFont
                     color: design.text
                 }
                 Label {
+                    visible: !!window.inspected
                     text: window.inspected ? "По умолчанию: " + window.inspected.default : ""
-                    font.pixelSize: design.smallSize
+                    font: design.captionFont
                     color: design.secondary
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -550,8 +566,7 @@ ApplicationWindow {
                     spacing: 2
                     Label {
                         text: window.titleFor(window.section)
-                        font.weight: Font.DemiBold
-                        font.pixelSize: design.bodySize
+                        font: design.sectionFont
                         color: design.text
                     }
                     Label {
@@ -560,7 +575,7 @@ ApplicationWindow {
                             backend.revision;
                             return window.choiceText("game") + " · " + window.choiceText("port");
                         }
-                        font.pixelSize: design.smallSize
+                        font: design.captionFont
                         color: design.secondary
                         elide: Text.ElideRight
                         Layout.fillWidth: true
@@ -672,21 +687,19 @@ ApplicationWindow {
                     spacing: 8
                     Label {
                         text: "Obsidian"
-                        font.pixelSize: 20
-                        font.weight: Font.DemiBold
+                        font: design.brandFont
                         color: design.text
                         Layout.topMargin: 14
                     }
                     Label {
                         text: "Конструктор уровней"
-                        font.pixelSize: design.smallSize
+                        font: design.captionFont
                         color: design.secondary
                         Layout.bottomMargin: 24
                     }
                     Label {
                         text: "Карта"
-                        font.pixelSize: design.smallSize
-                        font.weight: Font.DemiBold
+                        font: design.sectionFont
                         color: design.secondary
                         leftPadding: 8
                     }
@@ -723,7 +736,7 @@ ApplicationWindow {
                                         }
                                         Label {
                                             text: modelData.title
-                                            font.pixelSize: design.bodySize
+                                            font: design.navigationFont
                                             color: window.section === modelData.key ? design.selectionText : design.text
                                             Layout.fillWidth: true
                                         }
@@ -752,7 +765,7 @@ ApplicationWindow {
                     }
                     Label {
                         text: "Образец дизайна"
-                        font.pixelSize: design.smallSize
+                        font: design.captionFont
                         color: design.secondary
                         Layout.topMargin: 12
                     }
@@ -786,50 +799,84 @@ ApplicationWindow {
                         spacing: 8
                         Label {
                             text: window.query ? "Результаты поиска" : window.titleFor(window.section)
-                            font.pixelSize: Math.round(28 * design.textScale)
-                            font.weight: Font.DemiBold
+                            objectName: "pageTitle"
+                            font: design.titleFont
                             color: design.text
                         }
                         Label {
                             text: window.section === "resources" ? "Выберите категорию, чтобы настроить предметы на карте." : window.section === "combat" ? "Задайте ритм и сложность столкновений." : window.section === "results" ? "Созданная карта и файлы результата." : "Настройте основные свойства будущей карты."
-                            font.pixelSize: design.bodySize
+                            font: design.bodyFont
                             color: design.secondary
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                         }
                     }
-                    RowLayout {
+                    Rectangle {
                         visible: window.section !== "results"
                         Layout.fillWidth: true
                         Layout.leftMargin: 28
                         Layout.rightMargin: 28
-                        spacing: 12
-                        TextField {
-                            id: search
-                            Layout.fillWidth: true
-                            implicitHeight: 34
-                            placeholderText: "Поиск параметров"
-                            text: window.query
-                            selectByMouse: true
-                            Accessible.name: "Поиск параметров"
-                            onTextEdited: {
-                                window.query = text;
-                                Qt.callLater(function () {
-                                    search.forceActiveFocus();
-                                });
+                        implicitHeight: searchTools.implicitHeight + 16
+                        radius: 8
+                        color: design.toolbar
+                        RowLayout {
+                            id: searchTools
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 12
+                            PreviewTextField {
+                                id: search
+                                tokens: design
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 360
+                                Layout.maximumWidth: 480
+                                Layout.minimumWidth: 100
+                                placeholderText: "Поиск параметров"
+                                text: window.query
+                                selectByMouse: true
+                                Accessible.name: "Поиск параметров"
+                                onTextEdited: {
+                                    window.query = text;
+                                    Qt.callLater(function () {
+                                        search.forceActiveFocus();
+                                    });
+                                }
                             }
-                            background: Rectangle {
-                                radius: 7
-                                color: design.surface
-                                border.color: parent.activeFocus ? design.accent : design.line
-                                border.width: parent.activeFocus ? 2 : 1
+                            CheckBox {
+                                id: advancedToggle
+                                text: "Расширенные"
+                                indicator: Rectangle {
+                                    implicitWidth: 16
+                                    implicitHeight: 16
+                                    x: advancedToggle.leftPadding
+                                    y: (advancedToggle.height - height) / 2
+                                    radius: 4
+                                    color: advancedToggle.checked ? design.accent : design.surface
+                                    border.color: advancedToggle.visualFocus ? design.accent : design.line
+                                    border.width: advancedToggle.visualFocus ? 2 : 1
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "✓"
+                                        visible: advancedToggle.checked
+                                        font: design.captionFont
+                                        color: design.accentText
+                                    }
+                                }
+                                contentItem: Text {
+                                    text: advancedToggle.text
+                                    font: design.bodyFont
+                                    color: design.text
+                                    leftPadding: advancedToggle.indicator.width + 8
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                checked: window.advanced
+                                font: design.bodyFont
+                                onToggled: window.advanced = checked
                             }
-                        }
-                        CheckBox {
-                            text: "Расширенные"
-                            checked: window.advanced
-                            font.pixelSize: design.smallSize
-                            onToggled: window.advanced = checked
+                            Item {
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                            }
                         }
                     }
                     Rectangle {
@@ -843,6 +890,7 @@ ApplicationWindow {
                         border.color: design.line
                         GameSetup {
                             id: projectSetup
+                            tokens: design
                             anchors.fill: parent
                             anchors.margins: 16
                         }
@@ -882,10 +930,10 @@ ApplicationWindow {
                             Layout.rightMargin: 28
                             spacing: 10
                             Label {
+                                objectName: "groupTitle_" + group.modelData.id
                                 text: group.modelData.title
-                                font.pixelSize: design.smallSize
-                                font.weight: Font.DemiBold
-                                color: design.secondary
+                                font: design.sectionFont
+                                color: design.text
                                 leftPadding: 2
                             }
                             Rectangle {
@@ -925,47 +973,62 @@ ApplicationWindow {
                         wrapMode: Text.WordWrap
                         color: design.secondary
                     }
-                    Rectangle {
+                    ColumnLayout {
+                        visible: window.section !== "results"
                         Layout.fillWidth: true
                         Layout.leftMargin: 28
                         Layout.rightMargin: 28
-                        visible: window.section !== "results"
-                        color: design.surface
-                        radius: 10
-                        border.color: design.line
-                        implicitHeight: seedGroup.implicitHeight + 32
-                        ColumnLayout {
-                            id: seedGroup
-                            anchors.fill: parent
-                            anchors.margins: 16
-                            spacing: 12
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Label {
-                                    text: "Seed"
-                                    font.pixelSize: design.bodySize
-                                    color: design.text
+                        spacing: 10
+                        Label {
+                            text: "Генерация"
+                            font: design.sectionFont
+                            color: design.text
+                            leftPadding: 2
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: seedGroup.implicitHeight + 16
+                            radius: 10
+                            color: design.surface
+                            border.color: design.line
+                            ColumnLayout {
+                                id: seedGroup
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 6
+                                RowLayout {
                                     Layout.fillWidth: true
-                                }
-                                TextField {
-                                    Layout.preferredWidth: 180
-                                    text: {
-                                        backend.revision;
-                                        return backend.value("", "seed");
+                                    Layout.leftMargin: 8
+                                    Layout.rightMargin: 8
+                                    Label {
+                                        text: "Seed"
+                                        font: design.bodyFont
+                                        color: design.text
+                                        Layout.fillWidth: true
                                     }
-                                    placeholderText: "0 — случайный"
-                                    selectByMouse: true
-                                    enabled: !backend.busy && !backend.loading
-                                    Accessible.name: "Seed генерации"
-                                    onEditingFinished: backend.setGeneral("seed", text)
+                                    PreviewTextField {
+                                        tokens: design
+                                        Layout.preferredWidth: 180
+                                        text: {
+                                            backend.revision;
+                                            return backend.value("", "seed");
+                                        }
+                                        placeholderText: "0 — случайный"
+                                        selectByMouse: true
+                                        enabled: !backend.busy && !backend.loading
+                                        Accessible.name: "Seed генерации"
+                                        onEditingFinished: backend.setGeneral("seed", text)
+                                    }
                                 }
-                            }
-                            Label {
-                                text: "Оставьте 0 для нового случайного seed при создании карты."
-                                color: design.secondary
-                                font.pixelSize: design.smallSize
-                                Layout.fillWidth: true
-                                wrapMode: Text.WordWrap
+                                Label {
+                                    text: "0 — новый случайный seed при создании карты."
+                                    color: design.secondary
+                                    font: design.captionFont
+                                    Layout.leftMargin: 8
+                                    Layout.rightMargin: 8
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.WordWrap
+                                }
                             }
                         }
                     }
@@ -992,7 +1055,7 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             wrapMode: Text.WrapAnywhere
                             color: design.secondary
-                            font.pixelSize: design.bodySize
+                            font: design.bodyFont
                         }
                         PreviewButton {
                             tokens: design
@@ -1012,14 +1075,14 @@ ApplicationWindow {
                             readOnly: true
                             selectByMouse: true
                             wrapMode: TextEdit.Wrap
-                            font.pixelSize: design.smallSize
+                            font: design.monoFont
                         }
                     }
                     Label {
                         visible: window.section !== "results"
                         text: "F2 — создать карту  ·  Ctrl+G — игра и формат"
                         color: design.secondary
-                        font.pixelSize: design.smallSize
+                        font: design.captionFont
                         Layout.leftMargin: 28
                         Layout.rightMargin: 28
                         Layout.fillWidth: true
@@ -1087,7 +1150,7 @@ ApplicationWindow {
                     text: backend.status
                     Layout.fillWidth: true
                     elide: Text.ElideRight
-                    font.pixelSize: design.smallSize
+                    font: design.captionFont
                     color: design.secondary
                 }
                 Label {
@@ -1095,14 +1158,14 @@ ApplicationWindow {
                     text: backend.outputFolder
                     Layout.maximumWidth: 350
                     elide: Text.ElideMiddle
-                    font.pixelSize: design.smallSize
+                    font: design.captionFont
                     color: design.secondary
                 }
                 ToolButton {
                     text: "Папка…"
                     enabled: !backend.busy
                     onClicked: outputDialog.open()
-                    font.pixelSize: design.smallSize
+                    font: design.captionFont
                 }
             }
         }

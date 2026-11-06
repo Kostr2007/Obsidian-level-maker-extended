@@ -9,12 +9,12 @@ Button {
     property bool selected: false
     property bool primary: false
     property bool quiet: false
-    font.pixelSize: tokens.bodySize
+    font: tokens.bodyFont
     leftPadding: symbol ? 10 : 14
     rightPadding: symbol ? 10 : 14
-    topPadding: 7
-    bottomPadding: 7
-    implicitHeight: Math.max(32, contentItem.implicitHeight + 14)
+    topPadding: 5
+    bottomPadding: 5
+    implicitHeight: Math.max(tokens.controlHeight, contentItem.implicitHeight + 10)
     implicitWidth: Math.max(symbol ? 34 : 70, contentItem.implicitWidth + leftPadding + rightPadding)
     contentItem: Item {
         implicitWidth: control.symbol ? 18 : label.implicitWidth

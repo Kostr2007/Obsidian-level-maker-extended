@@ -1,0 +1,140 @@
+{
+  "format": 1,
+  "project": "Inter",
+  "version": "4.1",
+  "source": "https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip",
+  "archive_sha256": "9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e",
+  "processing": "Unmodified official static TrueType files from extras/ttf; no subsetting, renaming or instantiation.",
+  "license": "SIL Open Font License 1.1",
+  "license_sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+  "fonts": [
+    {
+      "file": "Inter-Regular.ttf",
+      "upstream_path": "extras/ttf/Inter-Regular.ttf",
+      "sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+      "bytes": 411640,
+      "names": {
+        "1": [
+          "Inter"
+        ],
+        "2": [
+          "Regular"
+        ],
+        "4": [
+          "Inter Regular"
+        ],
+        "6": [
+          "Inter-Regular"
+        ],
+        "16": [],
+        "17": []
+      },
+      "weight": 400,
+      "cyrillic_ru": true,
+      "variable": false,
+      "font_version_strings": [
+        "Version 4.001;git-9221beed3"
+      ],
+      "font_revision": 4.001007080078125
+    },
+    {
+      "file": "Inter-Medium.ttf",
+      "upstream_path": "extras/ttf/Inter-Medium.ttf",
+      "sha256": "97ad806f526e41546d46365bb3a393145f75b7b1568913db74549ad8b8dba872",
+      "bytes": 417300,
+      "names": {
+        "1": [
+          "Inter Medium"
+        ],
+        "2": [
+          "Regular"
+        ],
+        "4": [
+          "Inter Medium"
+        ],
+        "6": [
+          "Inter-Medium"
+        ],
+        "16": [
+          "Inter"
+        ],
+        "17": [
+          "Medium"
+        ]
+      },
+      "weight": 500,
+      "cyrillic_ru": true,
+      "variable": false,
+      "font_version_strings": [
+        "Version 4.001;git-9221beed3"
+      ],
+      "font_revision": 4.001007080078125
+    },
+    {
+      "file": "Inter-SemiBold.ttf",
+      "upstream_path": "extras/ttf/Inter-SemiBold.ttf",
+      "sha256": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+      "bytes": 419744,
+      "names": {
+        "1": [
+          "Inter SemiBold"
+        ],
+        "2": [
+          "Regular"
+        ],
+        "4": [
+          "Inter SemiBold"
+        ],
+        "6": [
+          "Inter-SemiBold"
+        ],
+        "16": [
+          "Inter"
+        ],
+        "17": [
+          "SemiBold"
+        ]
+      },
+      "weight": 600,
+      "cyrillic_ru": true,
+      "variable": false,
+      "font_version_strings": [
+        "Version 4.001;git-9221beed3"
+      ],
+      "font_revision": 4.001007080078125
+    },
+    {
+      "file": "InterDisplay-SemiBold.ttf",
+      "upstream_path": "extras/ttf/InterDisplay-SemiBold.ttf",
+      "sha256": "0310d7a325896129730c6c8cf9a6e0f81ee258bedf77b1ff059b2a7b75f74e02",
+      "bytes": 418540,
+      "names": {
+        "1": [
+          "Inter Display SemiBold"
+        ],
+        "2": [
+          "Regular"
+        ],
+        "4": [
+          "Inter Display SemiBold"
+        ],
+        "6": [
+          "InterDisplay-SemiBold"
+        ],
+        "16": [
+          "Inter Display"
+        ],
+        "17": [
+          "SemiBold"
+        ]
+      },
+      "weight": 600,
+      "cyrillic_ru": true,
+      "variable": false,
+      "font_version_strings": [
+        "Version 4.001;git-9221beed3"
+      ],
+      "font_revision": 4.001007080078125
+    }
+  ]
+}

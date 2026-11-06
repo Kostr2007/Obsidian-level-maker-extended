@@ -17,6 +17,7 @@ ColumnLayout {
     signal inspect(bool openPanel)
     Layout.fillWidth: true
     Layout.minimumWidth: 0
+    objectName: "optionRow_" + moduleId + "_" + option.id
     spacing: 0
     function choiceIndex(items, value) {
         for (let i = 0; i < items.length; i++)
@@ -27,16 +28,57 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         Layout.minimumWidth: 0
-        Layout.margins: 16
+        Layout.leftMargin: 16
+        Layout.rightMargin: 16
+        Layout.topMargin: 8
+        Layout.bottomMargin: 8
         spacing: 16
-        Label {
-            text: row.option.title
+        RowLayout {
             Layout.fillWidth: true
             Layout.minimumWidth: 0
-            Layout.preferredWidth: 160
-            wrapMode: Text.WordWrap
-            font.pixelSize: row.tokens.bodySize
-            color: row.tokens.text
+            Layout.preferredWidth: 180
+            spacing: 4
+            Label {
+                id: parameterTitle
+                text: row.option.title
+                Layout.minimumWidth: 0
+                Layout.maximumWidth: parent.width - infoButton.width - 4
+                wrapMode: Text.WordWrap
+                font: row.tokens.bodyFont
+                color: row.tokens.text
+                ToolTip.visible: titleHover.hovered
+                ToolTip.text: row.option.summary || row.option.tooltip || row.option.title
+                HoverHandler {
+                    id: titleHover
+                }
+            }
+            ToolButton {
+                id: infoButton
+                text: "ⓘ"
+                implicitWidth: 26
+                implicitHeight: 28
+                font: row.tokens.bodyFont
+                Accessible.name: "Пояснение: " + row.option.title
+                onClicked: row.inspect(true)
+                contentItem: PreviewIcon {
+                    name: "info"
+                    ink: row.tokens.secondary
+                    implicitWidth: 16
+                    implicitHeight: 16
+                }
+                background: Rectangle {
+                    radius: 5
+                    color: infoButton.hovered ? row.tokens.hover : "transparent"
+                    border.color: row.tokens.accent
+                    border.width: infoButton.visualFocus ? 2 : 0
+                }
+                ToolTip.visible: hovered
+                ToolTip.text: "Объяснение параметра"
+            }
+            Item {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+            }
         }
         ColumnLayout {
             Layout.preferredWidth: 250
@@ -44,28 +86,23 @@ ColumnLayout {
             Layout.fillWidth: true
             Layout.minimumWidth: 0
             spacing: 6
-            ComboBox {
+            PreviewComboBox {
+                tokens: row.tokens
                 visible: row.option.kind === "choice"
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
-                implicitHeight: 32
+                implicitHeight: row.tokens.controlHeight
                 model: row.option.choices
                 textRole: "text"
                 valueRole: "id"
                 currentIndex: row.choiceIndex(row.option.choices, row.value)
-                font.pixelSize: row.tokens.bodySize
+                font: row.tokens.bodyFont
                 Accessible.name: row.option.title
                 onActiveFocusChanged: if (activeFocus)
                     row.inspect(false)
                 onActivated: {
                     row.inspect(false);
                     backend.setOption(row.moduleId, row.option.id, currentValue);
-                }
-                background: Rectangle {
-                    radius: 6
-                    color: row.tokens.surface
-                    border.color: parent.visualFocus ? row.tokens.accent : row.tokens.line
-                    border.width: parent.visualFocus ? 2 : 1
                 }
             }
             Switch {
@@ -100,26 +137,21 @@ ColumnLayout {
                     backend.setOption(row.moduleId, row.option.id, checked ? "1" : "0");
                 }
             }
-            ComboBox {
+            PreviewComboBox {
+                tokens: row.tokens
                 visible: row.option.kind === "slider" && row.option.nan.length > 0
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
-                implicitHeight: 30
+                implicitHeight: row.tokens.controlHeight
                 model: ["Числовое значение"].concat(row.option.nan)
                 currentIndex: row.numeric ? 0 : row.option.nan.indexOf(row.value) + 1
                 Accessible.name: row.option.title + ": режим"
-                font.pixelSize: row.tokens.bodySize
+                font: row.tokens.bodyFont
                 onActiveFocusChanged: if (activeFocus)
                     row.inspect(false)
                 onActivated: {
                     row.inspect(false);
                     backend.setOption(row.moduleId, row.option.id, currentIndex === 0 ? String(row.option.min) : currentText);
-                }
-                background: Rectangle {
-                    radius: 6
-                    color: row.tokens.surface
-                    border.color: parent.visualFocus ? row.tokens.accent : row.tokens.line
-                    border.width: parent.visualFocus ? 2 : 1
                 }
             }
             RowLayout {
@@ -168,15 +200,16 @@ ColumnLayout {
                         backend.setOption(row.moduleId, row.option.id, String(Number(value.toFixed(6))));
                     }
                 }
-                TextField {
+                PreviewTextField {
+                    tokens: row.tokens
                     Layout.preferredWidth: 58
-                    implicitHeight: 30
+                    implicitHeight: row.tokens.controlHeight
                     text: row.value
                     selectByMouse: true
                     enabled: row.numeric
                     horizontalAlignment: Text.AlignHCenter
                     Accessible.name: row.option.title + ": точное значение"
-                    font.pixelSize: row.tokens.bodySize
+                    font: row.tokens.bodyFont
                     validator: DoubleValidator {
                         bottom: row.option.min || 0
                         top: row.option.max || 1
@@ -190,22 +223,8 @@ ColumnLayout {
                         else
                             text = row.value;
                     }
-                    background: Rectangle {
-                        radius: 5
-                        color: row.tokens.canvas
-                        border.color: parent.activeFocus ? row.tokens.accent : row.tokens.line
-                        border.width: parent.activeFocus ? 2 : 1
-                    }
                 }
             }
-        }
-        ToolButton {
-            text: "?"
-            implicitWidth: 26
-            Accessible.name: "Пояснение: " + row.option.title
-            onClicked: row.inspect(true)
-            ToolTip.visible: hovered
-            ToolTip.text: "Объяснение параметра"
         }
     }
     Rectangle {

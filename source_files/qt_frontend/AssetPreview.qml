@@ -6,6 +6,7 @@ import "ResourceAssets.js" as Resources
 
 ColumnLayout {
     id: assets
+    property var tokens: null
     property string optionId: ""
     property real textScale: 1
     readonly property string game: {
@@ -63,7 +64,7 @@ ColumnLayout {
                 }
                 Label {
                     text: modelData.caption
-                    font.pixelSize: Math.round(11 * assets.textScale)
+                    font.pixelSize: Math.round(12 * assets.textScale)
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     wrapMode: Text.WordWrap
@@ -74,7 +75,7 @@ ColumnLayout {
     }
     Label {
         text: "Оригинальные спрайты Freedoom Phase 2.\nПоказан вид предметов, а не гарантированный состав вашей карты."
-        font.pixelSize: Math.round(11 * assets.textScale)
+        font.pixelSize: Math.round(12 * assets.textScale)
         opacity: .65
         Layout.fillWidth: true
         Layout.minimumWidth: 0

@@ -39,6 +39,11 @@ qt_add_resources(obsidian-qt-core "freedoom" PREFIX "/freedoom"
   assets/freedoom/bfg.png
   assets/freedoom/chainsaw.png
   assets/freedoom/soul_bonus.png)
+qt_add_resources(obsidian-qt-core "fonts" PREFIX "/fonts"
+  BASE "${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts" FILES
+  assets/fonts/Inter-Regular.ttf assets/fonts/Inter-Medium.ttf
+  assets/fonts/Inter-SemiBold.ttf assets/fonts/InterDisplay-SemiBold.ttf
+  assets/fonts/OFL.txt)
 target_link_libraries(obsidian-qt-core PUBLIC Qt6::Quick)
 target_compile_features(obsidian-qt-core PUBLIC cxx_std_17)
 qt_add_executable(obsidian-qt main.cpp)
@@ -46,7 +51,7 @@ set_target_properties(obsidian-qt PROPERTIES OUTPUT_NAME obsidian)
 target_compile_definitions(obsidian-qt PRIVATE OBSIDIAN_EXTENDED_VERSION="${PROJECT_VERSION}")
 target_link_libraries(obsidian-qt PRIVATE obsidian-qt-core Qt6::QuickControls2)
 set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml GameplayComparison.qml AssetPreview.qml ResourceAssets.js
-  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml prototype/ResourceGallery.qml)
+  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml prototype/ResourceGallery.qml prototype/PreviewComboBox.qml prototype/PreviewTextField.qml prototype/PreviewDialog.qml)
 qt_add_resources(obsidian-qt "interface" PREFIX "/ui"
   BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${STUDIO_QML})
 add_dependencies(obsidian-qt obsidian)
