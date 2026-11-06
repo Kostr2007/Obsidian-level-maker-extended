@@ -1,0 +1,457 @@
+{
+  "format": 1,
+  "source": {
+    "project": "Freedoom",
+    "edition": "Phase 2",
+    "version": "0.13.0",
+    "filename": "freedoom2.wad",
+    "sha256": "92e73a81f75a03e29984e293da040928ddafd1cbad26a629489073a46e475347",
+    "palette": "PLAYPAL:0",
+    "palette_sha256": "fd895921b5d0a394612bb29852ed003d44d69f76dec31c0dc6b5d5fc7d63f7bb",
+    "url": "https://github.com/freedoom/freedoom/releases/tag/v0.13.0",
+    "copyright": "2001–2024 Contributors to the Freedoom project"
+  },
+  "processing": "Original patch canvas and first PLAYPAL palette; RGBA8 with column transparency; no resizing, recoloring or retouching.",
+  "assets": [
+    {
+      "id": "clip",
+      "file": "clip.png",
+      "lump": "CLIPA0",
+      "group": "ammo",
+      "caption": "Патроны",
+      "option": "ammo",
+      "dimensions": [
+        7,
+        12
+      ],
+      "patch_offsets": [
+        4,
+        12
+      ],
+      "lump_sha256": "cdfbec30e07de3a2af44ea2e393804f37d0a5ed991777ae79305516e7175ac10",
+      "rgba_sha256": "6612775159ef47bebf29f5b55491a4688111e99899f178888a8157db6815475b",
+      "png_sha256": "496b144f5627b21820dd0c664d68f5b4641af7da6f8bdb8f9b057becd733587a",
+      "opaque_pixels": 81
+    },
+    {
+      "id": "ammo_box",
+      "file": "ammo_box.png",
+      "lump": "AMMOA0",
+      "group": "ammo",
+      "caption": "Ящик патронов",
+      "option": "ammo",
+      "dimensions": [
+        17,
+        16
+      ],
+      "patch_offsets": [
+        8,
+        16
+      ],
+      "lump_sha256": "001f82a19f878406ad906c205d465d34615f445c165d0210ffd22b976397d258",
+      "rgba_sha256": "fdb8eb60948164104bac27315c9c056c91bd745086ccfe85b734859a6062430a",
+      "png_sha256": "b1ad912ce32565453809346e6e887543125104e1cf4acdac1f0827d6a890cc96",
+      "opaque_pixels": 266
+    },
+    {
+      "id": "shells",
+      "file": "shells.png",
+      "lump": "SHELA0",
+      "group": "ammo",
+      "caption": "Патроны для дробовика",
+      "option": "ammo",
+      "dimensions": [
+        14,
+        10
+      ],
+      "patch_offsets": [
+        7,
+        9
+      ],
+      "lump_sha256": "7d12e7c88fc97376381025a52f86251eeb24fad73144b6b6fab57068557cc7f6",
+      "rgba_sha256": "21e96f040f36709b293f912ee1bc79d8450a15227dcea170921314d9951a77a2",
+      "png_sha256": "95b0c7b216110989dcc99ecfa9dd62f672d11349f4a7179a4465cc152a179257",
+      "opaque_pixels": 123
+    },
+    {
+      "id": "shell_box",
+      "file": "shell_box.png",
+      "lump": "SBOXA0",
+      "group": "ammo",
+      "caption": "Коробка патронов",
+      "option": "ammo",
+      "dimensions": [
+        34,
+        13
+      ],
+      "patch_offsets": [
+        17,
+        12
+      ],
+      "lump_sha256": "7746d97d2f248ad23082689beab7529cc981aff52c2da3fbbd565cdbb767b273",
+      "rgba_sha256": "aaf822a4ca10b4981429a41b139b755334ff249755b91b19faa13bf6acb5de25",
+      "png_sha256": "562f62b976a04044760f40af2412820dfea5866f6b95e73e7b3a4bb6fb80d1cd",
+      "opaque_pixels": 427
+    },
+    {
+      "id": "rocket",
+      "file": "rocket.png",
+      "lump": "ROCKA0",
+      "group": "ammo",
+      "caption": "Ракета",
+      "option": "ammo",
+      "dimensions": [
+        10,
+        24
+      ],
+      "patch_offsets": [
+        5,
+        24
+      ],
+      "lump_sha256": "8e958ce3ebd567953ba2b91b3c269b1aa844285f73953a1450638645e7dbc21a",
+      "rgba_sha256": "4d8c88e0cd9a8335ad7d5a361b8cde32a08c451360a772552ab5ecbb3dcfc4e8",
+      "png_sha256": "a9faf920460aace5e81b870848d84a96d5f602dbce3466a794575d40233722f1",
+      "opaque_pixels": 200
+    },
+    {
+      "id": "rocket_box",
+      "file": "rocket_box.png",
+      "lump": "BROKA0",
+      "group": "ammo",
+      "caption": "Ящик ракет",
+      "option": "ammo",
+      "dimensions": [
+        52,
+        20
+      ],
+      "patch_offsets": [
+        27,
+        20
+      ],
+      "lump_sha256": "8ea4b66840ca8160109749e8768cf938460d49f266aa6f6fd69f8a17a6486574",
+      "rgba_sha256": "c8c5780d3d4de8851b2aab25bc3428bfb34a4f42565702e28e660d34336abe40",
+      "png_sha256": "9908b253da52eb8edf41da9df5bf0ecc664ebfe33d894cc5586d23c4333483d6",
+      "opaque_pixels": 1006
+    },
+    {
+      "id": "cell",
+      "file": "cell.png",
+      "lump": "CELLA0",
+      "group": "ammo",
+      "caption": "Энергетическая ячейка",
+      "option": "ammo",
+      "dimensions": [
+        19,
+        12
+      ],
+      "patch_offsets": [
+        8,
+        12
+      ],
+      "lump_sha256": "7a330c6a30580a4edaf65fed78bfbc776cf2eb2b1382ebc2f81c80e0a806c709",
+      "rgba_sha256": "7f4b6c84a7fce3c31c2541abeedb721a35b24354730993ad9f7aceccc2ed60e7",
+      "png_sha256": "c2955f0b24feffd9d63b0e72936b210d5da98c603fe570b95c521f8dee84230a",
+      "opaque_pixels": 188
+    },
+    {
+      "id": "cell_pack",
+      "file": "cell_pack.png",
+      "lump": "CELPA0",
+      "group": "ammo",
+      "caption": "Блок ячеек",
+      "option": "ammo",
+      "dimensions": [
+        32,
+        20
+      ],
+      "patch_offsets": [
+        15,
+        20
+      ],
+      "lump_sha256": "7941e9a3dabc4e34d084683b00ef6cd0e808a0e0b62db103ee463e493289216c",
+      "rgba_sha256": "fea1613eb973139db5eec6a658a1989643991de357da5a9dc4efb0330c9447d4",
+      "png_sha256": "86d68cf89411b712c019bfb16952b0710901adba5b6e3d4c53adf028b08de3ca",
+      "opaque_pixels": 572
+    },
+    {
+      "id": "stimpack",
+      "file": "stimpack.png",
+      "lump": "STIMA0",
+      "group": "health",
+      "caption": "Малая аптечка",
+      "option": "health",
+      "dimensions": [
+        19,
+        10
+      ],
+      "patch_offsets": [
+        10,
+        10
+      ],
+      "lump_sha256": "55a9362f61230c5ed6ca2114924de9becb7e948d2b2c3aae7450f8d4a9e3dea6",
+      "rgba_sha256": "39d05e0660f10fdac9403cd5819d1b07c221f4f7e58a6efd5dd8d0499621d875",
+      "png_sha256": "357ede4eb52349ca4bbbcab8e5fa51632245049e7377542d8cb2d3b887c55119",
+      "opaque_pixels": 174
+    },
+    {
+      "id": "medikit",
+      "file": "medikit.png",
+      "lump": "MEDIA0",
+      "group": "health",
+      "caption": "Большая аптечка",
+      "option": "health",
+      "dimensions": [
+        29,
+        20
+      ],
+      "patch_offsets": [
+        14,
+        20
+      ],
+      "lump_sha256": "2953f1873a68f5c68122ec5abc1ae9505b7580a60bb6cd4e56cc438049189c11",
+      "rgba_sha256": "773b901fba70ca66873069467bb880fef80235de73574eb61214318b1be6df6b",
+      "png_sha256": "7dc47e0be92b64d73ec3a7aebc45ce98b7b4b851b2d7552dff5a7c9b6662cef0",
+      "opaque_pixels": 516
+    },
+    {
+      "id": "health_bonus",
+      "file": "health_bonus.png",
+      "lump": "BON1A0",
+      "group": "health",
+      "caption": "Бонус здоровья",
+      "option": "health",
+      "dimensions": [
+        11,
+        15
+      ],
+      "patch_offsets": [
+        5,
+        15
+      ],
+      "lump_sha256": "061e1ace8542d5535c3d2f5adc74ab127b5749be3a4e7fa627ea0f38c86c14bf",
+      "rgba_sha256": "e7c8a07b6c92c6a3e451a9274899ba874b49517255adec9a57978a99a4b310e6",
+      "png_sha256": "b597f4a39e8e829cec6dc9f67acef67723908ab2363e5d1f7705dd76406d325b",
+      "opaque_pixels": 123
+    },
+    {
+      "id": "green_armor",
+      "file": "green_armor.png",
+      "lump": "ARM1A0",
+      "group": "armor",
+      "caption": "Лёгкая броня",
+      "option": "items",
+      "dimensions": [
+        37,
+        28
+      ],
+      "patch_offsets": [
+        18,
+        28
+      ],
+      "lump_sha256": "f4f66dd8304592876aa0f7dd2acac9044cfadae64d1338cd47f892a35a39b144",
+      "rgba_sha256": "5d6af4449a5fc527828410c03272256c0f706078407229b72b5a1065fbc47b79",
+      "png_sha256": "101b7f60931ad3d5cdd4a8700d2699ce947157d5528d893dca30a9f188ae63c2",
+      "opaque_pixels": 542
+    },
+    {
+      "id": "blue_armor",
+      "file": "blue_armor.png",
+      "lump": "ARM2A0",
+      "group": "armor",
+      "caption": "Усиленная броня",
+      "option": "items",
+      "dimensions": [
+        37,
+        25
+      ],
+      "patch_offsets": [
+        18,
+        24
+      ],
+      "lump_sha256": "65195d22aa68299f342b63180b3456536c0522ed74321c6b57140a733f8b545e",
+      "rgba_sha256": "ea8826092f5ba1ffade1b2b3803aaded94de6427e5a07838772ee6059a3e10d6",
+      "png_sha256": "ae83bfa481fbf4f8191d1a875eaeae038c5c60638480fb85b720006c4ac98555",
+      "opaque_pixels": 567
+    },
+    {
+      "id": "armor_bonus",
+      "file": "armor_bonus.png",
+      "lump": "BON2A0",
+      "group": "armor",
+      "caption": "Бонус брони",
+      "option": "items",
+      "dimensions": [
+        13,
+        19
+      ],
+      "patch_offsets": [
+        6,
+        19
+      ],
+      "lump_sha256": "979e94d7de7ef4dbfd52cd7ba03d50789db4d468b6e2daf9192faf7fe6bb2370",
+      "rgba_sha256": "fa804c43967efda45c628b9f442897467b6243f8ab0d929b2808df53125521dd",
+      "png_sha256": "0fce0db3c96088ade67bc61203b47d0b5cb4a551856637d824a918b2d9c436eb",
+      "opaque_pixels": 215
+    },
+    {
+      "id": "shotgun",
+      "file": "shotgun.png",
+      "lump": "SHOTA0",
+      "group": "weapons",
+      "caption": "Дробовик",
+      "option": "weapons",
+      "dimensions": [
+        38,
+        13
+      ],
+      "patch_offsets": [
+        21,
+        13
+      ],
+      "lump_sha256": "d751c82cd99770318f8f4d30e2e4b375eae895ac71c72a575caf149194c8bec2",
+      "rgba_sha256": "af7184624227e316201b4fb4e6be591e927a5ca9fb52f142d8854d394ba2658d",
+      "png_sha256": "cbfc234af17ba72abbb4d77d82c77140d06c07dd1a7d8e1f42b38d86781b5326",
+      "opaque_pixels": 284
+    },
+    {
+      "id": "super_shotgun",
+      "file": "super_shotgun.png",
+      "lump": "SGN2A0",
+      "group": "weapons",
+      "caption": "Двуствольный дробовик",
+      "option": "weapons",
+      "dimensions": [
+        43,
+        14
+      ],
+      "patch_offsets": [
+        22,
+        14
+      ],
+      "lump_sha256": "74a1d5b6deab8dd4cbdac91567300bbec57a735b688dc84a027ba469d477d57f",
+      "rgba_sha256": "4345489c83e52f39bd2b3884f1002917c4dc4a2071f6f8c576061e9407ccd1df",
+      "png_sha256": "c8ec14748dcd9c559a400b25c25ae87f54248fd68564a9398d198c39fe2051cb",
+      "opaque_pixels": 322
+    },
+    {
+      "id": "chaingun",
+      "file": "chaingun.png",
+      "lump": "MGUNA0",
+      "group": "weapons",
+      "caption": "Пулемёт",
+      "option": "weapons",
+      "dimensions": [
+        50,
+        25
+      ],
+      "patch_offsets": [
+        25,
+        25
+      ],
+      "lump_sha256": "cd8563d674ec3f0223f5f8dfc0d9d0eefe3342c7823d1828dc47a8fc1c837fdf",
+      "rgba_sha256": "7bc16ede7db829b2e911b5bff8db3729b1ee5cde0b22f9157cd984974d604e24",
+      "png_sha256": "d134b5e25b38740d53dcf137c0e0275a3e516cdfe12782502ac022a862c88803",
+      "opaque_pixels": 529
+    },
+    {
+      "id": "rocket_launcher",
+      "file": "rocket_launcher.png",
+      "lump": "LAUNA0",
+      "group": "weapons",
+      "caption": "Ракетное оружие",
+      "option": "weapons",
+      "dimensions": [
+        59,
+        20
+      ],
+      "patch_offsets": [
+        30,
+        20
+      ],
+      "lump_sha256": "af4cc828326d772922f948f48811b88ff823acf54c356624e8b8f6f3df70d33e",
+      "rgba_sha256": "b02c44b2c86b13491ba80c296bde9c20e81a69b5020d8e29f1976d95d7914403",
+      "png_sha256": "8ade09039afe7e2e680d0cc4844c146ebd43c8c279c94069d61b3f6ca555e27d",
+      "opaque_pixels": 635
+    },
+    {
+      "id": "plasma_rifle",
+      "file": "plasma_rifle.png",
+      "lump": "PLASA0",
+      "group": "weapons",
+      "caption": "Плазменное оружие",
+      "option": "weapons",
+      "dimensions": [
+        51,
+        16
+      ],
+      "patch_offsets": [
+        29,
+        16
+      ],
+      "lump_sha256": "fde8b64268d4befa311a64b1466ea0f5db7465e692a741e101c99d663e849362",
+      "rgba_sha256": "6a62816fe0416a5132e10c409d51434b59f03601382e4ae776a3d4a5520570d9",
+      "png_sha256": "23357c5d7d499d04f5f24ff7b2260fc6428da32e51b699db5c6965d1be8679d5",
+      "opaque_pixels": 481
+    },
+    {
+      "id": "bfg",
+      "file": "bfg.png",
+      "lump": "BFUGA0",
+      "group": "weapons",
+      "caption": "Тяжёлое энергооружие",
+      "option": "weapons",
+      "dimensions": [
+        56,
+        24
+      ],
+      "patch_offsets": [
+        28,
+        20
+      ],
+      "lump_sha256": "3c832a7a4e01adf95c8e28babd690f824aea7e5cc4d7c7206ee61c606c195177",
+      "rgba_sha256": "baa6b5c1509ce8edec01bfbde9df4c854cdc1d74e4166d5da54f40f2de5a75bf",
+      "png_sha256": "669f0d1f696f4c8cffd691264e6d311cb56337eee6e5bd35b1e4e4df636179bc",
+      "opaque_pixels": 1017
+    },
+    {
+      "id": "chainsaw",
+      "file": "chainsaw.png",
+      "lump": "CSAWA0",
+      "group": "weapons",
+      "caption": "Бензопила",
+      "option": "weapons",
+      "dimensions": [
+        47,
+        19
+      ],
+      "patch_offsets": [
+        22,
+        20
+      ],
+      "lump_sha256": "ff46cd7e2888a7910add5f371842b08c1509ed96316dac699f4d9c5c5d34b4bb",
+      "rgba_sha256": "5f87de340a5634440e607ba8919bd1d4a44d25006b5c7a79499aca4ddcb169cd",
+      "png_sha256": "fca7aed99b2bc00f36618b91db7521041ff542e0839cee4c1a7d2e3f354dad53",
+      "opaque_pixels": 537
+    },
+    {
+      "id": "soul_bonus",
+      "file": "soul_bonus.png",
+      "lump": "SOULA0",
+      "group": "bonuses",
+      "caption": "Особая награда",
+      "option": "secrets_bonus",
+      "dimensions": [
+        25,
+        25
+      ],
+      "patch_offsets": [
+        12,
+        39
+      ],
+      "lump_sha256": "b163ed5578b0b60ef700828603f30937db620b15c360a7165afbda49698f1e13",
+      "rgba_sha256": "b8d04b91a374dc0babd3cf2faa3474f14a9c34356bfe7647697c4617d8dd5034",
+      "png_sha256": "2d3ac7c059492af736a2342c923ba005b958f7455f4c9ca73df9a36a920de395",
+      "opaque_pixels": 489
+    }
+  ]
+}

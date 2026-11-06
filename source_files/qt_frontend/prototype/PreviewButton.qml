@@ -6,6 +6,7 @@ Button {
     id: control
     required property var tokens
     property string symbol: ""
+    property bool selected: false
     property bool primary: false
     property bool quiet: false
     font.pixelSize: tokens.bodySize
@@ -22,7 +23,7 @@ Button {
             anchors.centerIn: parent
             visible: !!control.symbol
             name: control.symbol
-            ink: control.primary ? control.tokens.accentText : control.tokens.secondary
+            ink: control.primary ? control.tokens.accentText : control.selected ? control.tokens.accent : control.tokens.secondary
         }
         Label {
             id: label
@@ -36,9 +37,9 @@ Button {
     }
     background: Rectangle {
         radius: 6
-        color: control.primary ? control.tokens.accent : control.down || control.hovered ? control.tokens.hover : control.quiet ? "transparent" : control.tokens.surface
+        color: control.primary ? control.tokens.accent : control.down || control.hovered ? control.tokens.hover : control.selected ? control.tokens.selection : control.quiet ? "transparent" : control.tokens.surface
         opacity: control.enabled ? (control.down ? .75 : 1) : .45
-        border.color: control.visualFocus ? control.tokens.accent : control.primary || control.quiet ? "transparent" : control.tokens.line
+        border.color: control.visualFocus ? control.tokens.accent : control.primary || control.selected ? control.tokens.selection : control.quiet ? "transparent" : control.tokens.line
         border.width: control.visualFocus ? 2 : 1
         Behavior on color {
             ColorAnimation {

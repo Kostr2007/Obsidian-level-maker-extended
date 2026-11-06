@@ -45,6 +45,10 @@ ScrollView {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
         }
+        AssetPreview {
+            optionId: inspector.moduleId === "ui_pickups" && inspector.option ? inspector.option.id : ""
+            visible: available
+        }
         GameplayComparison {
             example: inspector.option ? inspector.option.comparison : ""
             visible: supported

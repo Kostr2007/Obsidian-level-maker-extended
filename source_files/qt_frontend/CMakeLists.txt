@@ -14,14 +14,39 @@ qt_add_resources(obsidian-qt-core "gameplay" PREFIX "/gameplay"
   "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/steepness-high.png"
   "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/monsters-low.png"
   "${CMAKE_SOURCE_DIR}/docs/artwork/gameplay/monsters-high.png")
+qt_add_resources(obsidian-qt-core "freedoom" PREFIX "/freedoom"
+  BASE "${CMAKE_CURRENT_SOURCE_DIR}/assets/freedoom" FILES
+  assets/freedoom/manifest.json
+  assets/freedoom/clip.png
+  assets/freedoom/ammo_box.png
+  assets/freedoom/shells.png
+  assets/freedoom/shell_box.png
+  assets/freedoom/rocket.png
+  assets/freedoom/rocket_box.png
+  assets/freedoom/cell.png
+  assets/freedoom/cell_pack.png
+  assets/freedoom/stimpack.png
+  assets/freedoom/medikit.png
+  assets/freedoom/health_bonus.png
+  assets/freedoom/green_armor.png
+  assets/freedoom/blue_armor.png
+  assets/freedoom/armor_bonus.png
+  assets/freedoom/shotgun.png
+  assets/freedoom/super_shotgun.png
+  assets/freedoom/chaingun.png
+  assets/freedoom/rocket_launcher.png
+  assets/freedoom/plasma_rifle.png
+  assets/freedoom/bfg.png
+  assets/freedoom/chainsaw.png
+  assets/freedoom/soul_bonus.png)
 target_link_libraries(obsidian-qt-core PUBLIC Qt6::Quick)
 target_compile_features(obsidian-qt-core PUBLIC cxx_std_17)
 qt_add_executable(obsidian-qt main.cpp)
 set_target_properties(obsidian-qt PROPERTIES OUTPUT_NAME obsidian)
 target_compile_definitions(obsidian-qt PRIVATE OBSIDIAN_EXTENDED_VERSION="${PROJECT_VERSION}")
 target_link_libraries(obsidian-qt PRIVATE obsidian-qt-core Qt6::QuickControls2)
-set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml GameplayComparison.qml
-  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml)
+set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml GameplayComparison.qml AssetPreview.qml ResourceAssets.js
+  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml prototype/ResourceGallery.qml)
 qt_add_resources(obsidian-qt "interface" PREFIX "/ui"
   BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${STUDIO_QML})
 add_dependencies(obsidian-qt obsidian)

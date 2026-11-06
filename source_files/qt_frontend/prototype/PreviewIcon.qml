@@ -36,7 +36,32 @@ Canvas {
             c.arc(x, y, r, 0, 2 * Math.PI);
             c.stroke();
         }
-        if (name === "geometry") {
+        if (name === "grid") {
+            for (let y = 4; y <= 14; y += 10)
+                for (let x = 4; x <= 14; x += 10)
+                    c.strokeRect(x, y, 6, 6);
+        } else if (name === "list") {
+            for (let y = 5; y <= 19; y += 7) {
+                c.strokeRect(3, y - 2, 3, 3);
+                path([[9, y], [21, y]], false);
+            }
+        } else if (name === "folder") {
+            c.lineWidth = 1;
+            c.fillStyle = "#78caff";
+            c.beginPath();
+            c.moveTo(2, 7);
+            c.lineTo(2, 4);
+            c.lineTo(10, 4);
+            c.lineTo(13, 7);
+            c.lineTo(22, 7);
+            c.lineTo(22, 20);
+            c.lineTo(2, 20);
+            c.closePath();
+            c.fill();
+            c.fillStyle = ink;
+            c.fillRect(2, 9, 20, 11);
+            c.strokeRect(2, 9, 20, 11);
+        } else if (name === "geometry") {
             path([[4, 7], [12, 3], [20, 7], [20, 17], [12, 21], [4, 17]], true);
             path([[4, 7], [12, 11], [20, 7]], false);
             path([[12, 11], [12, 21]], false);

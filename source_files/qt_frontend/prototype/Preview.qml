@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import Obsidian 1.0
 import ".."
+import "../ResourceAssets.js" as Resources
 
 ApplicationWindow {
     id: window
@@ -32,7 +33,17 @@ ApplicationWindow {
     DesignTokens {
         id: design
     }
-    property string section: "combat"
+    property string section: "resources"
+    property string pendingSection: "resources"
+    property string currentResourceId: "ammo"
+    property string resourceViewMode: "grid"
+    readonly property bool reduceMotion: design.reduceMotion
+    readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running
+    readonly property bool resourceGameCompatible: {
+        backend.revision;
+        backend.schema;
+        return Resources.compatible(backend.value("", "game"));
+    }
     property string query: ""
     property bool advanced: false
     property bool sidebarShown: true
@@ -73,6 +84,7 @@ ApplicationWindow {
             icon: "results"
         }
     ]
+    Component.onCompleted: selectInitial()
     function titleFor(key) {
         for (let c of categories)
             if (c.key === key)
@@ -93,7 +105,7 @@ ApplicationWindow {
             if (!m.available || !m.isUi)
                 continue;
             let options = m.options.filter(function (o) {
-                return o.kind !== "header" && (q ? [o.title, o.text, o.id, o.summary].join(" ").toLocaleLowerCase().includes(q) : o.category === section && (advanced || !o.advanced));
+                return o.kind !== "header" && (q ? [o.title, o.text, o.id, o.summary].join(" ").toLocaleLowerCase().includes(q) : o.category === section && (advanced || !o.advanced) && (section !== "resources" || o.id === currentResourceId));
             });
             if (options.length)
                 result.push({
@@ -110,20 +122,120 @@ ApplicationWindow {
         if (openPanel && !inlineInspector)
             inspectorDialog.open();
     }
+    function resourceEntries() {
+        for (let m of (backend.schema.modules || [])) {
+            if (m.id !== "ui_pickups" || !m.available)
+                continue;
+            let ordered = [];
+            for (let id of ["ammo", "health", "items", "weapons", "secrets", "secrets_bonus"])
+                for (let option of m.options)
+                    if (option.id === id)
+                        ordered.push(option);
+            return ordered;
+        }
+        return [];
+    }
+    function selectResource(id, openPanel) {
+        for (let option of resourceEntries())
+            if (option.id === id) {
+                currentResourceId = id;
+                inspect(option, "ui_pickups", openPanel);
+                return;
+            }
+    }
     function selectInitial() {
+        inspected = null;
+        inspectedModule = "";
+        if (section === "resources") {
+            selectResource(currentResourceId, false);
+            return;
+        }
         for (let m of (backend.schema.modules || []))
-            if (m.available)
+            if (m.available && m.isUi)
                 for (let o of m.options)
-                    if (m.id === "ui_mons" && o.id === "float_mons") {
-                        inspected = o;
-                        inspectedModule = m.id;
+                    if (o.category === section && o.kind !== "header") {
+                        inspect(o, m.id, false);
                         return;
                     }
         inspected = null;
     }
-    function go(key) {
-        section = key;
+    function finishNavigation() {
+        if (section === "resources")
+            resourceGallery.focusSelection();
+    }
+    function applyNavigation() {
+        section = pendingSection;
         query = "";
+        selectInitial();
+        contentScroll.contentItem.contentY = 0;
+    }
+    function go(key) {
+        if (navigationMotion.running)
+            navigationMotion.complete();
+        pendingSection = key;
+        if (section === key || design.reduceMotion) {
+            applyNavigation();
+            Qt.callLater(finishNavigation);
+        } else
+            navigationMotion.start();
+    }
+    SequentialAnimation {
+        id: navigationMotion
+        NumberAnimation {
+            target: pageContent
+            property: "opacity"
+            to: 0
+            duration: design.navOut
+        }
+        ScriptAction {
+            script: {
+                window.applyNavigation();
+                pageShift.y = 12;
+            }
+        }
+        ParallelAnimation {
+            NumberAnimation {
+                target: pageContent
+                property: "opacity"
+                to: 1
+                duration: design.navIn
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                target: pageShift
+                property: "y"
+                to: 0
+                duration: design.navIn
+                easing.type: Easing.OutCubic
+            }
+        }
+        onFinished: window.finishNavigation()
+    }
+    Connections {
+        target: design
+        function onReduceMotionChanged() {
+            if (design.reduceMotion) {
+                navigationMotion.complete();
+                sidebarMotion.complete();
+                inspectorMotion.complete();
+            }
+        }
+    }
+    Shortcut {
+        sequence: "Ctrl+1"
+        onActivated: window.resourceViewMode = "grid"
+    }
+    Shortcut {
+        sequence: "Ctrl+2"
+        onActivated: window.resourceViewMode = "list"
+    }
+    Shortcut {
+        sequence: "Ctrl+Shift+M"
+        onActivated: design.reduceMotion = !design.reduceMotion
+    }
+    Shortcut {
+        sequence: "Ctrl+Shift+B"
+        onActivated: window.sidebarShown = !window.sidebarShown
     }
     function generate() {
         createButton.forceActiveFocus();
@@ -138,6 +250,8 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+F"
         onActivated: {
+            if (navigationMotion.running)
+                navigationMotion.complete();
             if (window.section === "results")
                 window.section = "combat";
             Qt.callLater(function () {
@@ -232,7 +346,7 @@ ApplicationWindow {
         }
         MenuSeparator {}
         MenuItem {
-            text: "Боковая панель"
+            text: "Боковая панель  ·  Ctrl+Shift+B"
             checkable: true
             checked: window.sidebarShown
             onTriggered: window.sidebarShown = checked
@@ -259,7 +373,7 @@ ApplicationWindow {
             onTriggered: design.textScale = checked ? 1.25 : 1
         }
         MenuItem {
-            text: "Меньше анимации"
+            text: "Меньше анимации  ·  Ctrl+Shift+M"
             checkable: true
             checked: design.reduceMotion
             onTriggered: design.reduceMotion = checked
@@ -322,6 +436,7 @@ ApplicationWindow {
     }
     Dialog {
         id: inspectorDialog
+        objectName: "inspectorDialog"
         title: "Пояснение параметра"
         anchors.centerIn: Overlay.overlay
         modal: true
@@ -349,6 +464,7 @@ ApplicationWindow {
                     color: design.secondary
                 }
                 Label {
+                    objectName: "resourceDetailTitle"
                     text: window.inspected ? window.inspected.title : "Выберите параметр"
                     font.pixelSize: Math.round(20 * design.textScale)
                     font.weight: Font.DemiBold
@@ -363,6 +479,11 @@ ApplicationWindow {
                     color: design.secondary
                     font.pixelSize: design.bodySize
                     lineHeight: 1.15
+                }
+                AssetPreview {
+                    textScale: design.textScale
+                    optionId: window.inspectedModule === "ui_pickups" && window.inspected ? window.inspected.id : ""
+                    visible: available
                 }
                 GameplayComparison {
                     example: window.inspected ? window.inspected.comparison : ""
@@ -410,8 +531,8 @@ ApplicationWindow {
         // One toolbar, separate from content. Linux/Qt owns the native window decoration.
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 66
-            color: design.sidebar
+            Layout.preferredHeight: 62
+            color: design.toolbar
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 16
@@ -428,7 +549,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     spacing: 2
                     Label {
-                        text: window.section === "results" ? "Результат" : "Параметры карты"
+                        text: window.titleFor(window.section)
                         font.weight: Font.DemiBold
                         font.pixelSize: design.bodySize
                         color: design.text
@@ -443,6 +564,26 @@ ApplicationWindow {
                         color: design.secondary
                         elide: Text.ElideRight
                         Layout.fillWidth: true
+                    }
+                }
+                RowLayout {
+                    visible: window.section === "resources" && !window.query
+                    spacing: 2
+                    PreviewButton {
+                        tokens: design
+                        symbol: "grid"
+                        quiet: true
+                        selected: window.resourceViewMode === "grid"
+                        Accessible.name: "Показать значками · Ctrl+1"
+                        onClicked: window.resourceViewMode = "grid"
+                    }
+                    PreviewButton {
+                        tokens: design
+                        symbol: "list"
+                        quiet: true
+                        selected: window.resourceViewMode === "list"
+                        Accessible.name: "Показать списком · Ctrl+2"
+                        onClicked: window.resourceViewMode = "list"
                     }
                 }
                 PreviewButton {
@@ -505,13 +646,29 @@ ApplicationWindow {
             Layout.fillHeight: true
             spacing: 0
             Rectangle {
-                visible: window.sidebarShown
-                Layout.preferredWidth: 210
+                id: sidebarPanel
+                property real reveal: window.sidebarShown ? 1 : 0
+                Behavior on reveal {
+                    NumberAnimation {
+                        id: sidebarMotion
+                        duration: design.panelDuration
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                visible: reveal > 0.001
+                clip: true
+                Layout.minimumWidth: 0
+                Layout.maximumWidth: 210 * reveal
+                Layout.preferredWidth: 210 * reveal
                 Layout.fillHeight: true
                 color: design.sidebar
                 ColumnLayout {
-                    anchors.fill: parent
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
                     anchors.margins: 16
+                    width: 178
+                    opacity: sidebarPanel.reveal
                     spacing: 8
                     Label {
                         text: "Obsidian"
@@ -555,7 +712,14 @@ ApplicationWindow {
                                         spacing: 10
                                         PreviewIcon {
                                             name: modelData.icon
-                                            ink: window.section === modelData.key ? design.selectionText : design.secondary
+                                            ink: ({
+                                                    project: "#77818d",
+                                                    geometry: "#1686e8",
+                                                    combat: "#ed625f",
+                                                    resources: "#e89925",
+                                                    appearance: "#a778d8",
+                                                    results: "#1b9ec9"
+                                                })[modelData.key]
                                         }
                                         Label {
                                             text: modelData.title
@@ -569,6 +733,11 @@ ApplicationWindow {
                                         color: window.section === modelData.key ? design.selection : parent.hovered ? design.hover : "transparent"
                                         border.width: parent.visualFocus ? 2 : 0
                                         border.color: design.accent
+                                        Behavior on color {
+                                            ColorAnimation {
+                                                duration: design.reduceMotion ? 0 : 130
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -604,6 +773,10 @@ ApplicationWindow {
                 clip: true
                 ScrollBar.vertical.active: true
                 ColumnLayout {
+                    id: pageContent
+                    transform: Translate {
+                        id: pageShift
+                    }
                     width: contentScroll.availableWidth
                     spacing: 24
                     ColumnLayout {
@@ -618,7 +791,7 @@ ApplicationWindow {
                             color: design.text
                         }
                         Label {
-                            text: window.section === "combat" ? "Задайте ритм и сложность столкновений." : window.section === "results" ? "Созданная карта и файлы результата." : "Настройте основные свойства будущей карты."
+                            text: window.section === "resources" ? "Выберите категорию, чтобы настроить предметы на карте." : window.section === "combat" ? "Задайте ритм и сложность столкновений." : window.section === "results" ? "Созданная карта и файлы результата." : "Настройте основные свойства будущей карты."
                             font.pixelSize: design.bodySize
                             color: design.secondary
                             Layout.fillWidth: true
@@ -672,6 +845,31 @@ ApplicationWindow {
                             id: projectSetup
                             anchors.fill: parent
                             anchors.margins: 16
+                        }
+                    }
+                    ResourceGallery {
+                        id: resourceGallery
+                        tokens: design
+                        entries: window.resourceEntries()
+                        visible: window.section === "resources" && !window.query
+                        selectedId: window.currentResourceId
+                        viewMode: window.resourceViewMode
+                        compatible: window.resourceGameCompatible
+                        Layout.leftMargin: 28
+                        Layout.rightMargin: 28
+                        onSelect: function (id, openPanel) {
+                            window.selectResource(id, openPanel);
+                        }
+                        onRevealItem: function (item) {
+                            let flick = contentScroll.contentItem;
+                            let top = item.mapToItem(flick.contentItem, 0, 0).y;
+                            let bottom = top + item.height;
+                            let target = flick.contentY;
+                            if (top < target)
+                                target = top - 12;
+                            else if (bottom > target + flick.height)
+                                target = bottom - flick.height + 12;
+                            flick.contentY = Math.max(0, Math.min(Math.max(0, flick.contentHeight - flick.height), target));
                         }
                     }
                     Repeater {
@@ -833,8 +1031,20 @@ ApplicationWindow {
                 }
             }
             Rectangle {
-                visible: window.inlineInspector
-                Layout.preferredWidth: 310
+                id: inspectorPanel
+                property real reveal: window.inlineInspector ? 1 : 0
+                Behavior on reveal {
+                    NumberAnimation {
+                        id: inspectorMotion
+                        duration: design.panelDuration
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                visible: reveal > 0.001
+                clip: true
+                Layout.minimumWidth: 0
+                Layout.maximumWidth: 310 * reveal
+                Layout.preferredWidth: 310 * reveal
                 Layout.fillHeight: true
                 color: design.surface
                 Rectangle {
@@ -843,8 +1053,12 @@ ApplicationWindow {
                     color: design.line
                 }
                 Loader {
-                    anchors.fill: parent
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
                     anchors.margins: 20
+                    width: 270
+                    opacity: inspectorPanel.reveal
                     sourceComponent: inspectorContent
                 }
             }

@@ -13,6 +13,7 @@
 #include "../wadpreview.h"
 #include <QFile>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -156,6 +157,91 @@ private slots:
         backend.setGeneral("port","limit_enforcing");
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
+    }
+    void previewResourcesAndMotion() {
+        QTemporaryDir state; Backend backend(engine,data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml"));
+        QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first());QVERIFY(window);
+        window->show();QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate();QTRY_VERIFY(window->isActive());
+        window->setWidth(1440);window->setHeight(900);QTest::qWait(150);
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        const auto ammoBefore=backend.value("ui_pickups","ammo");
+        const auto healthBefore=backend.value("ui_pickups","health");
+        QTest::keyClick(window,Qt::Key_3,Qt::AltModifier);
+        QTRY_COMPARE(window->property("section").toString(),QString("resources"));
+        QTRY_COMPARE(window->property("currentResourceId").toString(),QString("ammo"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        auto *gallery=visualItem(window->contentItem(),"resourceGallery");QVERIFY(gallery);
+        auto *ammo=visualItem(gallery,"resourceCard_ammo");QVERIFY(ammo);
+        QTRY_VERIFY(ammo->hasActiveFocus());
+        QTest::keyClick(window,Qt::Key_Right);
+        QTRY_COMPARE(window->property("currentResourceId").toString(),QString("health"));
+        auto *health=visualItem(gallery,"resourceCard_health");QVERIFY(health);QTRY_VERIFY(health->hasActiveFocus());
+        QTest::keyClick(window,Qt::Key_Left);
+        QTRY_COMPARE(window->property("currentResourceId").toString(),QString("ammo"));
+        QCOMPARE(backend.value("ui_pickups","ammo"),ammoBefore);
+        QCOMPARE(backend.value("ui_pickups","health"),healthBefore);
+        QTest::keyClick(window,Qt::Key_2,Qt::ControlModifier);
+        QTRY_COMPARE(window->property("resourceViewMode").toString(),QString("list"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        QTest::keyClick(window,Qt::Key_1,Qt::ControlModifier);
+        QTRY_COMPARE(window->property("resourceViewMode").toString(),QString("grid"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        // Rapid navigation must settle at the final destination, including after interruption.
+        QTest::keyClick(window,Qt::Key_1,Qt::AltModifier);
+        QTest::keyClick(window,Qt::Key_2,Qt::AltModifier);
+        QTest::keyClick(window,Qt::Key_3,Qt::AltModifier);
+        QTRY_COMPARE(window->property("section").toString(),QString("resources"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        QTRY_VERIFY(visualItem(window->contentItem(),"resourceCard_ammo")->hasActiveFocus());
+        // Observe actual animation lifecycle, not a duration-dependent intermediate frame.
+        QSignalSpy motion(window,SIGNAL(motionActiveChanged()));QVERIFY(motion.isValid());
+        QTest::keyClick(window,Qt::Key_1,Qt::AltModifier);
+        QTRY_COMPARE(window->property("section").toString(),QString("geometry"));
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        QVERIFY(motion.count()>=2);
+        QTest::keyClick(window,Qt::Key_M,Qt::ControlModifier|Qt::ShiftModifier);
+        QTRY_VERIFY(window->property("reduceMotion").toBool());
+        motion.clear();
+        QTest::keyClick(window,Qt::Key_3,Qt::AltModifier);
+        QTRY_COMPARE(window->property("section").toString(),QString("resources"));
+        QVERIFY(!window->property("motionActive").toBool());QCOMPARE(motion.count(),0);
+        QTest::keyClick(window,Qt::Key_M,Qt::ControlModifier|Qt::ShiftModifier);
+        QTRY_VERIFY(!window->property("reduceMotion").toBool());
+        window->setWidth(1050);window->setHeight(640);QTest::qWait(200);
+        QTest::keyClick(window,Qt::Key_3,Qt::AltModifier);
+        QTRY_VERIFY(!window->property("motionActive").toBool());
+        auto *selected=visualItem(window->contentItem(),"resourceCard_ammo");QVERIFY(selected);selected->forceActiveFocus();
+        QTest::keyClick(window,Qt::Key_2,Qt::ControlModifier);
+        window->setHeight(540);QTest::qWait(150);
+        selected=visualItem(window->contentItem(),"resourceCard_ammo");QVERIFY(selected);selected->forceActiveFocus();
+        for(int i=0;i<5;++i)QTest::keyClick(window,Qt::Key_Down);
+        QTRY_COMPARE(window->property("currentResourceId").toString(),QString("secrets_bonus"));
+        auto *last=visualItem(window->contentItem(),"resourceCard_secrets_bonus");QVERIFY(last);
+        QTRY_VERIFY(last->hasActiveFocus());
+        QTRY_VERIFY(last->mapToScene(last->boundingRect().center()).y()>66);
+        QTRY_VERIFY(last->mapToScene(last->boundingRect().center()).y()<window->height()-34);
+        QTest::keyClick(window,Qt::Key_Return);
+        auto *dialog=window->findChild<QObject*>("inspectorDialog");QVERIFY(dialog);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QTest::keyClick(window,Qt::Key_Escape);QTRY_VERIFY(!dialog->property("visible").toBool());
+        // Native WAD sprites keep their dimensions/transparency; no network or IWAD at runtime.
+        QFile manifest(":/freedoom/manifest.json");QVERIFY(manifest.open(QIODevice::ReadOnly));
+        const auto assets=QJsonDocument::fromJson(manifest.readAll()).object().value("assets").toArray();
+        QVERIFY(assets.size()>=20);
+        for(const auto &entry:assets) {
+            const auto asset=entry.toObject();const auto dimensions=asset.value("dimensions").toArray();
+            QImage image(":/freedoom/"+asset.value("file").toString());
+            QVERIFY2(!image.isNull(),qPrintable(asset.value("file").toString()));
+            QCOMPARE(image.size(),QSize(dimensions[0].toInt(),dimensions[1].toInt()));
+            QVERIFY(image.hasAlphaChannel());
+        }
     }
     void configurationRoundTrip() {
         const QByteArray input = "-- legacy\nengine = idtech_1\ngame = doom2\nseed = 18446744073709551615\nfloat_size = 42\nfuture_key = custom value\n@custom = 1\n  detail = rare\n  future_option = retained\n";

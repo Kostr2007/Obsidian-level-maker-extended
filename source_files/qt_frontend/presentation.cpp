@@ -7,6 +7,7 @@
 static QVariantMap catalog() {
     Q_INIT_RESOURCE(studio);
     Q_INIT_RESOURCE(gameplay);
+    Q_INIT_RESOURCE(freedoom);
     QFile file(":/studio/studio-catalog.json");
     if (!file.open(QIODevice::ReadOnly)) qFatal("Studio catalog is missing");
     const auto doc = QJsonDocument::fromJson(file.readAll());
