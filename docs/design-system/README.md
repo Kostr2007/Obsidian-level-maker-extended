@@ -12,7 +12,15 @@ This is a **research-first and evidence-first** system for Obsidian Extended's Q
 
 ## Deliverables / state
 **Prepared:** Codex roles, task contracts, research roadmap, source-backed external reference catalog, cross-linked local Obsidian screenshot baselines, review template and setup validator.
-**Not yet done:** exhaustive study of *every* Apple HIG article, redistribution-approved local macOS screenshots, actual new design audits or functional test results from the agent team. These must be performed in a Codex session with repository execution and screen/image access.
+**Baseline audited (2026-11-06):** five concrete official macOS app images inspected,
+17 source entries cataloged, and independent functional, visual and keyboard reviews
+completed at `81cbc4f`. See the [prioritized plan and reports](reports/2026-11-06-plan.md).
+The inspected design was accepted; the confirmed game-dialog screenshot evidence gap
+is assigned as a small verification fix before any styling work.
+
+**Not yet done:** exhaustive study of *every* Apple HIG article, redistribution-approved
+local macOS screenshots, native platform/screen-reader coverage, and effective runtime
+reasoning introspection. These are not implied by the baseline acceptance.
 
 No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the repo. External pages serve as visual sources; approved assets can be added later with license/source metadata.
 
