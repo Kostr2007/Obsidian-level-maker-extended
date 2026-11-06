@@ -67,8 +67,11 @@ ColumnLayout {
                     mipmap: true
                     cache: true
                 }
-                ToolTip.visible: hovered
-                ToolTip.text: "Открыть сравнение крупнее"
+                PreviewToolTip {
+                    tokens: comparison.tokens
+                    visible: thumbnail.hovered
+                    text: "Открыть сравнение крупнее"
+                }
             }
         }
     }

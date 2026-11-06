@@ -36,7 +36,9 @@ Canvas {
             c.arc(x, y, r, 0, 2 * Math.PI);
             c.stroke();
         }
-        if (name === "info") {
+        if (name === "check") {
+            path([[5, 12], [10, 17], [20, 6]], false);
+        } else if (name === "info") {
             circle(12, 12, 8);
             path([[12, 11], [12, 17]], false);
             circle(12, 7.5, .4);

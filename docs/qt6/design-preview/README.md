@@ -4,6 +4,8 @@
 [Обновлённая типографика Inter и сравнение до/после](../typography/README.md). Дизайн, ссылки HIG,
 границы образца и инструкции: [MACOS_PREVIEW.md](../MACOS_PREVIEW.md).
 
+[Текущая итерация: полосатые строки, новый план, меню и анимации диалогов](../popup-results/README.md).
+
 ![Светлая тема: ресурсы и оригинальные предметы Freedoom](light.png)
 
 ![Тёмная тема](dark.png)
@@ -46,7 +48,7 @@ Freedoom скрыты. Выбор карточки не меняет значе�
 Из распакованной сборки: `./start.sh --design-preview`; из checkout:
 `./obsidian --design-preview`. Обычный запуск открывает Studio.
 
-QtTest: 13 passed, 0 failed на Qt 6.8.2 и Ubuntu 24.04 / Qt 6.4.2.
+QtTest: 14 passed, 0 failed на Qt 6.8.2 и Ubuntu 24.04 / Qt 6.4.2.
 Проверены выбор карточек без изменения CONFIG, быстрые переходы, lifecycle
 анимаций, режим уменьшенного движения, видимость фокуса в списке и PNG из qrc.
 Скрипт `scripts/dev/check-design-preview.py --motion` воспроизводит снимки и видео.

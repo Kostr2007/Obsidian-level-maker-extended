@@ -6,6 +6,7 @@ Button {
     id: control
     required property var tokens
     property string symbol: ""
+    property bool tooltipEnabled: true
     property bool selected: false
     property bool primary: false
     property bool quiet: false
@@ -47,6 +48,9 @@ Button {
             }
         }
     }
-    ToolTip.visible: hovered && !!symbol
-    ToolTip.text: Accessible.name
+    PreviewToolTip {
+        tokens: control.tokens
+        visible: control.hovered && !!control.symbol && control.tooltipEnabled
+        text: control.Accessible.name
+    }
 }

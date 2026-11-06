@@ -41,6 +41,13 @@ ComboBox {
         y: (control.height - height) / 2
         width: 9
         height: 6
+        rotation: control.popup.visible ? 180 : 0
+        Behavior on rotation {
+            NumberAnimation {
+                duration: control.tokens && control.tokens.reduceMotion ? 0 : 120
+                easing.type: Easing.OutCubic
+            }
+        }
         opacity: control.enabled ? 1 : .5
         onInkChanged: requestPaint()
         onPaint: {
@@ -92,6 +99,43 @@ ComboBox {
     }
     popup: Popup {
         objectName: control.objectName + "_popup"
+        enter: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: control.tokens ? control.tokens.popupIn : 170
+                    easing.type: Easing.OutCubic
+                }
+                NumberAnimation {
+                    property: "scale"
+                    from: 0.97
+                    to: 1
+                    duration: control.tokens ? control.tokens.popupIn : 170
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
+        exit: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 1
+                    to: 0
+                    duration: control.tokens ? control.tokens.popupOut : 110
+                    easing.type: Easing.InCubic
+                }
+                NumberAnimation {
+                    property: "scale"
+                    from: 1
+                    to: 0.985
+                    duration: control.tokens ? control.tokens.popupOut : 110
+                    easing.type: Easing.InCubic
+                }
+            }
+        }
+
         y: control.height + 4
         padding: 4
         margins: 12
@@ -113,6 +157,9 @@ ComboBox {
             border.color: control.tokens ? control.tokens.line : control.palette.mid
         }
     }
-    ToolTip.visible: hovered && contentItem.truncated
-    ToolTip.text: displayText
+    PreviewToolTip {
+        tokens: control.tokens
+        visible: control.hovered && control.contentItem.truncated && !control.popup.visible
+        text: control.displayText
+    }
 }

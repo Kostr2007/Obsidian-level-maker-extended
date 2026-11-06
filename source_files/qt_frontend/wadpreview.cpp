@@ -6,6 +6,11 @@
 #include <QRegularExpression>
 #include <QtEndian>
 #include <cmath>
+#include <QWheelEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QCursor>
+#include <algorithm>
 
 namespace {
 quint32 u32(const char *p) { return qFromLittleEndian<quint32>(reinterpret_cast<const uchar *>(p)); }
@@ -14,7 +19,7 @@ struct Lump { quint32 offset, size; QByteArray name; };
 }
 MapGeometry MapGeometry::read(const QString &filename) {
     MapGeometry result;
-    auto fail = [&result](const QString &error) { result.lines.clear(); result.error = error; return result; };
+    auto fail = [&result](const QString &error) { result.lines.clear(); result.twoSided.clear(); result.error = error; return result; };
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) return fail(file.errorString());
     const auto header = file.read(12);
@@ -74,6 +79,7 @@ MapGeometry MapGeometry::read(const QString &filename) {
                 a < 0 || b < 0 || a >= vertices.size() || b >= vertices.size())
                 return fail("Некорректная линия UDMF.");
             result.lines.push_back(QLineF(vertices[int(a)], vertices[int(b)]));
+            result.twoSided.push_back(QRegularExpression("\\btwosided\\s*=\\s*true\\s*;").match(body).hasMatch());
         }
     } else {
         const auto v = read("VERTEXES", 4 * 1000000), l = read("LINEDEFS", 32 * 1000000);
@@ -86,36 +92,119 @@ MapGeometry MapGeometry::read(const QString &filename) {
             const int a = u16(l.constData() + i), b = u16(l.constData() + i + 2);
             if (a >= vertices.size() || b >= vertices.size()) return fail("Линия ссылается на отсутствующую вершину.");
             result.lines.push_back(QLineF(vertices[a], vertices[b]));
+            result.twoSided.push_back((u16(l.constData() + i + 4) & 4) != 0);
         }
     }
     if (result.lines.isEmpty()) return fail("В карте нет линий для предпросмотра.");
+    result.calculateBounds();
+    if (!std::isfinite(result.bounds.width()) || !std::isfinite(result.bounds.height()) ||
+        !std::isfinite(result.bounds.center().x()) || !std::isfinite(result.bounds.center().y()))
+        return fail("Координаты карты выходят за диапазон предпросмотра.");
     return result;
+}
+void MapGeometry::calculateBounds() {
+    bounds={};mainBounds={};primaryLines.clear();
+    if (lines.isEmpty()) return;
+    // Fit the densest connected component by default. All geometry remains available.
+    QMap<QPair<qreal,qreal>, int> ids;
+    QVector<int> parents;
+    auto id = [&](QPointF p) {
+        const auto key = qMakePair(p.x(),p.y());
+        if (!ids.contains(key)) { ids[key]=parents.size(); parents.push_back(parents.size()); }
+        return ids[key];
+    };
+    auto root = [&](int n) { while (parents[n]!=n) { parents[n]=parents[parents[n]];n=parents[n]; } return n; };
+    QVector<QPair<int,int>> endpoints;
+    for (const auto &l:lines) { int a=id(l.p1()),b=id(l.p2()); endpoints.push_back({a,b}); a=root(a);b=root(b);if(a!=b)parents[b]=a; }
+    QMap<int,int> counts;
+    QMap<int,QRectF> boxes;
+    for(int i=0;i<lines.size();++i) {
+        const auto &l=lines[i];const int group=root(endpoints[i].first);
+        const QRectF box(l.p1(),l.p2());
+        const QRectF normalized=box.normalized().adjusted(-.01,-.01,.01,.01);
+        boxes[group]=counts[group] ? boxes[group].united(normalized) : normalized;
+        bounds=i ? bounds.united(normalized) : normalized;
+        ++counts[group];
+    }
+    int largest=counts.firstKey();
+    for(auto i=counts.begin();i!=counts.end();++i)if(i.value()>counts[largest])largest=i.key();
+    mainBounds=boxes[largest];
+    for(const auto &pair:endpoints)primaryLines.push_back(root(pair.first)==largest);
+}
+WadPreview::WadPreview(QQuickItem *parent):QQuickPaintedItem(parent) {
+    setAntialiasing(true);
+    setActiveFocusOnTab(true);
+    setAcceptedMouseButtons(Qt::LeftButton);
+    setCursor(QCursor(Qt::OpenHandCursor));
+    connect(this,&WadPreview::appearanceChanged,this,[this]{update();});
 }
 void WadPreview::setFile(const QString &file) {
     if (m_file == file) return;
     m_file = file; m_map = file.isEmpty() ? MapGeometry() : MapGeometry::read(file);
-    emit fileChanged(); update();
+    resetView();emit fileChanged(); update();
+}
+QRectF WadPreview::focusBounds() const { return m_showAll ? m_map.bounds : m_map.mainBounds; }
+qreal WadPreview::mapScale() const {
+    auto box=focusBounds();
+    return qMin(qMax(1.,width()-72)/qMax(1.,box.width()),qMax(1.,height()-72)/qMax(1.,box.height()))*m_zoom;
+}
+void WadPreview::setZoom(qreal value) {
+    value=qBound(.25,value,12.);
+    if(qFuzzyCompare(value,m_zoom))return;
+    m_zoom=value;emit zoomChanged();update();
+}
+void WadPreview::setShowAll(bool all) { if(all==m_showAll)return;m_showAll=all;resetView();emit showAllChanged(); }
+void WadPreview::resetView() { m_pan={};m_zoom=1;emit zoomChanged();update(); }
+void WadPreview::wheelEvent(QWheelEvent *event) {
+    const QPointF delta=event->position()-QPointF(width()/2,height()/2);
+    const qreal before=mapScale();
+    const QPointF world=m_pan+QPointF(delta.x()/before,-delta.y()/before);
+    setZoom(m_zoom*std::pow(1.0015,event->angleDelta().y()));
+    const qreal after=mapScale();
+    m_pan=world-QPointF(delta.x()/after,-delta.y()/after);
+    update();event->accept();
+}
+void WadPreview::mousePressEvent(QMouseEvent *event) { forceActiveFocus();m_lastMouse=event->position();setCursor(QCursor(Qt::ClosedHandCursor));event->accept(); }
+void WadPreview::mouseMoveEvent(QMouseEvent *event) { auto delta=event->position()-m_lastMouse;m_lastMouse=event->position();m_pan+=QPointF(-delta.x()/mapScale(),delta.y()/mapScale());update();event->accept(); }
+void WadPreview::mouseReleaseEvent(QMouseEvent *event) {setCursor(QCursor(Qt::OpenHandCursor));event->accept();}
+void WadPreview::keyPressEvent(QKeyEvent *event) {
+    switch(event->key()) {
+    case Qt::Key_Plus:case Qt::Key_Equal:setZoom(m_zoom*1.2);break;
+    case Qt::Key_Minus:setZoom(m_zoom/1.2);break;
+    case Qt::Key_0:case Qt::Key_Home:resetView();break;
+    case Qt::Key_Left:m_pan.rx()-=32/mapScale();update();break;
+    case Qt::Key_Right:m_pan.rx()+=32/mapScale();update();break;
+    case Qt::Key_Up:m_pan.ry()+=32/mapScale();update();break;
+    case Qt::Key_Down:m_pan.ry()-=32/mapScale();update();break;
+    default:QQuickPaintedItem::keyPressEvent(event);return;
+    }
+    event->accept();
 }
 void WadPreview::paint(QPainter *p) {
-    p->fillRect(boundingRect(), QColor("#14191e"));
-    p->setPen(QColor("#283239"));
-    for (int x = 16; x < width(); x += 24)
-        for (int y = 16; y < height(); y += 24) p->drawPoint(x, y);
+    p->fillRect(boundingRect(),m_canvas);
+    p->setFont(m_font);
     if (m_map.lines.isEmpty()) {
-        p->setPen(QColor("#b9c8d0"));
+        p->setPen(m_walls);
         p->drawText(boundingRect().adjusted(24,24,-24,-24), Qt::AlignCenter | Qt::TextWordWrap,
-                    m_map.error.isEmpty() ? "Здесь появится настоящая карта\nпосле завершения генерации" : m_map.error);
+                    m_map.error.isEmpty() ? "Здесь появится карта после генерации" : m_map.error);
         return;
     }
-    qreal minx = m_map.lines[0].x1(), maxx = minx, miny = m_map.lines[0].y1(), maxy = miny;
-    for (const auto &line : m_map.lines) for (const auto &point : {line.p1(), line.p2()}) {
-        minx = qMin(minx, point.x()); maxx = qMax(maxx, point.x());
-        miny = qMin(miny, point.y()); maxy = qMax(maxy, point.y());
+    const auto center=focusBounds().center()+m_pan;
+    const qreal scale=mapScale();
+    qreal step=128*scale;
+    while(step<32)step*=2;
+    while(step>96)step/=2;
+    p->setPen(QPen(m_grid,1));
+    const auto origin=QPointF(width()/2-center.x()*scale,height()/2+center.y()*scale);
+    for(qreal x=std::fmod(origin.x(),step);x<width();x+=step)p->drawLine(QPointF(x,0),QPointF(x,height()));
+    for(qreal y=std::fmod(origin.y(),step);y<height();y+=step)p->drawLine(QPointF(0,y),QPointF(width(),y));
+    p->save();p->setClipRect(boundingRect());p->translate(width()/2,height()/2);p->scale(scale,-scale);p->translate(-center);
+    QVector<QLineF> walls,details;
+    for(int i=0;i<m_map.lines.size();++i) {
+        if(!m_showAll && !m_map.primaryLines.value(i,true))continue;
+        (i<m_map.twoSided.size() && m_map.twoSided[i] ? details : walls).push_back(m_map.lines[i]);
     }
-    const qreal scale = qMin(qMax(1., width()-48) / qMax(1., maxx-minx), qMax(1., height()-48) / qMax(1., maxy-miny));
-    p->save(); p->translate(width()/2, height()/2); p->scale(scale, -scale);
-    p->translate(-(minx+maxx)/2, -(miny+maxy)/2);
-    QPen pen(QColor("#a5dfd5")); pen.setCosmetic(true); pen.setWidthF(1.1); p->setPen(pen);
-    p->drawLines(m_map.lines); p->restore();
-    p->setPen(QColor("#d6e4eb")); p->drawText(QPointF(16,24), m_map.name);
+    QPen inner(m_details);inner.setCosmetic(true);inner.setWidthF(.8);p->setPen(inner);p->drawLines(details);
+    QPen boundary(m_walls);boundary.setCosmetic(true);boundary.setWidthF(1.4);boundary.setCapStyle(Qt::RoundCap);p->setPen(boundary);p->drawLines(walls);
+    p->restore();
 }

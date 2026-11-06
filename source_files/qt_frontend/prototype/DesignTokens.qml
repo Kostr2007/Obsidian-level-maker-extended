@@ -68,6 +68,10 @@ QtObject {
     readonly property color toolbar: dark ? "#29292d" : "#f7f7f8"
     readonly property color thumbnail: dark ? "#2c2c31" : "#f5f5f7"
     readonly property color thumbnailSelected: dark ? "#404047" : "#e7e7eb"
+    readonly property color alternateRow: dark ? "#333338" : "#f2f2f5"
+    readonly property color rowBase: dark ? "#2a2a2e" : "#ffffff"
+    readonly property int popupIn: reduceMotion ? 0 : 170
+    readonly property int popupOut: reduceMotion ? 0 : 110
     readonly property int navOut: reduceMotion ? 0 : 90
     readonly property int navIn: reduceMotion ? 0 : 220
     readonly property int panelDuration: reduceMotion ? 0 : 240

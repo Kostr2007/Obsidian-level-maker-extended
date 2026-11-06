@@ -47,7 +47,7 @@ ApplicationWindow {
     property bool advanced: false
     property bool sidebarShown: true
     property bool inspectorShown: true
-    readonly property bool inlineInspector: width >= 1200 && inspectorShown
+    readonly property bool inlineInspector: width >= 1200 && inspectorShown && section !== "results"
     property var inspected: null
     property string inspectedModule: ""
     property bool quitting: false
@@ -272,6 +272,7 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Ctrl+I"
+        enabled: window.section !== "results"
         onActivated: {
             if (window.width < 1200)
                 inspectorDialog.open();
@@ -296,6 +297,10 @@ ApplicationWindow {
         onActivated: window.go("results")
     }
     Shortcut {
+        sequence: "Ctrl+Shift+P"
+        onActivated: commands.popup(commandsButton, 0, commandsButton.height + 6)
+    }
+    Shortcut {
         sequence: StandardKey.Quit
         onActivated: window.close()
     }
@@ -315,50 +320,66 @@ ApplicationWindow {
                 Qt.quit();
         }
     }
-    Menu {
+    PreviewMenu {
         id: commands
-        padding: 6
-        font: design.bodyFont
-        background: Rectangle {
-            radius: 10
-            color: design.surface
-            border.color: design.line
-        }
-        MenuItem {
+        tokens: design
+        PreviewMenuItem {
+            tokens: design
             text: "Создать карту  ·  F2"
             enabled: createButton.enabled
             onTriggered: window.generate()
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Игра и формат…  ·  Ctrl+G"
             enabled: !backend.loading && !backend.busy
             onTriggered: gameDialog.open()
         }
-        MenuSeparator {}
-        MenuItem {
+        MenuSeparator {
+            padding: 6
+            contentItem: Rectangle {
+                implicitWidth: 200
+                implicitHeight: 1
+                color: design.line
+            }
+        }
+        PreviewMenuItem {
+            tokens: design
             text: "Импорт пресета…"
             enabled: !backend.loading && !backend.busy
             onTriggered: loadConfig.open()
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Сохранить пресет…"
             enabled: !backend.loading && !backend.busy
             onTriggered: saveConfig.open()
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Папка результатов…"
             enabled: !backend.busy
             onTriggered: outputDialog.open()
         }
-        MenuSeparator {}
-        MenuItem {
+        MenuSeparator {
+            padding: 6
+            contentItem: Rectangle {
+                implicitWidth: 200
+                implicitHeight: 1
+                color: design.line
+            }
+        }
+        PreviewMenuItem {
+            tokens: design
             text: "Боковая панель  ·  Ctrl+Shift+B"
             checkable: true
             checked: window.sidebarShown
             onTriggered: window.sidebarShown = checked
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Инспектор  ·  Ctrl+I"
+            enabled: window.section !== "results"
             onTriggered: {
                 if (window.width < 1200)
                     inspectorDialog.open();
@@ -366,26 +387,37 @@ ApplicationWindow {
                     window.inspectorShown = !window.inspectorShown;
             }
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Тёмное оформление"
             checkable: true
             checked: backend.dark
             onTriggered: backend.dark = checked
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Увеличенный текст"
             checkable: true
             checked: design.textScale > 1
             onTriggered: design.textScale = checked ? 1.25 : 1
         }
-        MenuItem {
+        PreviewMenuItem {
+            tokens: design
             text: "Меньше анимации  ·  Ctrl+Shift+M"
             checkable: true
             checked: design.reduceMotion
             onTriggered: design.reduceMotion = checked
         }
-        MenuSeparator {}
-        MenuItem {
+        MenuSeparator {
+            padding: 6
+            contentItem: Rectangle {
+                implicitWidth: 200
+                implicitHeight: 1
+                color: design.line
+            }
+        }
+        PreviewMenuItem {
+            tokens: design
             text: "Выйти  ·  Ctrl+Q"
             onTriggered: window.close()
         }
@@ -611,6 +643,7 @@ ApplicationWindow {
                 PreviewButton {
                     tokens: design
                     symbol: "inspector"
+                    visible: window.section !== "results"
                     quiet: true
                     Accessible.name: "Показать или скрыть инспектор"
                     onClicked: {
@@ -621,11 +654,14 @@ ApplicationWindow {
                     }
                 }
                 PreviewButton {
+                    id: commandsButton
                     tokens: design
+                    objectName: "commandsButton"
                     symbol: "project"
                     quiet: true
+                    tooltipEnabled: !commands.visible
                     Accessible.name: "Меню команд"
-                    onClicked: commands.popup()
+                    onClicked: commands.popup(commandsButton, 0, commandsButton.height + 6)
                 }
                 Rectangle {
                     implicitWidth: 1
@@ -920,43 +956,53 @@ ApplicationWindow {
                             flick.contentY = Math.max(0, Math.min(Math.max(0, flick.contentHeight - flick.height), target));
                         }
                     }
-                    Repeater {
-                        model: window.section === "results" ? [] : window.modules()
-                        ColumnLayout {
-                            id: group
-                            required property var modelData
-                            Layout.fillWidth: true
-                            Layout.leftMargin: 28
-                            Layout.rightMargin: 28
-                            spacing: 10
-                            Label {
-                                objectName: "groupTitle_" + group.modelData.id
-                                text: group.modelData.title
-                                font: design.sectionFont
-                                color: design.text
-                                leftPadding: 2
-                            }
-                            Rectangle {
-                                Layout.fillWidth: true
-                                implicitHeight: groupRows.implicitHeight + 8
-                                color: design.surface
-                                radius: 10
-                                border.color: design.line
-                                ColumnLayout {
-                                    id: groupRows
-                                    width: parent.width
-                                    spacing: 0
-                                    y: 4
-                                    Repeater {
-                                        model: group.modelData.options
-                                        PreviewOptionRow {
-                                            required property var modelData
-                                            tokens: design
-                                            option: modelData
-                                            moduleId: group.modelData.id
-                                            enabled: !backend.busy && !backend.loading
-                                            onInspect: function (openPanel) {
-                                                window.inspect(modelData, group.modelData.id, openPanel);
+                    Column {
+                        id: formGroups
+                        // Keep recreated search delegates outside pageContent's layout cache (Qt 6.4).
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        Layout.leftMargin: 28
+                        Layout.rightMargin: 28
+                        spacing: 24
+                        Repeater {
+                            model: window.section === "results" ? [] : window.modules()
+                            ColumnLayout {
+                                id: group
+                                required property var modelData
+                                width: formGroups.width
+                                spacing: 10
+                                Label {
+                                    objectName: "groupTitle_" + group.modelData.id
+                                    text: group.modelData.title
+                                    font: design.sectionFont
+                                    color: design.text
+                                    leftPadding: 2
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    implicitHeight: groupRows.implicitHeight + 8
+                                    color: design.surface
+                                    radius: 10
+                                    border.color: design.line
+                                    Column {
+                                        id: groupRows
+                                        width: parent.width
+                                        spacing: 0
+                                        y: 4
+                                        Repeater {
+                                            model: group.modelData.options
+                                            PreviewOptionRow {
+                                                width: groupRows.width
+                                                required property var modelData
+                                                required property int index
+                                                stripeIndex: index
+                                                tokens: design
+                                                option: modelData
+                                                moduleId: group.modelData.id
+                                                enabled: !backend.busy && !backend.loading
+                                                onInspect: function (openPanel) {
+                                                    window.inspect(modelData, group.modelData.id, openPanel);
+                                                }
                                             }
                                         }
                                     }
@@ -1037,17 +1083,103 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Layout.leftMargin: 28
                         Layout.rightMargin: 28
-                        spacing: 16
+                        spacing: 14
                         Rectangle {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 340
+                            implicitHeight: mapCard.implicitHeight + 24
                             color: design.surface
-                            radius: 10
+                            radius: 12
                             border.color: design.line
-                            WadView {
+                            ColumnLayout {
+                                id: mapCard
                                 anchors.fill: parent
-                                anchors.margins: 8
-                                file: backend.previewFile
+                                anchors.margins: 12
+                                spacing: 12
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 10
+                                    Label {
+                                        text: resultMap.mapName || "План уровня"
+                                        font: design.sectionFont
+                                        color: design.text
+                                        Layout.fillWidth: true
+                                    }
+                                    PreviewButton {
+                                        tokens: design
+                                        text: "−"
+                                        Accessible.name: "Уменьшить карту"
+                                        enabled: resultMap.lineCount > 0
+                                        onClicked: resultMap.zoom /= 1.25
+                                    }
+                                    Label {
+                                        text: Math.round(resultMap.zoom * 100) + "%"
+                                        font: design.captionFont
+                                        color: design.secondary
+                                        Layout.preferredWidth: 48
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                    PreviewButton {
+                                        tokens: design
+                                        text: "+"
+                                        Accessible.name: "Увеличить карту"
+                                        enabled: resultMap.lineCount > 0
+                                        onClicked: resultMap.zoom *= 1.25
+                                    }
+                                    PreviewButton {
+                                        tokens: design
+                                        text: "Вписать"
+                                        enabled: resultMap.lineCount > 0
+                                        onClicked: resultMap.resetView()
+                                    }
+                                }
+                                Item {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: Math.max(260, Math.min(520, window.height * .54))
+                                    clip: true
+                                    WadView {
+                                        id: resultMap
+                                        objectName: "resultMap"
+                                        anchors.fill: parent
+                                        file: backend.previewFile
+                                        showAll: false
+                                        canvasColor: design.canvas
+                                        wallColor: design.dark ? "#a0c6f5" : "#386b9f"
+                                        detailColor: design.dark ? "#65738a" : "#a0aab8"
+                                        gridColor: design.dark ? "#29292f" : "#eff1f5"
+                                        viewFont: design.bodyFont
+                                        Accessible.name: "План созданного уровня"
+                                        Accessible.description: "Колесо — масштаб, перетаскивание — перемещение, Home — вписать, плюс и минус — масштаб"
+                                    }
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        color: "transparent"
+                                        border.color: resultMap.activeFocus ? design.accent : "transparent"
+                                        radius: 5
+                                    }
+                                }
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 10
+                                    PreviewButton {
+                                        tokens: design
+                                        text: resultMap.showAll ? "Вся геометрия" : "Основная область"
+                                        enabled: resultMap.lineCount > 0
+                                        Accessible.description: "Переключить вписывание основной связной области и всей геометрии, включая служебные участки"
+                                        onClicked: resultMap.showAll = !resultMap.showAll
+                                    }
+                                    Label {
+                                        text: "Колесо — масштаб · Перетаскивание — перемещение"
+                                        font: design.captionFont
+                                        color: design.secondary
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        text: resultMap.lineCount ? (resultMap.showAll ? resultMap.lineCount : resultMap.mainLineCount) + " линий" : ""
+                                        font: design.captionFont
+                                        color: design.secondary
+                                    }
+                                }
                             }
                         }
                         Label {
@@ -1055,20 +1187,28 @@ ApplicationWindow {
                             Layout.fillWidth: true
                             wrapMode: Text.WrapAnywhere
                             color: design.secondary
-                            font: design.bodyFont
+                            font: design.captionFont
                         }
-                        PreviewButton {
-                            tokens: design
-                            text: "Открыть папку результата"
-                            enabled: !!backend.resultFolder
-                            onClicked: backend.openResult()
-                        }
-                        Label {
-                            text: "Журнал генерации"
-                            font.weight: Font.DemiBold
-                            color: design.text
+                        RowLayout {
+                            Layout.fillWidth: true
+                            PreviewButton {
+                                tokens: design
+                                text: "Открыть папку результата"
+                                enabled: !!backend.resultFolder
+                                onClicked: backend.openResult()
+                            }
+                            Item {
+                                Layout.fillWidth: true
+                            }
+                            PreviewButton {
+                                id: logToggle
+                                tokens: design
+                                text: checked ? "Скрыть журнал" : "Журнал генерации"
+                                checkable: true
+                            }
                         }
                         TextArea {
+                            visible: logToggle.checked
                             Layout.fillWidth: true
                             Layout.preferredHeight: 220
                             text: backend.log
@@ -1076,6 +1216,12 @@ ApplicationWindow {
                             selectByMouse: true
                             wrapMode: TextEdit.Wrap
                             font: design.monoFont
+                            color: design.text
+                            background: Rectangle {
+                                color: design.surface
+                                radius: 8
+                                border.color: design.line
+                            }
                         }
                     }
                     Label {
@@ -1161,7 +1307,9 @@ ApplicationWindow {
                     font: design.captionFont
                     color: design.secondary
                 }
-                ToolButton {
+                PreviewButton {
+                    tokens: design
+                    quiet: true
                     text: "Папка…"
                     enabled: !backend.busy
                     onClicked: outputDialog.open()

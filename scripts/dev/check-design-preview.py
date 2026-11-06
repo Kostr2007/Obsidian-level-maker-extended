@@ -134,6 +134,34 @@ def typography_captures(window, state, mode, env, processes=()):
     time.sleep(.6)
 
 
+def popup_captures(window, state, mode, env, processes, record=False):
+    keys('ctrl+shift+p', env=env)
+    time.sleep(.35)
+    capture(window, state / 'commands-menu.png', env, processes=processes)
+    keys('Escape', env=env)
+    time.sleep(.25)
+    if mode != 'hidpi':
+        width = int(dict(line.split('=',1) for line in command('xdotool','getwindowgeometry','--shell',window,env=env).splitlines())['WIDTH'])
+        command('xdotool','mousemove','--window',window,str(width-184),'31',env=env)
+        time.sleep(.8)
+        # Do not move the pointer away: this capture intentionally includes the styled tooltip.
+        command('import','-window',window,str(state/'tooltip.png'),env=env,timeout=15,processes=processes)
+        command('xdotool','mousemove','1760','1180',env=env)
+        time.sleep(.2)
+    if record and mode == 'light':
+        motion_clip(window, state/'commands-motion.mp4',lambda:keys('ctrl+shift+p',env=env),env)
+        keys('Escape',env=env);time.sleep(.3)
+        motion_clip(window, state/'dialog-motion.mp4',lambda:keys('ctrl+g',env=env),env)
+        time.sleep(.3)
+        motion_clip(window, state/'dropdown-motion.mp4',lambda:command('xdotool','mousemove','--window',window,'490','420','click','1',env=env),env)
+        keys('Escape',env=env);time.sleep(.25)
+        keys('Escape',env=env);time.sleep(.3)
+        keys('ctrl+shift+m',env=env)
+        motion_clip(window,state/'dialog-reduced-motion.mp4',lambda:keys('ctrl+g',env=env),env)
+        keys('Escape',env=env);time.sleep(.2)
+        keys('ctrl+shift+m',env=env)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--motion', action='store_true', help='Save real transition MP4/GIF clips (requires ffmpeg).')
@@ -178,6 +206,7 @@ def main():
                 keys('ctrl+1', env=env)
                 time.sleep(.3)
                 typography_captures(window, state, mode, env, processes=processes)
+                popup_captures(window, state, mode, env, processes, record=args.motion)
                 if args.motion and mode == 'light':
                     keys('alt+1', env=env)
                     time.sleep(.6)
@@ -194,6 +223,16 @@ def main():
                 keys('alt+4', env=env)
                 time.sleep(.6)
                 capture(window, state / 'result.png', env, processes=processes)
+                if mode != 'hidpi':
+                    command('xdotool','mousemove','--window',window,'700','450','click','4','click','4',env=env)
+                    command('xdotool','mousedown','1','mousemove','--window',window,'780','480','mouseup','1',env=env)
+                    time.sleep(.2)
+                    capture(window,state/'result-zoom.png',env,processes=processes)
+                    keys('Home',env=env)
+                    command('xdotool','mousemove','--window',window,'325','738','click','1',env=env)
+                    time.sleep(.2)
+                    capture(window,state/'result-all.png',env,processes=processes)
+                    command('xdotool','mousemove','--window',window,'325','738','click','1',env=env)
                 keys('alt+2', 'ctrl+f', env=env)
                 command('xdotool', 'type', 'float_mons', env=env)
                 time.sleep(.6)

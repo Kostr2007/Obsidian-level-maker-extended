@@ -51,7 +51,7 @@ set_target_properties(obsidian-qt PROPERTIES OUTPUT_NAME obsidian)
 target_compile_definitions(obsidian-qt PRIVATE OBSIDIAN_EXTENDED_VERSION="${PROJECT_VERSION}")
 target_link_libraries(obsidian-qt PRIVATE obsidian-qt-core Qt6::QuickControls2)
 set(STUDIO_QML Main.qml OptionEditor.qml ActionButton.qml Surface.qml GameSetup.qml StudioInspector.qml GameplayComparison.qml AssetPreview.qml ResourceAssets.js
-  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml prototype/ResourceGallery.qml prototype/PreviewComboBox.qml prototype/PreviewTextField.qml prototype/PreviewDialog.qml)
+  prototype/Preview.qml prototype/DesignTokens.qml prototype/PreviewButton.qml prototype/PreviewIcon.qml prototype/PreviewOptionRow.qml prototype/ResourceGallery.qml prototype/PreviewComboBox.qml prototype/PreviewTextField.qml prototype/PreviewDialog.qml prototype/PreviewToolTip.qml prototype/PreviewMenu.qml prototype/PreviewMenuItem.qml)
 qt_add_resources(obsidian-qt "interface" PREFIX "/ui"
   BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${STUDIO_QML})
 add_dependencies(obsidian-qt obsidian)

@@ -3,11 +3,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-ColumnLayout {
+Item {
     id: row
     required property var tokens
     required property var option
     required property string moduleId
+    property int stripeIndex: 0
     property bool selected: false
     property string value: {
         backend.revision;
@@ -18,7 +19,15 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.minimumWidth: 0
     objectName: "optionRow_" + moduleId + "_" + option.id
-    spacing: 0
+    implicitHeight: rowBody.implicitHeight + 16
+    Rectangle {
+        anchors.fill: parent
+        anchors.leftMargin: 4
+        anchors.rightMargin: 4
+        radius: 5
+        z: -1
+        color: row.stripeIndex % 2 ? row.tokens.alternateRow : row.tokens.rowBase
+    }
     function choiceIndex(items, value) {
         for (let i = 0; i < items.length; i++)
             if (String(items[i].id) === value)
@@ -26,12 +35,10 @@ ColumnLayout {
         return -1;
     }
     RowLayout {
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.leftMargin: 16
-        Layout.rightMargin: 16
-        Layout.topMargin: 8
-        Layout.bottomMargin: 8
+        id: rowBody
+        x: 16
+        y: 8
+        width: Math.max(0, row.width - 32)
         spacing: 16
         RowLayout {
             Layout.fillWidth: true
@@ -46,8 +53,11 @@ ColumnLayout {
                 wrapMode: Text.WordWrap
                 font: row.tokens.bodyFont
                 color: row.tokens.text
-                ToolTip.visible: titleHover.hovered
-                ToolTip.text: row.option.summary || row.option.tooltip || row.option.title
+                PreviewToolTip {
+                    tokens: row.tokens
+                    visible: titleHover.hovered
+                    text: row.option.summary || row.option.tooltip || row.option.title
+                }
                 HoverHandler {
                     id: titleHover
                 }
@@ -72,8 +82,11 @@ ColumnLayout {
                     border.color: row.tokens.accent
                     border.width: infoButton.visualFocus ? 2 : 0
                 }
-                ToolTip.visible: hovered
-                ToolTip.text: "Объяснение параметра"
+                PreviewToolTip {
+                    tokens: row.tokens
+                    visible: infoButton.hovered
+                    text: "Объяснение параметра"
+                }
             }
             Item {
                 Layout.fillWidth: true
@@ -115,6 +128,11 @@ ColumnLayout {
                     y: (toggle.height - height) / 2
                     radius: 10
                     color: toggle.checked ? row.tokens.accent : row.tokens.dark ? "#66666e" : "#bdbdc5"
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: row.tokens.reduceMotion ? 0 : 120
+                        }
+                    }
                     border.width: toggle.visualFocus ? 2 : 1
                     border.color: toggle.checked || toggle.visualFocus ? row.tokens.accent : row.tokens.secondary
                     Rectangle {
@@ -122,6 +140,12 @@ ColumnLayout {
                         height: 16
                         radius: 8
                         x: toggle.checked ? 16 : 2
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: row.tokens.reduceMotion ? 0 : 120
+                                easing.type: Easing.OutCubic
+                            }
+                        }
                         y: 2
                         color: "#ffffff"
                     }
@@ -226,14 +250,5 @@ ColumnLayout {
                 }
             }
         }
-    }
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.leftMargin: 16
-        Layout.rightMargin: 16
-        implicitHeight: 1
-        color: row.tokens.line
-        opacity: .65
     }
 }

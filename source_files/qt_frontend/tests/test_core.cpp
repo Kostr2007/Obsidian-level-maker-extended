@@ -237,9 +237,21 @@ private slots:
             if(script.hasError())qWarning()<<script.error();
             return qobject_cast<QQuickItem*>(result.value<QObject*>());
         };
-        QTest::keyClick(window,Qt::Key_G,Qt::ControlModifier);
         auto *gameDialog=window->findChild<QObject*>("gameDialog");QVERIFY(gameDialog);
-        QTRY_VERIFY(gameDialog->property("visible").toBool());
+        auto *menu=window->findChild<QObject*>("commandsMenu");QVERIFY(menu);
+        auto *menuButton=visualItem(window->contentItem(),"commandsButton");QVERIFY(menuButton);
+        QSignalSpy menuFade(menu,SIGNAL(opacityChanged()));QVERIFY(menuFade.isValid());
+        QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,menuButton->mapToScene(menuButton->boundingRect().center()).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        QVERIFY(menu->property("width").toReal()>=300);
+        QVERIFY(menuFade.count()>=2); // Actual intermediate opacity changes, not just configured durations.
+        QQmlExpression menuScript(QQmlEngine::contextForObject(menu),menu,"itemAt(1)");
+        auto *menuCommand=qobject_cast<QQuickItem*>(menuScript.evaluate().value<QObject*>());QVERIFY(menuCommand);
+        QSignalSpy dialogFade(gameDialog,SIGNAL(opacityChanged()));QVERIFY(dialogFade.isValid());
+        QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,menuCommand->mapToScene(menuCommand->boundingRect().center()).toPoint());
+        QTRY_VERIFY(gameDialog->property("opened").toBool());
+        QVERIFY(dialogFade.count()>=2);
+        QTRY_VERIFY(!menu->property("visible").toBool());
         auto *ok=dialogButton(gameDialog,"Ok");QVERIFY(ok);
         QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,ok->mapToScene(ok->boundingRect().center()).toPoint());
         QTRY_VERIFY(!gameDialog->property("visible").toBool());
@@ -281,6 +293,21 @@ private slots:
         auto *sliderRow=visualItem(window->contentItem(),"optionRow_ui_arch_float_size");QVERIFY(sliderRow);
         QTRY_VERIFY(ordinaryRow->height()>=44 && ordinaryRow->height()<=50);
         QVERIFY(sliderRow->height()>ordinaryRow->height());
+        // Results used to resize the inspector while search rebuilt its delegates.
+        for(int cycle=0;cycle<3;++cycle) {
+            evaluate("go('results')");
+            QTRY_COMPARE(window->property("section").toString(),QString("results"));
+            QTRY_VERIFY(!window->property("motionActive").toBool());
+            QTest::keyClick(window,Qt::Key_2,Qt::AltModifier);
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(1); // Deliver the queued search focus request.
+            for(const auto c:QByteArray("float_mons"))QTest::keyClick(window,c,Qt::NoModifier,5);
+            QTRY_COMPARE(window->property("query").toString(),QString("float_mons"));
+            QTRY_VERIFY(!window->property("motionActive").toBool());
+            evaluate("go('resources')");
+            QTRY_COMPARE(window->property("section").toString(),QString("resources"));
+            QTRY_VERIFY(!window->property("motionActive").toBool());
+        }
         const auto ammoBefore=backend.value("ui_pickups","ammo");
         const auto healthBefore=backend.value("ui_pickups","health");
         QTest::keyClick(window,Qt::Key_3,Qt::AltModifier);
@@ -383,6 +410,22 @@ private slots:
         QVERIFY(MapGeometry::read(path).lines.isEmpty());
         bytes[8]=char(255);bytes[9]=char(255);bytes[10]=char(255);bytes[11]=char(255);write(path,bytes);
         QVERIFY(MapGeometry::read(path).lines.isEmpty());
+    }
+    void mapViewport() {
+        QTemporaryDir dir;
+        const auto first=dir.path()+"/first.wad",second=dir.path()+"/second.wad";
+        const QByteArray geometry="vertex{x=0;y=0;} vertex{x=100;y=0;} vertex{x=100;y=100;} vertex{x=10000;y=10000;} vertex{x=10100;y=10000;} linedef{v1=0;v2=1;} linedef{v1=1;v2=2;twosided=true;} linedef{v1=3;v2=4;}";
+        write(first,wad({{"MAP01",{}},{"TEXTMAP",geometry},{"ENDMAP",{}}}));
+        auto map=MapGeometry::read(first);
+        QCOMPARE(map.lines.size(),3);QCOMPARE(map.twoSided.size(),3);QVERIFY(map.twoSided[1]);
+        QVERIFY(map.mainBounds.width()<101);QVERIFY(map.bounds.width()>10000);
+        WadPreview view;view.setWidth(500);view.setHeight(350);view.setFile(first);
+        QCOMPARE(view.mapName(),QString("MAP01"));QCOMPARE(view.lineCount(),3);
+        view.setShowAll(false);view.setZoom(4);QCOMPARE(view.zoom(),4.0);
+        view.resetView();QCOMPARE(view.zoom(),1.0);
+        view.setZoom(100);QCOMPARE(view.zoom(),12.0);
+        write(second,wad({{"MAP02",{}},{"TEXTMAP",geometry},{"ENDMAP",{}}}));
+        view.setFile(second);QCOMPARE(view.mapName(),QString("MAP02"));QCOMPARE(view.zoom(),1.0);
     }
     void udmfWad() {
         QTemporaryDir dir; const auto path=dir.path()+"/udmf.wad";

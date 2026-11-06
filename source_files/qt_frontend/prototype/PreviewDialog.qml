@@ -16,6 +16,43 @@ Dialog {
     function standardButton(button) {
         return footerActions.standardButton(button);
     }
+
+    enter: Transition {
+        ParallelAnimation {
+            NumberAnimation {
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: styleDialog.tokens ? styleDialog.tokens.popupIn : 170
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 0.97
+                to: 1
+                duration: styleDialog.tokens ? styleDialog.tokens.popupIn : 170
+                easing.type: Easing.OutCubic
+            }
+        }
+    }
+    exit: Transition {
+        ParallelAnimation {
+            NumberAnimation {
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: styleDialog.tokens ? styleDialog.tokens.popupOut : 110
+                easing.type: Easing.InCubic
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 1
+                to: 0.985
+                duration: styleDialog.tokens ? styleDialog.tokens.popupOut : 110
+                easing.type: Easing.InCubic
+            }
+        }
+    }
     padding: 16
     spacing: 14
     font: styleDialog.tokens ? styleDialog.tokens.bodyFont : Qt.application.font
