@@ -15,8 +15,9 @@ This is a **research-first and evidence-first** system for Obsidian Extended's Q
 **Baseline audited (2026-11-06):** five concrete official macOS app images inspected,
 17 source entries cataloged, and independent functional, visual and keyboard reviews
 completed at `81cbc4f`. See the [prioritized plan and reports](reports/2026-11-06-plan.md).
-The inspected design was accepted; the confirmed game-dialog screenshot evidence gap
-is assigned as a small verification fix before any styling work.
+The inspected design was accepted. The confirmed game-dialog screenshot evidence gap
+was corrected in `c363ac1` and independently passed functional and visual review in
+light/dark/HiDPI. See the [result and acceptance evidence](reports/2026-11-06-result.md).
 
 **Not yet done:** exhaustive study of *every* Apple HIG article, redistribution-approved
 local macOS screenshots, native platform/screen-reader coverage, and effective runtime
