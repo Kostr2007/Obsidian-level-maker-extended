@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "policy": "external-link-only-until-license-verified",
+  "entries": [
+    {
+      "id": "MAC-01",
+      "name": "macOS design",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/designing-for-macos",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-02",
+      "name": "Sidebar",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/sidebars",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-03",
+      "name": "Toolbar",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/toolbars",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-04",
+      "name": "Typography",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/typography",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-05",
+      "name": "Dark mode and color",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/color",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-06",
+      "name": "Layout",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-07",
+      "name": "Buttons",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/buttons",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-08",
+      "name": "macOS windows",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/windows",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-09",
+      "name": "Motion",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/motion",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-10",
+      "name": "UI kits",
+      "url": "https://developer.apple.com/design/resources/",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-11",
+      "name": "macOS guide",
+      "url": "https://support.apple.com/guide/mac-help/welcome/mac",
+      "local_image": null,
+      "rights": "not-evaluated"
+    },
+    {
+      "id": "MAC-12",
+      "name": "WWDC design sessions",
+      "url": "https://developer.apple.com/videos/design/",
+      "local_image": null,
+      "rights": "not-evaluated"
+    }
+  ]
+}
