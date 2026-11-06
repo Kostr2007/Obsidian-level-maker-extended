@@ -31,6 +31,8 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y build-essential cmake ninja-build flex qt6-base-dev qt6-declarative-dev qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-dialogs qml6-module-qtquick-templates qml6-module-qtquick-window qml6-module-qtqml-workerscript qml6-module-qtqml-models qt6-qpa-plugins xvfb xdotool imagemagick
+      - name: Verify virtual display readiness and ownership
+        run: python3 -m unittest discover -s scripts/dev/tests -p 'test_xvfb_session.py' -v
       - name: Build Qt interface and console worker
         run: ./scripts/dev/build-linux.sh
       - name: Test configuration, preview, dependencies, generation and cancellation
@@ -59,8 +61,10 @@ jobs:
           path: |
             Obsidian source(1)/build/qt/Testing/Temporary/LastTest.log
             Obsidian source(1)/build/qt-smoke/qt-smoke.json
+            Obsidian source(1)/build/qt-ui-check/*.log
             Obsidian source(1)/build/qt-ui-check/*.png
             Obsidian source(1)/build/qt-ui-check/*/*.log
+            Obsidian source(1)/build/design-preview-check/*.log
             Obsidian source(1)/build/design-preview-check/*.png
             Obsidian source(1)/build/design-preview-check/*/*.png
             Obsidian source(1)/build/design-preview-check/*/*.log

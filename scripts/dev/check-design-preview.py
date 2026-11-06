@@ -11,32 +11,19 @@ import shutil
 import subprocess
 import time
 
+from xvfb_session import XvfbSession, wait_for
+
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'build/design-preview-check'
 ENV = os.environ.copy()
-ENV.update(DISPLAY=os.environ.get('OBSIDIAN_PREVIEW_DISPLAY', ':93'), QT_QUICK_BACKEND='software')
-
+ENV['QT_QUICK_BACKEND'] = 'software'
 
 def command(*args, env=ENV):
     return subprocess.check_output(args, env=env, text=True, stderr=subprocess.DEVNULL).strip()
 
 
-def wait_for(fn, message, timeout=30):
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        try:
-            result = fn()
-            if result:
-                return result
-        except (subprocess.CalledProcessError, IndexError):
-            pass
-        time.sleep(.15)
-    raise RuntimeError(message)
-
-
 def keys(*sequence, env=ENV):
     command('xdotool', 'key', *sequence, env=env)
-
 
 def capture(window, path, env=ENV):
     # Keep the pointer outside the app: neither tooltips nor hover become part
@@ -47,7 +34,6 @@ def capture(window, path, env=ENV):
     if logfile.exists():
         diagnostics = logfile.read_text()
         assert 'QML' not in diagnostics, str(path) + ': ' + diagnostics
-
 
 def motion_clip(window, path, action, env=ENV):
     geometry = dict(line.split('=', 1) for line in command('xdotool', 'getwindowgeometry', '--shell', window, env=env).splitlines())
@@ -71,7 +57,6 @@ def motion_clip(window, path, action, env=ENV):
         '-filter_complex', 'fps=15,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse',
         '-filter_complex_threads', '1', '-threads', '2', '-loop', '0', str(path.with_suffix('.gif'))], env=env, check=True)
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--motion', action='store_true', help='Save real transition MP4/GIF clips (requires ffmpeg).')
@@ -81,10 +66,8 @@ def main():
         parser.error('--motion needs ffmpeg')
     os.chdir(ROOT)
     OUT.mkdir(parents=True, exist_ok=True)
-    with (OUT / 'xvfb.log').open('w') as log:
-        display = subprocess.Popen(['Xvfb', ENV['DISPLAY'], '-screen', '0', '1800x1200x24', '-nolisten', 'tcp'], env=ENV, stdout=log, stderr=subprocess.STDOUT)
-    try:
-        wait_for(lambda: command('xdotool', 'getdisplaygeometry'), 'Display did not start')
+    with XvfbSession(OUT / 'xvfb.log', '1800x1200x24', ENV, os.environ.get('OBSIDIAN_PREVIEW_DISPLAY')) as display:
+        ENV['DISPLAY'] = display.name
         for mode in args.modes:
             state = OUT / mode
             state.mkdir(exist_ok=True)
@@ -97,13 +80,14 @@ def main():
             with (state / 'launch.log').open('w') as log:
                 app = subprocess.Popen(['./obsidian', '--design-preview', '--state-dir', str(state)], env=env, stdout=log, stderr=subprocess.STDOUT)
             try:
-                window = wait_for(lambda: command('xdotool', 'search', '--onlyvisible', '--name', 'Design Preview', env=env).splitlines()[0], f'Preview failed; see {state}/launch.log')
+                processes = ((display.process, OUT / 'xvfb.log'), (app, state / 'launch.log'))
+                window = wait_for(lambda: command('xdotool', 'search', '--onlyvisible', '--name', 'Design Preview', env=env).splitlines()[0], f'Preview failed; see {state}/launch.log', processes=processes)
                 command('xdotool', 'windowmove', window, '0', '0', env=env)
                 command('xdotool', 'windowfocus', window, env=env)
                 time.sleep(1)
                 prior = set(results.glob('Obsidian-*'))
                 keys('F2', env=env)
-                folder = wait_for(lambda: next(iter(set(results.glob('Obsidian-*')) - prior), None), 'Preview F2 did not finish', timeout=90)
+                folder = wait_for(lambda: next(iter(set(results.glob('Obsidian-*')) - prior), None), 'Preview F2 did not finish', timeout=90, processes=processes)
                 assert (folder / 'level.wad').read_bytes().startswith(b'PWAD')
                 keys('alt+3', 'ctrl+1', env=env)
                 time.sleep(.7)
@@ -178,9 +162,6 @@ def main():
                 if app.poll() is None:
                     app.terminate()
                     app.wait(timeout=10)
-    finally:
-        display.terminate()
-        display.wait(timeout=10)
 
 
 if __name__ == '__main__':

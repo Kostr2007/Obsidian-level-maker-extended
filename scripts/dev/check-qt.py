@@ -5,37 +5,22 @@ from pathlib import Path
 import subprocess
 import time
 
+from xvfb_session import XvfbSession, wait_for
+
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'build/qt-ui-check'
 ENV = os.environ.copy()
-ENV['DISPLAY'] = os.environ.get('OBSIDIAN_TEST_DISPLAY', ':96')
 ENV['QT_QUICK_BACKEND'] = 'software'
-
 
 def command(*args):
     return subprocess.check_output(args, env=ENV, text=True, stderr=subprocess.DEVNULL).strip()
 
 
-def wait_for(predicate, message, timeout=30):
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        try:
-            result = predicate()
-            if result:
-                return result
-        except subprocess.CalledProcessError:
-            pass
-        time.sleep(.15)
-    raise RuntimeError(message)
-
-
 def main():
     os.chdir(ROOT)
     OUT.mkdir(parents=True, exist_ok=True)
-    with (OUT / 'xvfb.log').open('w') as log:
-        display = subprocess.Popen(['Xvfb', ENV['DISPLAY'], '-screen', '0', '1600x1000x24', '-nolisten', 'tcp'], env=ENV, stdout=log, stderr=subprocess.STDOUT)
-    try:
-        wait_for(lambda: command('xdotool', 'getdisplaygeometry'), 'Xvfb did not start')
+    with XvfbSession(OUT / 'xvfb.log', '1600x1000x24', ENV, os.environ.get('OBSIDIAN_TEST_DISPLAY')) as display:
+        ENV['DISPLAY'] = display.name
         for mode in ('dark', 'light'):
             state = OUT / mode
             state.mkdir(exist_ok=True)
@@ -46,13 +31,14 @@ def main():
             with (state / 'launch.log').open('w') as log:
                 app = subprocess.Popen(['./obsidian', '--state-dir', str(state)], env=ENV, stdout=log, stderr=subprocess.STDOUT)
             try:
-                window = wait_for(lambda: command('xdotool', 'search', '--onlyvisible', '--name', 'Obsidian Extended').splitlines()[0], 'Qt window did not open')
+                processes = ((display.process, OUT / 'xvfb.log'), (app, state / 'launch.log'))
+                window = wait_for(lambda: command('xdotool', 'search', '--onlyvisible', '--name', 'Obsidian Extended').splitlines()[0], 'Qt window did not open', processes=processes)
                 command('xdotool', 'windowmove', window, '0', '0')
                 command('xdotool', 'windowfocus', window)
                 time.sleep(1)
                 prior = set(results.glob('Obsidian-*'))
                 command('xdotool', 'key', 'F2')
-                folder = wait_for(lambda: next(iter(set(results.glob('Obsidian-*')) - prior), None), 'F2 did not produce a completed result', timeout=90)
+                folder = wait_for(lambda: next(iter(set(results.glob('Obsidian-*')) - prior), None), 'F2 did not produce a completed result', timeout=90, processes=processes)
                 data = (folder / 'level.wad').read_bytes()
                 assert data.startswith(b'PWAD'), folder
                 time.sleep(.2)
@@ -110,9 +96,6 @@ def main():
                 if app.poll() is None:
                     app.terminate()
                     app.wait(timeout=10)
-    finally:
-        display.terminate()
-        display.wait(timeout=10)
 
 
 if __name__ == '__main__':
