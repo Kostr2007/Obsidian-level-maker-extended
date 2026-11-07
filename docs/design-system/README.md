@@ -32,8 +32,8 @@ No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the re
 - [ART-03: Resource inspector](ART03.md) — the user chose A (original gallery
   before the current value, with individual illustration tiles).
 - [ART-04: Sidebar icons](ART04.md) — the user chose B (colored rounded backplates).
-- [ART-05: Slider handle](ART05.md) — approved four-option prototype A/B/C/D;
-  final choice pending independent reviews and the user's decision.
+- [ART-05: Slider handle](ART05.md) — the user chose C, with a dark capsule fill
+  requested for dark appearance; verify that refinement before ART-06.
 
 Starting with ART-05, new artistic comparisons offer four scoped options: the
 current component A and three alternatives B/C/D. Each receives independent
