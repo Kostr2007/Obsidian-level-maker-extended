@@ -16,6 +16,8 @@ Item {
         backend.revision;
         return backend.value(moduleId, option.id);
     }
+    property string sliderStyle: "original"
+    readonly property color rowColor: uniformSurface ? tokens.surface : stripeIndex % 2 ? tokens.alternateRow : tokens.rowBase
     property bool numeric: value !== "" && isFinite(Number(value))
     signal inspect(bool openPanel)
     Layout.fillWidth: true
@@ -29,7 +31,7 @@ Item {
         anchors.rightMargin: 4
         radius: 5
         z: -1
-        color: row.uniformSurface ? row.tokens.surface : row.stripeIndex % 2 ? row.tokens.alternateRow : row.tokens.rowBase
+        color: row.rowColor
     }
     Rectangle {
         objectName: "rowSeparator"
@@ -180,6 +182,7 @@ Item {
                 Layout.minimumWidth: 0
                 implicitHeight: row.tokens.controlHeight
                 model: ["Числовое значение"].concat(row.option.nan)
+                objectName: "sliderValueMode"
                 currentIndex: row.numeric ? 0 : row.option.nan.indexOf(row.value) + 1
                 Accessible.name: row.option.title + ": режим"
                 font: row.tokens.bodyFont
@@ -197,7 +200,22 @@ Item {
                 spacing: 12
                 Slider {
                     id: level
+                    objectName: "levelSizeSlider"
+                    // Decorative handles may extend beyond the retained 15px control.
+                    // Expand native hit testing without changing layout or drag behavior.
+                    containmentMask: QtObject {
+                        function contains(point: point): bool {
+                            if (point.x >= 0 && point.x < level.width && point.y >= 0 && point.y < level.height)
+                                return true;
+                            if (!level.enabled || row.sliderStyle === "original")
+                                return false;
+                            const x = level.handle.x + handleVisual.x;
+                            const y = level.handle.y + handleVisual.y;
+                            return point.x >= x && point.x < x + handleVisual.width && point.y >= y && point.y < y + handleVisual.height;
+                        }
+                    }
                     background: Rectangle {
+                        objectName: "sliderTrack"
                         x: level.leftPadding
                         y: level.topPadding + level.availableHeight / 2 - height / 2
                         width: level.availableWidth
@@ -211,15 +229,38 @@ Item {
                             color: row.tokens.accent
                         }
                     }
-                    handle: Rectangle {
+                    handle: Item {
+                        objectName: "sliderHandleWrapper"
                         x: level.leftPadding + level.visualPosition * (level.availableWidth - width)
                         y: level.topPadding + level.availableHeight / 2 - height / 2
                         implicitWidth: 15
                         implicitHeight: 15
-                        radius: 8
-                        color: row.tokens.surface
-                        border.color: level.visualFocus ? row.tokens.accent : row.tokens.dark ? "#a8a8b0" : "#a3a3ae"
-                        border.width: level.visualFocus ? 2 : 1
+                        Rectangle {
+                            id: handleVisual
+                            objectName: "sliderHandleVisual"
+                            x: (parent.width - width) / 2
+                            y: (parent.height - height) / 2
+                            width: row.sliderStyle === "disc" ? 19 : row.sliderStyle === "capsule" ? 9 : row.sliderStyle === "tile" ? 16 : 15
+                            height: row.sliderStyle === "capsule" ? 21 : width
+                            radius: row.sliderStyle === "tile" ? 4 : row.sliderStyle === "original" ? 8 : width / 2
+                            color: row.sliderStyle === "original" ? row.tokens.surface : row.sliderStyle === "tile" ? row.tokens.accent : row.tokens.dark ? "#f4f4f6" : "#ffffff"
+                            border.color: row.sliderStyle === "original" ? (level.visualFocus ? row.tokens.accent : row.tokens.dark ? "#a8a8b0" : "#a3a3ae") : row.sliderStyle === "tile" ? row.tokens.accent : row.tokens.dark ? "#b9b9c2" : "#94949e"
+                            border.width: row.sliderStyle === "original" && level.visualFocus ? 2 : 1
+                            opacity: row.sliderStyle !== "original" && !level.enabled ? 0.4 : 1
+                        }
+                        Rectangle {
+                            objectName: "sliderFocusRing"
+                            x: (parent.width - width) / 2
+                            y: (parent.height - height) / 2
+                            width: handleVisual.width + 8
+                            height: handleVisual.height + 8
+                            radius: handleVisual.radius + 4
+                            visible: row.sliderStyle !== "original" && level.visualFocus
+                            color: row.rowColor
+                            border.color: row.tokens.accent
+                            border.width: 2
+                            z: -1
+                        }
                     }
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -237,6 +278,7 @@ Item {
                     }
                 }
                 PreviewTextField {
+                    objectName: "sliderExactField"
                     tokens: row.tokens
                     Layout.preferredWidth: 58
                     implicitHeight: row.tokens.controlHeight

@@ -164,6 +164,164 @@ private slots:
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
     }
+    void previewArt05Capture() {
+        QTemporaryDir state; QVERIFY(state.isValid());
+        write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
+        Backend backend(engine,data,state.path()); backend.setDark(qEnvironmentVariable("OBSIDIAN_CAPTURE_MODE")=="dark");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first()); QVERIFY(window);
+        window->setWidth(1440); window->setHeight(900); window->show(); QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate(); QTRY_VERIFY(window->isActive());
+        auto evaluate=[&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression); const auto value=script.evaluate();
+            if(script.hasError())qFatal("%s",qPrintable(script.error().toString())); return value;
+        };
+        auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
+        QTRY_VERIFY(tokens->property("fontsReady").toBool()); tokens->setProperty("reduceMotion",true);
+        QCOMPARE(window->property("levelSizeSliderStyle").toString(),QString("original"));
+        QCOMPARE(window->property("sidebarIconStyle").toString(),QString("badges"));
+        evaluate("go('geometry')"); QTest::qWait(200);
+        auto *row=visualItem(window->contentItem(),"optionRow_ui_arch_float_size"); QVERIFY(row);
+        auto *slider=visualItem(row,"levelSizeSlider"), *field=visualItem(row,"sliderExactField"), *mode=visualItem(row,"sliderValueMode"); QVERIFY(slider && field && mode);
+        auto *wrapper=visualItem(row,"sliderHandleWrapper"), *visual=visualItem(row,"sliderHandleVisual"), *ring=visualItem(row,"sliderFocusRing"), *track=visualItem(row,"sliderTrack"); QVERIFY(wrapper && visual && ring && track);
+        auto *commands=visualItem(window->contentItem(),"commandsButton"); QVERIFY(commands);
+        auto *menu=window->findChild<QObject*>("commandsMenu"); QVERIFY(menu);
+        auto click=[&](QQuickItem *item) {QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,item->mapToScene(QPointF(item->width()/2,item->height()/2)).toPoint());};
+        auto exported=[&]() {backend.exportConfig(QUrl::fromLocalFile(state.path()+"/export.txt")); QFile f(state.path()+"/export.txt"); if(!f.open(QIODevice::ReadOnly))qFatal("CONFIG export unreadable"); return f.readAll();};
+        const QStringList styles{"original","disc","capsule","tile"}; const QStringList suffixes{"Original","Disc","Capsule","Tile"};
+        const auto initialConfig=exported(); const auto initialRevision=backend.revision();
+        for(int i=0;i<4;++i)for(int repeat=0;repeat<2;++repeat) {
+            click(commands); QTRY_VERIFY(menu->property("opened").toBool()); QTest::qWait(80);
+            auto *choice=window->findChild<QQuickItem*>("levelSizeSlider"+suffixes[i]); QVERIFY(choice); click(choice);
+            QTRY_VERIFY(!menu->property("visible").toBool()); QCOMPARE(window->property("levelSizeSliderStyle").toString(),styles[i]);
+            for(int j=0;j<4;++j)QCOMPARE(window->findChild<QObject*>("levelSizeSlider"+suffixes[j])->property("checked").toBool(),i==j);
+            QCOMPARE(backend.revision(),initialRevision); QCOMPARE(exported(),initialConfig);
+        }
+        const auto original=backend.value("ui_arch","float_size"); QCOMPARE(original,QString("36"));
+        const double minimum=slider->property("from").toDouble(), maximum=slider->property("to").toDouble(), step=slider->property("stepSize").toDouble();
+        QVERIFY(maximum>minimum && step>0);
+        const auto option=row->property("option").toMap(); QCOMPARE(minimum,option.value("min").toDouble()); QCOMPARE(maximum,option.value("max").toDouble()); QCOMPARE(step,option.value("step").toDouble());
+        auto enter=[&](double value) { field->forceActiveFocus(Qt::TabFocusReason); QTest::keyClick(window,Qt::Key_A,Qt::ControlModifier); for(auto c:QString::number(value).toLatin1())QTest::keyClick(window,c); QTest::keyClick(window,Qt::Key_Return); };
+        for(const auto &style:styles) {
+            window->setProperty("levelSizeSliderStyle",style);
+            // Real drag uses the retained original wrapper travel and schema snap step.
+            backend.setOption("ui_arch","float_size",original); QTest::qWait(40);
+            for(double fraction:{0.0,0.5,1.0}) {
+                const auto start=wrapper->mapToScene(QPointF(7.5,7.5)).toPoint();
+                const double left=slider->property("leftPadding").toDouble(), available=slider->property("availableWidth").toDouble();
+                const auto target=slider->mapToScene(QPointF(left+7.5+fraction*(available-15),slider->height()/2)).toPoint();
+                QTest::mousePress(window,Qt::LeftButton,Qt::NoModifier,start); QTest::mouseMove(window,target,30); QTest::mouseRelease(window,Qt::LeftButton,Qt::NoModifier,target); QTest::qWait(40);
+                const double actual=backend.value("ui_arch","float_size").toDouble();
+                QVERIFY(qAbs(actual-(minimum+std::round(fraction*(maximum-minimum)/step)*step))<=step/2);
+                if(fraction==0)QCOMPARE(actual,minimum);
+                if(fraction==1)QCOMPARE(actual,maximum);
+                QVERIFY(qAbs((actual-minimum)/step-std::round((actual-minimum)/step))<0.00001);
+                slider->forceActiveFocus(Qt::TabFocusReason); QTest::qWait(10);
+                auto *outline=style=="original"?visual:ring;
+                const QRectF bounds(outline->mapToScene(QPointF()),QSizeF(outline->width(),outline->height()));
+                const QRectF rowBounds(row->mapToScene(QPointF()),QSizeF(row->width(),row->height())); QVERIFY(rowBounds.contains(bounds));
+                for(auto *ancestor=outline->parentItem();ancestor;ancestor=ancestor->parentItem())if(ancestor->clip()) {
+                    const QRectF clip(ancestor->mapToScene(QPointF()),QSizeF(ancestor->width(),ancestor->height())); QVERIFY(clip.contains(bounds));
+                }
+            }
+            // Start real native drags in each visible edge band, including the
+            // portions outside Slider's unchanged 15px layout rectangle.
+            for(double initial:{minimum,36.0,maximum})for(const QString edge:{"upper","lower","left","right"}) {
+                backend.setOption("ui_arch","float_size",QString::number(initial)); QTest::qWait(20);
+                const auto topLeft=visual->mapToScene(QPointF());
+                auto start=visual->mapToScene(QPointF(visual->width()/2,visual->height()/2)).toPoint();
+                if(edge=="upper")start.setY(qCeil(topLeft.y()+0.25));
+                if(edge=="lower")start.setY(qFloor(topLeft.y()+visual->height()-0.25));
+                if(edge=="left")start.setX(qCeil(topLeft.x()+0.25));
+                if(edge=="right")start.setX(qFloor(topLeft.x()+visual->width()-0.25));
+                const auto target=start+QPoint(initial==maximum?-50:50,0);
+                QTest::mousePress(window,Qt::LeftButton,Qt::NoModifier,start); QTest::mouseMove(window,target,30); QTest::mouseRelease(window,Qt::LeftButton,Qt::NoModifier,target);
+                const auto changed=backend.value("ui_arch","float_size").toDouble();
+                QVERIFY2(initial==maximum?changed<initial:changed>initial,qPrintable(style+" "+edge+" visible-edge drag at "+QString::number(initial)));
+            }
+            enter(minimum); QTRY_COMPARE(backend.value("ui_arch","float_size").toDouble(),minimum);
+            slider->forceActiveFocus(Qt::TabFocusReason); QTest::keyClick(window,Qt::Key_Right); QTRY_COMPARE(backend.value("ui_arch","float_size").toDouble(),minimum+step);
+            QTest::keyClick(window,Qt::Key_Left); QTRY_COMPARE(backend.value("ui_arch","float_size").toDouble(),minimum);
+            enter(maximum); QTRY_COMPARE(backend.value("ui_arch","float_size").toDouble(),maximum);
+            enter(36); QTRY_COMPARE(backend.value("ui_arch","float_size"),original);
+            // The actual existing nan mode disables both numeric controls.
+            const auto nan=option.value("nan").toStringList(); QVERIFY(!nan.isEmpty());
+            backend.setOption("ui_arch","float_size",nan.first()); QTRY_VERIFY(!slider->isEnabled()); QVERIFY(!field->isEnabled());
+            const auto disabledRevision=backend.revision(); click(slider); QTest::keyClick(window,Qt::Key_Right); click(field); QTest::keyClick(window,Qt::Key_9);
+            for(const QString edge:{"upper","lower","left","right"}) {
+                const auto origin=visual->mapToScene(QPointF()); auto start=visual->mapToScene(QPointF(visual->width()/2,visual->height()/2)).toPoint();
+                if(edge=="upper")start.setY(qCeil(origin.y()+0.25));
+                if(edge=="lower")start.setY(qFloor(origin.y()+visual->height()-0.25));
+                if(edge=="left")start.setX(qCeil(origin.x()+0.25));
+                if(edge=="right")start.setX(qFloor(origin.x()+visual->width()-0.25));
+                QTest::mousePress(window,Qt::LeftButton,Qt::NoModifier,start); QTest::mouseMove(window,start+QPoint(50,0),30); QTest::mouseRelease(window,Qt::LeftButton,Qt::NoModifier,start+QPoint(50,0));
+            }
+            QCOMPARE(backend.revision(),disabledRevision); QCOMPARE(backend.value("ui_arch","float_size"),nan.first());
+            // Return through the actual mode control's keyboard activation.
+            click(mode); QTest::keyClick(window,Qt::Key_Home); QTest::keyClick(window,Qt::Key_Return); QTest::qWait(40);
+            QTRY_VERIFY(slider->isEnabled());
+            backend.setOption("ui_arch","float_size",original); QTRY_VERIFY(slider->isEnabled());
+        }
+        const auto destination=qEnvironmentVariable("OBSIDIAN_CAPTURE_DIR"); QJsonArray shots;
+        auto rect=[](QQuickItem *item) {const auto p=item->mapToScene(QPointF()); return QJsonArray{p.x(),p.y(),item->width(),item->height()};};
+        const bool core=qEnvironmentVariable("OBSIDIAN_ART05_CORE_ONLY")=="1";
+        for(const auto &scenario:core ? QStringList{"normal"} : QStringList{"normal","focus","disabled","minimum","large-text"}) {
+            window->setWidth(scenario=="minimum"?900:1440); window->setHeight(scenario=="minimum"?540:900);
+            tokens->setProperty("textScale",scenario=="large-text"?1.25:1.0);
+            backend.setOption("ui_arch","float_size",scenario=="disabled"?option.value("nan").toStringList().first():original);
+            evaluate("go('geometry')"); QTest::qWait(1200);
+            QJsonArray baselineGeometry; QImage baselineImage;
+            const auto revision=backend.revision(); const auto config=exported();
+            for(const auto &style:styles) {
+                window->setProperty("levelSizeSliderStyle",style);
+                if(scenario=="focus")slider->forceActiveFocus(Qt::TabFocusReason); else commands->forceActiveFocus(Qt::OtherFocusReason);
+                QTest::mouseMove(window,QPoint(2,2)); QTest::qWait(180);
+                QCOMPARE(slider->property("visualFocus").toBool(),scenario=="focus");
+                QCOMPARE(wrapper->width(),15.0); QCOMPARE(wrapper->height(),15.0);
+                QCOMPARE(visual->mapToScene(QPointF(visual->width()/2,visual->height()/2)),wrapper->mapToScene(QPointF(7.5,7.5)));
+                QCOMPARE(row->property("sliderStyle").toString(),style);
+                QJsonArray editor,scroll;
+                std::function<void(QQuickItem*)> record=[&](QQuickItem *item) {
+                    if(item->objectName().startsWith("optionRow_") || item->objectName()=="pageTitle")editor.append(QJsonObject{{"id",item->objectName()},{"rect",rect(item)}});
+                    if(item->inherits("QQuickFlickable"))scroll.append(QJsonObject{{"rect",rect(item)},{"contentX",item->property("contentX").toDouble()},{"contentY",item->property("contentY").toDouble()}});
+                    if(item->objectName().startsWith("optionRow_") && item!=row)QCOMPARE(item->property("sliderStyle").toString(),QString("original"));
+                    for(auto *child:item->childItems())record(child);
+                }; record(window->contentItem());
+                QJsonArray geometry{rect(row),rect(slider),rect(wrapper),rect(field),rect(track),editor,scroll};
+                if(style=="original")baselineGeometry=geometry; else QCOMPARE(geometry,baselineGeometry);
+                QCOMPARE(backend.revision(),revision); QCOMPARE(exported(),config);
+                QCOMPARE(window->property("resourceSelectionStyle").toString(),QString("classic")); QCOMPARE(window->property("geometryTextureStyle").toString(),QString("zebra")); QCOMPARE(window->property("ammoInspectorStyle").toString(),QString("original")); QCOMPARE(window->property("sidebarIconStyle").toString(),QString("badges"));
+                auto image=window->grabWindow(); QVERIFY(!image.isNull());
+                const auto center=wrapper->mapToScene(QPointF(7.5,7.5)); const auto dpr=window->devicePixelRatio();
+                const QRect excluded(qFloor((center.x()-16)*dpr),qFloor((center.y()-17)*dpr),qCeil(32*dpr),qCeil(34*dpr));
+                if(style=="original")baselineImage=image; else {
+                    auto clean=image, baseline=baselineImage; QPainter p(&clean);p.fillRect(excluded,Qt::black);p.end();QPainter b(&baseline);b.fillRect(excluded,Qt::black);b.end(); QCOMPARE(clean,baseline);
+                }
+                const auto accepted=qEnvironmentVariable("OBSIDIAN_ART05_BASELINE_IMAGE");
+                if(!accepted.isEmpty() && scenario=="normal" && style=="original") {
+                    const QImage old(accepted); QVERIFY(!old.isNull()); const auto rp=row->mapToScene(QPointF());
+                    const QRect region(qRound(rp.x()*dpr),qRound(rp.y()*dpr),qRound(row->width()*dpr),qRound(row->height()*dpr)); QCOMPARE(image.copy(region).convertToFormat(QImage::Format_ARGB32),old.copy(region).convertToFormat(QImage::Format_ARGB32));
+                }
+                if(!destination.isEmpty()) {
+                    const auto filename=scenario+"-"+style+".png"; QVERIFY(image.save(destination+"/"+filename)); QFile png(destination+"/"+filename); QVERIFY(png.open(QIODevice::ReadOnly));
+                    shots.append(QJsonObject{{"file",filename},{"sha256",QString(QCryptographicHash::hash(png.readAll(),QCryptographicHash::Sha256).toHex())},{"theme",backend.dark()?"dark":"light"},{"style",style},{"scenario",scenario},{"section","geometry"},{"inspectedId",evaluate("inspected.id").toString()},{"value",backend.value("ui_arch","float_size")},{"mode",mode->property("currentText").toString()},{"minimum",minimum},{"maximum",maximum},{"step",step},{"enabled",slider->isEnabled()},{"visualFocus",slider->property("visualFocus").toBool()},{"revision",double(revision)},
+                        {"resourceSelectionStyle","classic"},{"geometryTextureStyle","zebra"},{"ammoInspectorStyle","original"},{"sidebarIconStyle","badges"},{"textScale",tokens->property("textScale").toDouble()},{"logicalWidth",window->width()},{"logicalHeight",window->height()},{"pixelWidth",image.width()},{"pixelHeight",image.height()},{"dpr",dpr},{"qtVersion",qVersion()},{"focus",window->activeFocusItem()?window->activeFocusItem()->objectName():QString()},{"rowRect",rect(row)},{"comparisonRect",QJsonArray{mode->mapToScene(QPointF()).x(),mode->mapToScene(QPointF()).y(),mode->width(),field->mapToScene(QPointF(0,field->height())).y()-mode->mapToScene(QPointF()).y()}},{"sliderRect",rect(slider)},{"wrapperRect",rect(wrapper)},{"handleRect",rect(visual)},{"focusRingRect",rect(ring)},{"focusRingVisible",ring->isVisible()},{"trackRect",rect(track)},{"fieldRect",rect(field)},{"editor",editor},{"scroll",scroll},{"pixelExclusion",QJsonArray{excluded.x(),excluded.y(),excluded.width(),excluded.height()}},{"outsideHandlePixelsIdenticalToA",true}});
+                }
+            }
+        }
+        backend.setOption("ui_arch","float_size",original); QCOMPARE(exported(),initialConfig);
+        evaluate("go('combat')"); QTest::qWait(100);
+        auto *otherRow=visualItem(window->contentItem(),"optionRow_ui_mons_float_mons"); QVERIFY(otherRow);
+        QVERIFY(visualItem(otherRow,"levelSizeSlider")); QCOMPARE(otherRow->property("sliderStyle").toString(),QString("original"));
+
+        QQmlApplicationEngine fresh; fresh.rootContext()->setContextProperty("backend",&backend); fresh.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!fresh.rootObjects().isEmpty());
+        QCOMPARE(fresh.rootObjects().first()->property("levelSizeSliderStyle").toString(),QString("original")); QCOMPARE(fresh.rootObjects().first()->property("sidebarIconStyle").toString(),QString("badges"));
+        if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
+    }
     void previewArt04Capture() {
         QTemporaryDir state; QVERIFY(state.isValid());
         write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
@@ -187,7 +345,7 @@ private slots:
         auto *a=window->findChild<QQuickItem*>("sidebarIconsOriginal"); QVERIFY(a);
         auto *b=window->findChild<QQuickItem*>("sidebarIconsBadges"); QVERIFY(b);
         auto *commands=visualItem(window->contentItem(),"commandsButton"); QVERIFY(commands);
-        QCOMPARE(window->property("sidebarIconStyle").toString(),QString("original"));
+        QCOMPARE(window->property("sidebarIconStyle").toString(),QString("badges"));
         backend.exportConfig(QUrl::fromLocalFile(state.path()+"/before.txt"));
         QFile before(state.path()+"/before.txt"); QVERIFY(before.open(QIODevice::ReadOnly)); const auto config=before.readAll();
         const auto revision=backend.revision();
@@ -314,7 +472,7 @@ private slots:
         backend.exportConfig(QUrl::fromLocalFile(state.path()+"/after.txt")); QFile after(state.path()+"/after.txt"); QVERIFY(after.open(QIODevice::ReadOnly)); QCOMPARE(after.readAll(),config);
         window->setProperty("sidebarIconStyle","badges");
         QQmlApplicationEngine fresh; fresh.rootContext()->setContextProperty("backend",&backend); fresh.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!fresh.rootObjects().isEmpty());
-        QCOMPARE(fresh.rootObjects().first()->property("sidebarIconStyle").toString(),QString("original"));
+        QCOMPARE(fresh.rootObjects().first()->property("sidebarIconStyle").toString(),QString("badges"));
         if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
     }
     void previewArt03Capture() {

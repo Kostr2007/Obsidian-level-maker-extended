@@ -42,8 +42,10 @@ ApplicationWindow {
     property string geometryTextureStyle: "zebra"
     // ART-03 is limited to the selected Ammo inspector and never persisted.
     property string ammoInspectorStyle: "original"
-    // ART-04 only affects the six sidebar glyphs; each launch retains A.
-    property string sidebarIconStyle: "original"
+    // ART-04 B is accepted; the original icons remain available for comparison.
+    property string sidebarIconStyle: "badges"
+    // ART-05 affects only the level-size numeric handle and is never persisted.
+    property string levelSizeSliderStyle: "original"
     readonly property bool priorityAmmoInspector: ammoInspectorStyle === "priority" && section === "resources" && inspectedModule === "ui_pickups" && inspected && inspected.id === "ammo" && resourceGameCompatible
     readonly property bool reduceMotion: design.reduceMotion
     readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running
@@ -341,6 +343,9 @@ ApplicationWindow {
     ButtonGroup {
         id: sidebarIconGroup
     }
+    ButtonGroup {
+        id: levelSizeSliderGroup
+    }
     PreviewMenu {
         id: commands
         tokens: design
@@ -479,6 +484,42 @@ ApplicationWindow {
             checkable: true
             checked: window.sidebarIconStyle === "badges"
             onTriggered: window.sidebarIconStyle = "badges"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "levelSizeSliderOriginal"
+            ButtonGroup.group: levelSizeSliderGroup
+            text: "Бегунок: A · Исходный"
+            checkable: true
+            checked: window.levelSizeSliderStyle === "original"
+            onTriggered: window.levelSizeSliderStyle = "original"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "levelSizeSliderDisc"
+            ButtonGroup.group: levelSizeSliderGroup
+            text: "Бегунок: B · Светлый диск"
+            checkable: true
+            checked: window.levelSizeSliderStyle === "disc"
+            onTriggered: window.levelSizeSliderStyle = "disc"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "levelSizeSliderCapsule"
+            ButtonGroup.group: levelSizeSliderGroup
+            text: "Бегунок: C · Капсула"
+            checkable: true
+            checked: window.levelSizeSliderStyle === "capsule"
+            onTriggered: window.levelSizeSliderStyle = "capsule"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "levelSizeSliderTile"
+            ButtonGroup.group: levelSizeSliderGroup
+            text: "Бегунок: D · Акцентная плитка"
+            checkable: true
+            checked: window.levelSizeSliderStyle === "tile"
+            onTriggered: window.levelSizeSliderStyle = "tile"
         }
         PreviewMenuItem {
             tokens: design
@@ -1139,6 +1180,7 @@ ApplicationWindow {
                                                 uniformSurface: window.section === "geometry" && group.modelData.id === "ui_arch" && window.geometryTextureStyle === "uniform"
                                                 separatorAfter: uniformSurface && index < group.modelData.options.length - 1
                                                 tokens: design
+                                                sliderStyle: moduleId === "ui_arch" && option.id === "float_size" ? window.levelSizeSliderStyle : "original"
                                                 option: modelData
                                                 moduleId: group.modelData.id
                                                 enabled: !backend.busy && !backend.loading

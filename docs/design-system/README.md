@@ -35,6 +35,10 @@ No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the re
 - [ART-05: Slider handle](ART05.md) — approved four-option prototype A/B/C/D;
   final choice pending independent reviews and the user's decision.
 
+Starting with ART-05, new artistic comparisons offer four scoped options: the
+current component A and three alternatives B/C/D. Each receives independent
+visual and functional assessment before the user chooses. See [WORKFLOW](WORKFLOW.md).
+
 ## First run
 From repository root:
 ```sh
