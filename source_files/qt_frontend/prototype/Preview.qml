@@ -40,6 +40,9 @@ ApplicationWindow {
     property string resourceSelectionStyle: "classic"
     // ART-02 is session-local; the retained zebra remains the launch default.
     property string geometryTextureStyle: "zebra"
+    // ART-03 is limited to the selected Ammo inspector and never persisted.
+    property string ammoInspectorStyle: "original"
+    readonly property bool priorityAmmoInspector: ammoInspectorStyle === "priority" && section === "resources" && inspectedModule === "ui_pickups" && inspected && inspected.id === "ammo" && resourceGameCompatible
     readonly property bool reduceMotion: design.reduceMotion
     readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running
     readonly property bool resourceGameCompatible: {
@@ -328,6 +331,9 @@ ApplicationWindow {
         id: resourceSelectionGroup
     }
     ButtonGroup {
+        id: ammoInspectorGroup
+    }
+    ButtonGroup {
         id: geometryTextureGroup
     }
     PreviewMenu {
@@ -432,6 +438,24 @@ ApplicationWindow {
             checkable: true
             checked: window.geometryTextureStyle === "uniform"
             onTriggered: window.geometryTextureStyle = "uniform"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "ammoInspectorOriginal"
+            ButtonGroup.group: ammoInspectorGroup
+            text: "Инспектор боеприпасов: A · Исходный"
+            checkable: true
+            checked: window.ammoInspectorStyle === "original"
+            onTriggered: window.ammoInspectorStyle = "original"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "ammoInspectorPriority"
+            ButtonGroup.group: ammoInspectorGroup
+            text: "Инспектор боеприпасов: B · ART-03 (эксперимент)"
+            checkable: true
+            checked: window.ammoInspectorStyle === "priority"
+            onTriggered: window.ammoInspectorStyle = "priority"
         }
         PreviewMenuItem {
             tokens: design
@@ -541,19 +565,24 @@ ApplicationWindow {
         id: inspectorContent
         ScrollView {
             id: helpScroll
+            objectName: "inspectorScroll"
             rightPadding: 12
             contentWidth: availableWidth
             clip: true
             ScrollBar.vertical.active: true
-            ColumnLayout {
+            GridLayout {
+                columns: 1
+                columnSpacing: 0
                 width: helpScroll.availableWidth
-                spacing: 16
+                rowSpacing: 16
                 Label {
+                    Layout.row: 0
                     text: !window.inspected && window.section === "project" ? "О проекте" : "Об этом параметре"
                     font: design.captionFont
                     color: design.secondary
                 }
                 Label {
+                    Layout.row: 1
                     objectName: "resourceDetailTitle"
                     text: window.inspected ? window.inspected.title : window.section === "project" ? "Игра и совместимость" : "Выберите параметр"
                     font: design.detailFont
@@ -562,6 +591,8 @@ ApplicationWindow {
                     wrapMode: Text.WordWrap
                 }
                 Label {
+                    objectName: "inspectorDescription"
+                    Layout.row: 2
                     text: window.inspected ? (window.inspected.summary || window.inspected.tooltip) : window.section === "project" ? "Движок, игра и порт определяют доступные возможности генератора. После изменения дождитесь обновления параметров." : "Нажмите кнопку информации рядом с названием."
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
@@ -570,17 +601,22 @@ ApplicationWindow {
                     lineHeight: 1.15
                 }
                 AssetPreview {
+                    objectName: "inspectorAssets"
+                    unifiedSurface: window.priorityAmmoInspector
+                    Layout.row: window.priorityAmmoInspector ? 6 : 3
                     tokens: design
                     textScale: design.textScale
                     optionId: window.inspectedModule === "ui_pickups" && window.inspected ? window.inspected.id : ""
                     visible: available
                 }
                 GameplayComparison {
+                    Layout.row: window.priorityAmmoInspector ? 7 : 4
                     tokens: design
                     example: window.inspected ? window.inspected.comparison : ""
                     visible: supported
                 }
                 Label {
+                    Layout.row: window.priorityAmmoInspector ? 8 : 5
                     text: window.inspected ? window.inspected.related : ""
                     visible: !!text
                     Layout.fillWidth: true
@@ -589,18 +625,23 @@ ApplicationWindow {
                     font: design.captionFont
                 }
                 Rectangle {
+                    Layout.row: window.priorityAmmoInspector ? 3 : 6
                     Layout.fillWidth: true
                     implicitHeight: 1
                     color: design.line
                 }
                 Label {
+                    Layout.row: window.priorityAmmoInspector ? 4 : 7
                     visible: !!window.inspected
+                    objectName: "inspectorValueTitle"
                     text: "Текущее значение"
                     font: design.captionFont
                     color: design.secondary
                 }
                 Label {
+                    Layout.row: window.priorityAmmoInspector ? 5 : 8
                     visible: !!window.inspected
+                    objectName: "inspectorValue"
                     text: {
                         backend.revision;
                         return window.inspected ? backend.value(window.inspectedModule, window.inspected.id) : "—";
@@ -609,7 +650,9 @@ ApplicationWindow {
                     color: design.text
                 }
                 Label {
+                    Layout.row: 9
                     visible: !!window.inspected
+                    objectName: "inspectorDefault"
                     text: window.inspected ? "По умолчанию: " + window.inspected.default : ""
                     font: design.captionFont
                     color: design.secondary

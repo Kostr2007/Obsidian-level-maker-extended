@@ -9,6 +9,8 @@ ColumnLayout {
     property var tokens: null
     property string optionId: ""
     property real textScale: 1
+    // Opt-in preview experiment; Studio retains the original individual tiles.
+    property bool unifiedSurface: false
     readonly property string game: {
         backend.revision;
         backend.schema;
@@ -32,48 +34,65 @@ ColumnLayout {
         Layout.minimumWidth: 0
         wrapMode: Text.WordWrap
     }
-    GridLayout {
-        // A stable two-column inspector avoids width/implicitHeight feedback on Qt 6.4.
-        columns: 2
+    Item {
         Layout.fillWidth: true
         Layout.minimumWidth: 0
-        columnSpacing: 8
-        rowSpacing: 12
-        Repeater {
-            model: assets.examples
-            ColumnLayout {
-                required property var modelData
-                Layout.fillWidth: true
-                Layout.minimumWidth: 0
-                spacing: 5
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 74
-                    radius: 8
-                    color: backend.dark ? "#37373d" : "#f1f1f4"
-                    Image {
-                        objectName: "freedoomSprite_" + modelData.id
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        source: Resources.image(modelData.file)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: false
-                        mipmap: false
-                        Accessible.name: modelData.caption
-                    }
-                }
-                Label {
-                    text: modelData.caption
-                    font.pixelSize: Math.round(12 * assets.textScale)
+        implicitHeight: spriteGrid.implicitHeight
+        Rectangle {
+            objectName: "assetUnifiedSurface"
+            anchors.fill: parent
+            z: -1
+            radius: 8
+            color: backend.dark ? "#37373d" : "#f1f1f4"
+            visible: assets.unifiedSurface
+        }
+        GridLayout {
+            id: spriteGrid
+            width: parent.width
+            objectName: "assetSpriteGrid"
+
+            // A stable two-column inspector avoids width/implicitHeight feedback on Qt 6.4.
+            columns: 2
+            columnSpacing: 8
+            rowSpacing: 12
+            Repeater {
+                model: assets.examples
+                ColumnLayout {
+                    required property var modelData
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
+                    spacing: 5
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 74
+                        radius: 8
+                        color: assets.unifiedSurface ? "transparent" : backend.dark ? "#37373d" : "#f1f1f4"
+                        Image {
+                            objectName: "freedoomSprite_" + modelData.id
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            source: Resources.image(modelData.file)
+                            fillMode: Image.PreserveAspectFit
+                            smooth: false
+                            mipmap: false
+                            Accessible.name: modelData.caption
+                        }
+                    }
+                    Label {
+                        objectName: "assetCaption_" + modelData.id
+                        text: modelData.caption
+                        font.pixelSize: Math.round(12 * assets.textScale)
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
                 }
             }
         }
     }
     Label {
+        objectName: "assetRightsNotice"
         text: "Оригинальные спрайты Freedoom Phase 2.\nПоказан вид предметов, а не гарантированный состав вашей карты."
         font.pixelSize: Math.round(12 * assets.textScale)
         opacity: .65

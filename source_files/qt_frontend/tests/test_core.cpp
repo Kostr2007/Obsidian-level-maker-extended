@@ -3,6 +3,7 @@
 #include "../presentation.h"
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQmlComponent>
 #include <QQmlExpression>
 #include <QQuickStyle>
 #include <QImage>
@@ -160,6 +161,171 @@ private slots:
         backend.setGeneral("port","limit_enforcing");
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
+    }
+    void previewArt03Capture() {
+        QTemporaryDir state; QVERIFY(state.isValid());
+        write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
+        Backend backend(engine,data,state.path());
+        backend.setDark(qEnvironmentVariable("OBSIDIAN_CAPTURE_MODE")=="dark");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first()); QVERIFY(window);
+        window->show(); QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate(); QTRY_VERIFY(window->isActive());
+        window->setWidth(1440); window->setHeight(900);
+        auto evaluate=[&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression); const auto value=script.evaluate();
+            if(script.hasError())qFatal("%s",qPrintable(script.error().toString())); return value;
+        };
+        auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
+        QTRY_VERIFY(tokens->property("fontsReady").toBool()); tokens->setProperty("reduceMotion",true);
+        QCOMPARE(window->property("ammoInspectorStyle").toString(),QString("original"));
+        auto *menu=window->findChild<QObject*>("commandsMenu"); QVERIFY(menu);
+        auto *a=window->findChild<QQuickItem*>("ammoInspectorOriginal"); QVERIFY(a);
+        auto *b=window->findChild<QQuickItem*>("ammoInspectorPriority"); QVERIFY(b);
+        auto *commands=visualItem(window->contentItem(),"commandsButton"); QVERIFY(commands);
+        backend.exportConfig(QUrl::fromLocalFile(state.path()+"/before.txt"));
+        QFile before(state.path()+"/before.txt"); QVERIFY(before.open(QIODevice::ReadOnly)); const auto config=before.readAll();
+        for(auto *choice:{a,a,b,b,a}) {
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,commands->mapToScene(QPointF(commands->width()/2,commands->height()/2)).toPoint());
+            QTRY_VERIFY(menu->property("opened").toBool()); QTest::qWait(80);
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,choice->mapToScene(QPointF(choice->width()/2,choice->height()/2)).toPoint());
+            QTRY_VERIFY(!menu->property("visible").toBool());
+            QCOMPARE(a->property("checked").toBool(),choice==a); QCOMPARE(b->property("checked").toBool(),choice==b);
+            QCOMPARE(window->property("ammoInspectorStyle").toString(),QString(choice==a ? "original" : "priority"));
+            QVERIFY(window->findChild<QObject*>("resourceStyleClassic")->property("checked").toBool());
+            QVERIFY(window->findChild<QObject*>("geometryTextureZebra")->property("checked").toBool());
+        }
+        window->setProperty("ammoInspectorStyle","priority");
+        for(const QString id:{"health","items","weapons"}) {
+            evaluate("selectResource('"+id+"',false)"); QTest::qWait(80);
+            QVERIFY(!window->property("priorityAmmoInspector").toBool());
+            QVERIFY(!visualItem(window->contentItem(),"inspectorAssets")->property("unifiedSurface").toBool());
+        }
+        window->setProperty("section","geometry"); QTest::qWait(80); QVERIFY(!window->property("priorityAmmoInspector").toBool());
+        window->setProperty("section","resources"); evaluate("selectResource('ammo',false)"); QTest::qWait(100);
+        // The value is read live from the backend, in both experiment states.
+        const auto normal=backend.value("ui_pickups","ammo"); QCOMPARE(normal,QString("normal"));
+        for(const QString style:{"original","priority"}) {
+            window->setProperty("ammoInspectorStyle",style);
+            backend.setOption("ui_pickups","ammo","more");
+            QTRY_COMPARE(visualItem(window->contentItem(),"inspectorValue")->property("text").toString(),QString("more"));
+            backend.setOption("ui_pickups","ammo",normal);
+            QTRY_COMPARE(visualItem(window->contentItem(),"inspectorValue")->property("text").toString(),normal);
+        }
+        const QStringList ids{"clip","ammo_box","shells","shell_box","rocket","rocket_box","cell","cell_pack"};
+        const QStringList captions{QString::fromUtf8("Патроны"),QString::fromUtf8("Ящик патронов"),QString::fromUtf8("Патроны для дробовика"),QString::fromUtf8("Коробка патронов"),QString::fromUtf8("Ракета"),QString::fromUtf8("Ящик ракет"),QString::fromUtf8("Энергетическая ячейка"),QString::fromUtf8("Блок ячеек")};
+        const auto destination=qEnvironmentVariable("OBSIDIAN_CAPTURE_DIR"); QJsonArray shots;
+        const bool core=qEnvironmentVariable("OBSIDIAN_ART03_CORE_ONLY")=="1";
+        auto rect=[](QQuickItem *item) { const auto p=item->mapToScene(QPointF()); return QJsonArray{p.x(),p.y(),item->width(),item->height()}; };
+        for(const QString scenario:core ? QStringList{"normal"} : QStringList{"normal","large-text","bottom","modal","modal-bottom"}) {
+            const bool modal=scenario.startsWith("modal"), bottom=scenario.endsWith("bottom");
+            window->setWidth(modal ? 1050 : 1440); window->setHeight(modal ? 640 : 900);
+            tokens->setProperty("textScale",scenario=="large-text" ? 1.25 : 1.0);
+            auto *dialog=window->findChild<QObject*>("inspectorDialog"); QVERIFY(dialog);
+            if(modal) { QTRY_VERIFY(!window->property("inlineInspector").toBool()); evaluate("selectResource('ammo',true)"); QTRY_VERIFY(dialog->property("opened").toBool()); }
+            QTest::qWait(150);
+            QJsonArray baselineSprites, baselineEditor;
+            for(const QString style:{"original","priority"}) {
+                window->setProperty("ammoInspectorStyle",style); QTest::qWait(150);
+                auto *root=modal ? dialog->property("contentItem").value<QQuickItem*>() : window->contentItem(); QVERIFY(root);
+                auto *scroll=visualItem(root,"inspectorScroll"); QVERIFY(scroll);
+                auto *flick=scroll->property("contentItem").value<QQuickItem*>(); QVERIFY(flick);
+                const double maxY=qMax(0.0,flick->property("contentHeight").toDouble()-flick->height());
+                flick->setProperty("contentY",bottom ? maxY : 0.0);
+                if(modal)scroll->forceActiveFocus(Qt::OtherFocusReason); else commands->forceActiveFocus(Qt::OtherFocusReason);
+                QTest::mouseMove(window,QPoint(2,2)); QTest::qWait(100);
+                auto *assets=visualItem(root,"inspectorAssets"); QVERIFY(assets);
+                auto *grid=visualItem(root,"assetSpriteGrid"); QVERIFY(grid);
+                auto *value=visualItem(root,"inspectorValue"); QVERIFY(value);
+                auto *desc=visualItem(root,"inspectorDescription"); QVERIFY(desc);
+                auto *notice=visualItem(root,"assetRightsNotice"); QVERIFY(notice);
+                auto *def=visualItem(root,"inspectorDefault"); QVERIFY(def);
+                QCOMPARE(assets->property("unifiedSurface").toBool(),style=="priority");
+                QCOMPARE(grid->property("columns").toInt(),2);
+                QCOMPARE(value->property("text").toString(),normal);
+                QVERIFY(desc->mapToScene(QPointF(0,desc->height())).y() < qMin(assets->mapToScene(QPointF()).y(),value->mapToScene(QPointF()).y()));
+                if(style=="priority") QVERIFY(value->mapToScene(QPointF(0,value->height())).y() < assets->mapToScene(QPointF()).y());
+                else QVERIFY(assets->mapToScene(QPointF(0,assets->height())).y() < value->mapToScene(QPointF()).y());
+                if(scenario=="normal" && style=="priority") {
+                    QVERIFY(value->mapToScene(QPointF(0,value->height())).y() < scroll->mapToScene(QPointF(0,scroll->height())).y());
+                    QVERIFY(grid->mapToScene(QPointF()).y() < scroll->mapToScene(QPointF(0,scroll->height())).y());
+                }
+                // Original ColumnLayout excluded hidden blocks and placed every visible
+                // block at implicit height with exactly 16 px spacing. Guard against
+                // explicit GridLayout row holes changing A's retained geometry.
+                if(style=="original") {
+                    QQuickItem *previous=nullptr;
+                    for(auto *block:desc->parentItem()->childItems())if(block->isVisible()) {
+                        if(previous) QVERIFY(qAbs(block->y()-previous->y()-previous->height()-16)<0.01);
+                        previous=block;
+                    }
+                }
+                QCOMPARE(QQmlExpression(qml.rootContext(),assets,"examples.length").evaluate().toInt(),8);
+                QJsonArray sprites;
+                for(int i=0;i<ids.size();++i) {
+                    auto *sprite=visualItem(assets,"freedoomSprite_"+ids[i]); QVERIFY(sprite);
+                    auto *caption=visualItem(assets,"assetCaption_"+ids[i]); QVERIFY(caption);
+                    QTRY_COMPARE(sprite->property("status").toInt(),1);
+                    QCOMPARE(sprite->property("smooth").toBool(),false); QCOMPARE(sprite->property("mipmap").toBool(),false);
+                    QCOMPARE(caption->property("text").toString(),captions[i]);
+                    const auto source=sprite->property("source").toUrl(); QVERIFY(source.path().endsWith("/"+ids[i]+".png"));
+                    const auto p=sprite->mapToItem(grid,QPointF()), cp=caption->mapToItem(grid,QPointF());
+                    sprites.append(QJsonObject{{"id",ids[i]},{"source",source.toString()},{"x",p.x()},{"y",p.y()},{"width",sprite->width()},{"height",sprite->height()},
+                        {"paintedWidth",sprite->property("paintedWidth").toDouble()},{"paintedHeight",sprite->property("paintedHeight").toDouble()},
+                        {"smooth",false},{"mipmap",false},{"caption",captions[i]},{"captionRect",QJsonArray{cp.x(),cp.y(),caption->width(),caption->height()}}});
+                }
+                QJsonArray editor;
+                std::function<void(QQuickItem*)> record=[&](QQuickItem *item) {
+                    if(item->objectName().startsWith("resourceCard_") || item->objectName().startsWith("optionRow_"))editor.append(QJsonObject{{"id",item->objectName()},{"rect",rect(item)}});
+                    for(auto *child:item->childItems())record(child);
+                }; record(window->contentItem());
+                if(style=="original") { baselineSprites=sprites; baselineEditor=editor; } else { QCOMPARE(sprites,baselineSprites); QCOMPARE(editor,baselineEditor); }
+                if(bottom) {
+                    const auto viewportBottom=scroll->mapToScene(QPointF(0,scroll->height())).y();
+                    QVERIFY(notice->mapToScene(QPointF(0,notice->height())).y() <= viewportBottom+1);
+                    QVERIFY(def->mapToScene(QPointF(0,def->height())).y() <= viewportBottom+1);
+                    auto *last=visualItem(assets,"assetCaption_cell_pack"); QVERIFY(last->mapToScene(QPointF()).y() >= scroll->mapToScene(QPointF()).y());
+                }
+                QCOMPARE(window->property("resourceSelectionStyle").toString(),QString("classic"));
+                QCOMPARE(window->property("geometryTextureStyle").toString(),QString("zebra"));
+                QCOMPARE(evaluate("inspected.id").toString(),QString("ammo")); QCOMPARE(backend.value("ui_pickups","ammo"),normal);
+                if(!destination.isEmpty()) {
+                    window->update(); QCoreApplication::processEvents(); const auto image=window->grabWindow(); QVERIFY(!image.isNull());
+                    QCOMPARE(image.size(),QSize(qRound(window->width()*window->devicePixelRatio()),qRound(window->height()*window->devicePixelRatio())));
+                    const auto filename=scenario+"-"+style+".png"; QVERIFY(image.save(destination+"/"+filename));
+                    QFile png(destination+"/"+filename); QVERIFY(png.open(QIODevice::ReadOnly));
+                    shots.append(QJsonObject{{"file",filename},{"sha256",QString(QCryptographicHash::hash(png.readAll(),QCryptographicHash::Sha256).toHex())},
+                        {"theme",backend.dark()?"dark":"light"},{"style",style},{"scenario",scenario},{"inspectedModule","ui_pickups"},{"inspectedId","ammo"},{"value",normal},
+                        {"resourceSelectionStyle","classic"},{"geometryTextureStyle","zebra"},{"textScale",tokens->property("textScale").toDouble()},
+                        {"logicalWidth",window->width()},{"logicalHeight",window->height()},{"pixelWidth",image.width()},{"pixelHeight",image.height()},{"dpr",window->devicePixelRatio()},
+                        {"qtVersion",qVersion()},{"focus",window->activeFocusItem() ? window->activeFocusItem()->objectName() : QString()},
+                        {"scrollPosition",bottom?"bottom":"top"},{"contentY",flick->property("contentY").toDouble()},{"contentHeight",flick->property("contentHeight").toDouble()},
+                        {"inspectorRect",modal ? rect(dialog->property("background").value<QQuickItem*>()) : rect(scroll->parentItem()->parentItem())},{"viewport",rect(scroll)},{"description",rect(desc)},{"valueRect",rect(value)},{"galleryRect",rect(assets)},{"gridRect",rect(grid)},
+                        {"notice",notice->property("text").toString()},{"noticeRect",rect(notice)},{"defaultText",def->property("text").toString()},{"defaultRect",rect(def)},
+                        {"sprites",sprites},{"editor",editor}});
+                }
+            }
+            if(modal) { QVERIFY(QMetaObject::invokeMethod(dialog,"close")); QTRY_VERIFY(!dialog->property("visible").toBool()); }
+        }
+        backend.exportConfig(QUrl::fromLocalFile(state.path()+"/after.txt")); QFile after(state.path()+"/after.txt"); QVERIFY(after.open(QIODevice::ReadOnly)); QCOMPARE(after.readAll(),config);
+        // Shared Studio component remains opt-in; incompatible games never get
+        // substitute Freedoom art even when the experiment is selected.
+        QQmlComponent shared(&qml,QUrl("qrc:/ui/AssetPreview.qml"));
+        QScopedPointer<QObject> sharedAssets(shared.create()); QVERIFY2(sharedAssets,qPrintable(shared.errorString()));
+        QCOMPARE(sharedAssets->property("unifiedSurface").toBool(),false);
+        sharedAssets->setProperty("optionId","ammo"); QVERIFY(sharedAssets->property("available").toBool());
+        backend.setGeneral("game","heretic"); QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
+        QTRY_VERIFY(!window->property("priorityAmmoInspector").toBool());
+        QTRY_VERIFY(!sharedAssets->property("available").toBool());
+        QCOMPARE(QQmlExpression(qml.rootContext(),sharedAssets.data(),"examples.length").evaluate().toInt(),0);
+        backend.setGeneral("game","doom2"); QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
+        QQmlApplicationEngine fresh; fresh.rootContext()->setContextProperty("backend",&backend); fresh.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!fresh.rootObjects().isEmpty());
+        QCOMPARE(fresh.rootObjects().first()->property("ammoInspectorStyle").toString(),QString("original"));
+        if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
     }
     void previewArt02Capture() {
         QTemporaryDir state; QVERIFY(state.isValid());
