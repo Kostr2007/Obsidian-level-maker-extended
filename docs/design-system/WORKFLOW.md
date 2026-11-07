@@ -4,14 +4,20 @@ The coordinator is the primary Codex thread; the roles live in `.codex/config.to
 
 | Role | Requested reasoning | Ownership / permission |
 |---|---|---|
-| Coordinator | high (set in current Codex session) | Prioritize, integrate evidence, decide approval |
+| Coordinator | ultra (requested in project config; current session setting remains client-controlled) | Prioritize, integrate evidence, decide approval |
 | apple_researcher | high | Official docs/references only; no production QML edits |
 | ui_builder | medium | Scoped production QML implementation |
 | visual_critic | high | Independent visual PASS/FAIL and screenshot comparison, read-only |
+| art_director | high | Independent artistic proposals and A/B preferences, read-only |
 | functional_tester | medium | Run builds, smoke and regression tests, report actual logs |
 | accessibility_critic | medium | Keyboard, zoom, contrast, reduced motion, read-only |
 
-Use xhigh only when the coordinator must resolve architectural conflicts or difficult regressions; ultra only for exceptional research/architecture if the client/model supports it. Per-agent effort is advisory until confirmed by the active Codex runtime.
+These are reasoning levels, not model names. Store them in `model_reasoning_effort`
+and explicitly pass each child's `reasoning_effort` when launching it. A coordinator
+requesting ultra does not change the assigned medium/high of its specialists.
+Keep the inherited model unless the user separately requests another model.
+The shared [runtime observability note](reports/2026-11-06-agent-runtime.md)
+documents the environment limitation once; ordinary reports need not repeat it.
 
 ## Loop (max 3 iterations per scoped finding)
 1. Researcher maps relevant official guidance and source-linked screenshots (one-time or cached; not every iteration).

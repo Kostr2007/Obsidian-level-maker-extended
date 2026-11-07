@@ -50,12 +50,19 @@ jobs:
         run: python3 scripts/dev/check-qt.py
       - name: Exercise the optional macOS-inspired design sample
         run: python3 scripts/dev/check-design-preview.py
+      - name: Compare classic and ART-01 resource selection
+        run: python3 scripts/dev/check-art01.py
       - name: Package verified Qt build
         run: ./scripts/dev/package-linux.sh
       - uses: actions/upload-artifact@v4
         with:
           name: Obsidian-Extended-Qt6-linux-x86_64
           path: Obsidian source(1)/build/Obsidian-Extended-Qt6-linux-x86_64.tar.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: art01-comparison
+          path: Obsidian source(1)/build/art01/
       - uses: actions/upload-artifact@v4
         if: always()
         with:

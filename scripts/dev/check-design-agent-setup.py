@@ -11,7 +11,11 @@ errors = []
 try:
     config = tomllib.loads(config_path.read_text())
     roles = config.get("agents", {})
-    expected = {"apple_researcher","ui_builder","visual_critic","functional_tester","accessibility_critic"}
+    expected = {"apple_researcher":"high", "ui_builder":"medium",
+                "visual_critic":"high", "art_director":"high",
+                "functional_tester":"medium", "accessibility_critic":"medium"}
+    if config.get("model_reasoning_effort") != "ultra":
+        errors.append("coordinator model_reasoning_effort must request ultra")
     for name in sorted(expected):
         cfg = roles.get(name)
         if not isinstance(cfg, dict):
@@ -22,8 +26,10 @@ try:
             errors.append(f"missing role config: {p}")
             continue
         role = tomllib.loads(p.read_text())
-        if role.get("model_reasoning_effort") not in {"low","medium","high","xhigh","ultra"}:
-            errors.append(f"invalid role effort: {name}")
+        if role.get("model_reasoning_effort") != expected[name]:
+            errors.append(f"unexpected role effort: {name}; expected {expected[name]}")
+        if role.get("model") in {"low","medium","high","xhigh","ultra"}:
+            errors.append(f"reasoning level used as a model name: {name}")
         if not role.get("developer_instructions"):
             errors.append(f"missing instructions: {name}")
     mf = ROOT / "docs/design-system/references/apple/manifest.json"

@@ -36,6 +36,8 @@ ApplicationWindow {
     property string pendingSection: "resources"
     property string currentResourceId: "ammo"
     property string resourceViewMode: "grid"
+    // Session-only experiment: classic remains the default on every launch.
+    property string resourceSelectionStyle: "classic"
     readonly property bool reduceMotion: design.reduceMotion
     readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running
     readonly property bool resourceGameCompatible: {
@@ -320,6 +322,9 @@ ApplicationWindow {
                 Qt.quit();
         }
     }
+    ButtonGroup {
+        id: resourceSelectionGroup
+    }
     PreviewMenu {
         id: commands
         tokens: design
@@ -386,6 +391,24 @@ ApplicationWindow {
                 else
                     window.inspectorShown = !window.inspectorShown;
             }
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "resourceStyleClassic"
+            ButtonGroup.group: resourceSelectionGroup
+            text: "Ресурсы: A · Классическое выделение"
+            checkable: true
+            checked: window.resourceSelectionStyle === "classic"
+            onTriggered: window.resourceSelectionStyle = "classic"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "resourceStyleArt01"
+            ButtonGroup.group: resourceSelectionGroup
+            text: "Ресурсы: B · ART-01 (эксперимент)"
+            checkable: true
+            checked: window.resourceSelectionStyle === "art01"
+            onTriggered: window.resourceSelectionStyle = "art01"
         }
         PreviewMenuItem {
             tokens: design
@@ -938,6 +961,7 @@ ApplicationWindow {
                         visible: window.section === "resources" && !window.query
                         selectedId: window.currentResourceId
                         viewMode: window.resourceViewMode
+                        selectionStyle: window.resourceSelectionStyle
                         compatible: window.resourceGameCompatible
                         Layout.leftMargin: 28
                         Layout.rightMargin: 28

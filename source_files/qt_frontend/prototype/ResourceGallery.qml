@@ -10,6 +10,7 @@ ColumnLayout {
     required property var entries
     property string selectedId: "ammo"
     property string viewMode: "grid"
+    property string selectionStyle: "classic"
     property bool compatible: true
     property string selectedModule: "ui_pickups"
     signal select(string id, bool openPanel)
@@ -19,11 +20,12 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.minimumWidth: 0
     spacing: 20
-    function focusSelection() {
+    function focusSelection(reason = Qt.OtherFocusReason) {
         for (let i = 0; i < cards.count; i++) {
             let item = cards.itemAt(i);
             if (item && item.modelData.id === selectedId) {
-                item.forceActiveFocus();
+                // Explicit keyboard reason keeps Controls.visualFocus true after arrows.
+                item.forceActiveFocus(reason);
                 revealItem(item);
                 return;
             }
@@ -33,7 +35,7 @@ ColumnLayout {
         let i = Math.max(0, Math.min(entries.length - 1, index + delta));
         if (entries[i]) {
             select(entries[i].id, false);
-            Qt.callLater(focusSelection);
+            Qt.callLater(function () { gallery.focusSelection(Qt.TabFocusReason); });
         }
     }
     GridLayout {
@@ -128,11 +130,12 @@ ColumnLayout {
                         anchors.topMargin: gallery.viewMode === "list" ? 8 : 8
                         spacing: 4
                         Label {
+                            objectName: "resourceTitle_" + card.modelData.id
                             text: card.modelData.title
                             Layout.alignment: gallery.viewMode === "list" ? Qt.AlignLeft : Qt.AlignHCenter
                             Layout.maximumWidth: parent.width
-                            color: card.chosen ? gallery.tokens.accentText : gallery.tokens.text
-                            font: gallery.tokens.bodyFont
+                            color: card.chosen && gallery.selectionStyle === "classic" ? gallery.tokens.accentText : gallery.tokens.text
+                            font: card.chosen && gallery.selectionStyle === "art01" ? gallery.tokens.sectionFont : gallery.tokens.bodyFont
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             leftPadding: 6
@@ -141,7 +144,7 @@ ColumnLayout {
                             bottomPadding: 3
                             background: Rectangle {
                                 radius: 4
-                                color: card.chosen ? gallery.tokens.accent : "transparent"
+                                color: card.chosen && gallery.selectionStyle === "classic" ? gallery.tokens.accent : "transparent"
                             }
                         }
                         Label {

@@ -1,4 +1,6 @@
 # Loaded by Codex for trusted projects. Do not force a model unsupported by the account.
+model_reasoning_effort = "ultra"
+
 [agents]
 enabled = true
 max_concurrent_threads_per_session = 4
@@ -16,6 +18,10 @@ config_file = "agents/ui_builder.toml"
 [agents.visual_critic]
 description = "Independent screenshot comparison and macOS design critique; no code edits."
 config_file = "agents/visual_critic.toml"
+
+[agents.art_director]
+description = "Independent art direction and comparison of approved visual experiments."
+config_file = "agents/art_director.toml"
 
 [agents.functional_tester]
 description = "Qt behavior, smoke and regression test specialist."

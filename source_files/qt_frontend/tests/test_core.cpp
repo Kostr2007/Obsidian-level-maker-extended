@@ -6,6 +6,7 @@
 #include <QQmlExpression>
 #include <QQuickStyle>
 #include <QImage>
+#include <QCryptographicHash>
 #include <QFontInfo>
 #include <QRawFont>
 #include <QQuickItem>
@@ -159,6 +160,127 @@ private slots:
         backend.setGeneral("port","limit_enforcing");
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
+    }
+    void previewArt01Capture() {
+        QTemporaryDir state; QVERIFY(state.isValid());
+        write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
+        Backend backend(engine,data,state.path());
+        backend.setDark(qEnvironmentVariable("OBSIDIAN_CAPTURE_MODE")=="dark");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml"));
+        QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first()); QVERIFY(window);
+        window->show(); QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate(); QTRY_VERIFY(window->isActive());
+        auto evaluate=[&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression);
+            const auto value=script.evaluate();
+            if(script.hasError())qFatal("%s",qPrintable(script.error().toString()));
+            return value;
+        };
+        auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
+        QTRY_VERIFY(tokens->property("fontsReady").toBool());
+        tokens->setProperty("reduceMotion",true);
+        QCOMPARE(window->property("resourceSelectionStyle").toString(),QString("classic"));
+        auto *menu=window->findChild<QObject*>("commandsMenu"); QVERIFY(menu);
+        auto *classic=window->findChild<QQuickItem*>("resourceStyleClassic"); QVERIFY(classic);
+        auto *art01=window->findChild<QQuickItem*>("resourceStyleArt01"); QVERIFY(art01);
+        auto *commandsButton=visualItem(window->contentItem(),"commandsButton"); QVERIFY(commandsButton);
+        for(auto *choice:{classic,classic,art01,art01,classic}) {
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,
+                              commandsButton->mapToScene(QPointF(commandsButton->width()/2,commandsButton->height()/2)).toPoint());
+            QTRY_VERIFY(menu->property("opened").toBool());
+            QTRY_VERIFY(choice->width()>0 && choice->height()>0);
+            QTest::qWait(100);
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,
+                              choice->mapToScene(QPointF(choice->width()/2,choice->height()/2)).toPoint());
+            QTRY_VERIFY(!menu->property("visible").toBool());
+            QCOMPARE(classic->property("checked").toBool(),choice==classic);
+            QCOMPARE(art01->property("checked").toBool(),choice==art01);
+            QCOMPARE(window->property("resourceSelectionStyle").toString(),choice==classic ? QString("classic") : QString("art01"));
+        }
+        const auto variant=qEnvironmentVariable("OBSIDIAN_ART01_VARIANT","classic");
+        QVERIFY(variant=="classic" || variant=="art01");
+        window->setProperty("resourceSelectionStyle",variant);
+        window->setWidth(1440); window->setHeight(900);
+        auto *gallery=visualItem(window->contentItem(),"resourceGallery"); QVERIFY(gallery);
+        const auto ammoValue=backend.value("ui_pickups","ammo");
+        const auto healthValue=backend.value("ui_pickups","health");
+        auto *ammo=visualItem(gallery,"resourceCard_ammo"); QVERIFY(ammo);
+        auto *health=visualItem(gallery,"resourceCard_health"); QVERIFY(health);
+        auto *title=visualItem(gallery,"resourceTitle_ammo"); QVERIFY(title);
+        QTRY_COMPARE(gallery->property("selectionStyle").toString(),variant);
+        const auto font=title->property("font").value<QFont>();
+        QCOMPARE(font.pixelSize(),tokens->property("bodyFont").value<QFont>().pixelSize());
+        QCOMPARE(font.weight(),variant=="art01" ? QFont::DemiBold : QFont::Normal);
+        QCOMPARE(title->property("color").value<QColor>(),tokens->property(variant=="art01" ? "text" : "accentText").value<QColor>());
+        auto *pill=title->property("background").value<QQuickItem*>(); QVERIFY(pill);
+        QCOMPARE(pill->property("color").value<QColor>(),variant=="art01" ? QColor(Qt::transparent) : tokens->property("accent").value<QColor>());
+        auto *background=ammo->property("background").value<QQuickItem*>(); QVERIFY(background);
+        QCOMPARE(background->property("color").value<QColor>(),tokens->property("thumbnailSelected").value<QColor>());
+        const auto destination=qEnvironmentVariable("OBSIDIAN_CAPTURE_DIR");
+        QJsonArray shots;
+        auto capture=[&](const QString &name,const QString &selected,bool focus,const QString &hovered) {
+            qInfo() << "Capture state:" << name;
+            QTest::qWait(180); // settle layout and the existing hover scale animation
+            QCOMPARE(window->property("section").toString(),QString("resources"));
+            QCOMPARE(window->property("currentResourceId").toString(),selected);
+            auto *card=visualItem(gallery,"resourceCard_"+selected); QVERIFY(card);
+            QCOMPARE(card->property("chosen").toBool(),true);
+            QCOMPARE(card->hasActiveFocus(),focus);
+            QCOMPARE(card->property("visualFocus").toBool(),focus);
+            auto *bg=card->property("background").value<QQuickItem*>(); QVERIFY(bg);
+            QQmlExpression border(qml.rootContext(),bg,"border.width");
+            QCOMPARE(border.evaluate().toInt(),focus ? 2 : 0);
+            QJsonArray hoveredIds;
+            for(const QString id:{"ammo","health","items","weapons","secrets","secrets_bonus"}) {
+                auto *item=visualItem(gallery,"resourceCard_"+id);
+                if(item && item->property("hovered").toBool())hoveredIds.append(id);
+            }
+            QCOMPARE(hoveredIds,hovered.isEmpty() ? QJsonArray() : QJsonArray{hovered});
+            window->update(); QCoreApplication::processEvents();
+            const auto image=window->grabWindow(); QVERIFY(!image.isNull());
+            QCOMPARE(image.size(),QSize(qRound(window->width()*window->devicePixelRatio()),
+                                       qRound(window->height()*window->devicePixelRatio())));
+            if(destination.isEmpty())return;
+            const auto filename=name+".png"; QVERIFY(image.save(destination+"/"+filename));
+            QFile png(destination+"/"+filename); QVERIFY(png.open(QIODevice::ReadOnly));
+            shots.append(QJsonObject{{"file",filename},{"sha256",QString(QCryptographicHash::hash(png.readAll(),QCryptographicHash::Sha256).toHex())},
+                {"variant",variant},{"theme",backend.dark() ? "dark" : "light"},{"viewMode",window->property("resourceViewMode").toString()},
+                {"selectedId",selected},{"activeFocus",card->hasActiveFocus()},{"visualFocus",card->property("visualFocus").toBool()},
+                {"focusReason",card->property("focusReason").toInt()},{"focusBorderWidth",border.evaluate().toInt()},{"hoveredIds",hoveredIds},
+                {"logicalWidth",window->width()},{"logicalHeight",window->height()},{"pixelWidth",image.width()},{"pixelHeight",image.height()},
+                {"dpr",window->devicePixelRatio()},{"textScale",tokens->property("textScale").toReal()}});
+        };
+        QTest::qWait(250); // initial queued resource focus request must finish first
+        auto unfocus=[&]() { commandsButton->forceActiveFocus(Qt::OtherFocusReason); QTest::mouseMove(window,QPoint(2,2)); };
+        unfocus(); capture("ammo-grid","ammo",false,{});
+        window->setProperty("resourceViewMode","list"); unfocus(); capture("ammo-list","ammo",false,{});
+        if(qEnvironmentVariable("OBSIDIAN_ART01_CORE_ONLY")=="1") {
+            if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
+            return;
+        }
+        window->setProperty("resourceViewMode","grid");
+        ammo->forceActiveFocus(Qt::TabFocusReason); QTest::keyClick(window,Qt::Key_Right);
+        QTRY_VERIFY(health->hasActiveFocus()); QTest::keyClick(window,Qt::Key_Left);
+        QTRY_VERIFY(ammo->hasActiveFocus()); capture("ammo-keyboard","ammo",true,{});
+        if(variant=="classic") {
+            if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
+            return;
+        }
+        unfocus(); QTest::mouseMove(window,health->mapToScene(QPointF(health->width()/2,health->height()/2)).toPoint());
+        capture("ammo-hover-health","ammo",false,"health");
+        unfocus(); evaluate("selectResource('health',false)"); capture("health-grid","health",false,{});
+        evaluate("selectResource('items',false)"); capture("items-grid","items",false,{});
+        tokens->setProperty("textScale",1.25); capture("items-large-text","items",false,{});
+        window->setWidth(1050); window->setHeight(640); window->setProperty("resourceViewMode","list");
+        capture("items-narrow-list","items",false,{});
+        QCOMPARE(backend.value("ui_pickups","ammo"),ammoValue);
+        QCOMPARE(backend.value("ui_pickups","health"),healthValue);
+        if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
     }
     void previewGameDialogCapture() {
         // A test-only capture entry point: no application debug API is needed.
@@ -384,6 +506,7 @@ private slots:
         QTest::keyClick(window,Qt::Key_Right);
         QTRY_COMPARE(window->property("currentResourceId").toString(),QString("health"));
         auto *health=visualItem(gallery,"resourceCard_health");QVERIFY(health);QTRY_VERIFY(health->hasActiveFocus());
+        QVERIFY2(health->property("visualFocus").toBool(),"Arrow navigation must show visualFocus, not only activeFocus");
         QTest::keyClick(window,Qt::Key_Left);
         QTRY_COMPARE(window->property("currentResourceId").toString(),QString("ammo"));
         QCOMPARE(backend.value("ui_pickups","ammo"),ammoBefore);
