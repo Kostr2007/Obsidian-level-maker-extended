@@ -1,5 +1,8 @@
 # Apple design study — sourced research map
 
+**Source precedence:** Apple Design/HIG (principles, official illustrations) → Apple Design Resources and Apple WWDC design sessions → official Apple Support application screenshots (visual examples only) → optional attributed third-party context. Apple Support is not a forum, but its screenshots are not normative HIG rules. Require an exact HIG citation for claimed Apple guidance; if none exists, mark the idea as subjective art direction.
+
+
 Scope: desktop productivity/editor UI patterns **first** (macOS), broad Apple philosophy **second**. Do not mistake an iPhone-specific recommendation for a macOS requirement.
 
 ## Primary sources (official)

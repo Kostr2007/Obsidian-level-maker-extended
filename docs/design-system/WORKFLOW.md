@@ -2,6 +2,18 @@
 
 The coordinator is the primary Codex thread; the roles live in `.codex/config.toml` and `.codex/agents/*.toml`.
 
+## Source hierarchy (mandatory for design decisions)
+
+1. **Authoritative guidance:** [Apple Design](https://developer.apple.com/design/) and the exact [HIG](https://developer.apple.com/design/human-interface-guidelines/) section relevant to the proposed UI behavior. Look at official illustrations on those pages first.
+2. **Design demonstrations:** [Apple Design Resources](https://developer.apple.com/design/resources/) and [Apple design sessions](https://developer.apple.com/videos/design/) to understand component anatomy and reasoning, respecting reuse licensing.
+3. **Official application examples:** [Apple Support user guides](https://support.apple.com/guide/mac-help/welcome/mac) show actual Finder/Settings/Notes UI, but do **not** establish mandatory styling rules. Support is Apple-owned, not a community forum.
+4. **Third-party websites:** optional context only, with attribution and independent verification; never the sole authority for a macOS/HIG requirement.
+
+Each art proposal / visual finding must include a separately identifiable `HIG source + relevant principle` and `visual screenshot source + what it shows`. If no corresponding HIG principle is found, label as **subjective art direction**, not as "required by Apple". Distinguish HIG requirements, Apple's app-specific choices and Obsidian's owner-approved preferences.
+
+User's decision **ART-01 = A (classic) as main style** takes precedence over agent preferences for experimental B; the B experiment may remain accessible for comparison, not silently promoted.
+
+
 | Role | Requested reasoning | Ownership / permission |
 |---|---|---|
 | Coordinator | ultra (requested in project config; current session setting remains client-controlled) | Prioritize, integrate evidence, decide approval |

@@ -2,6 +2,15 @@
 
 This board is designed for image-capable reviewer agents. **No external Apple screenshots are embedded or redistributed here.** Open the official link, view the real illustrations/screenshots, then record the page, visible UI region and capture date. The exact screenshot assets must only be committed after checking explicit redistribution rights.
 
+## Evidence hierarchy — don't confuse visual examples with HIG
+
+**FIRST** inspect the design guidance and embedded examples at [developer.apple.com/design](https://developer.apple.com/design/), especially [HIG](https://developer.apple.com/design/human-interface-guidelines/), [focus and selection](https://developer.apple.com/design/human-interface-guidelines/focus-and-selection), [sidebars](https://developer.apple.com/design/human-interface-guidelines/sidebars) and [layout](https://developer.apple.com/design/human-interface-guidelines/layout). **THEN** use Apple Design Resources / official design videos as component examples. **ONLY THEN** consult actual application screenshots in Apple Support guides for supplementary visual comparison. Support guides are official Apple, not independent forums, but they are not Apple HIG specifications.
+
+Catalog `MAC-13..17` below consists of **SUPPLEMENTARY application examples**, not a replacement for primary developer.apple.com/design references. Do not infer that Finder's gray selection implies a universal Apple rule; the user has chosen Obsidian **ART-01 classic A** over experiment B.
+
+Each new report should list (a) exact HIG URL and relevant principle, (b) exact illustrative image/URL and what is visible, (c) user-approved project direction, and (d) evidence-based tradeoffs. If (a) does not exist, mark it a subjective option rather than attribute it to Apple.
+
+
 | ID | Reference & authoritative visual source | Compare with Obsidian | Focus |
 |---|---|---|---|
 | MAC-01 | [Apple macOS design](https://developer.apple.com/design/human-interface-guidelines/designing-for-macos) | [light](../../../../docs/qt6/design-preview/light.png) | Toolbar vs sidebar vs content hierarchy |

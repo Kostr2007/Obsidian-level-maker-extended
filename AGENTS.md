@@ -6,11 +6,17 @@ Read `docs/design-system/README.md` before any visual/design task. This reposito
 - Keep C++/Lua level generation, gameplay semantics, schema IDs, CONFIG round-trip and existing user presets unchanged unless specifically tasked.
 - Only `ui_builder` changes production QML for design work; auditors give findings and evidence, not self-approved edits.
 - Use official Apple HIG as *guidance*, never assert a project-specific pixel value is prescribed by Apple.
+- **Design-source priority:** normative design arguments must start at `https://developer.apple.com/design/` and its Apple Human Interface Guidelines; then use Apple Design Resources or official WWDC design sessions. `support.apple.com/guide/` is also **official Apple**, but its application screenshots are supplemental examples, NOT normative HIG rules. Do not use forums/blogs as the authority for macOS design requirements.
+- Each new artistic recommendation must cite an exact relevant **HIG principle** separately from any example screenshot. If no matching HIG guidance exists, explicitly label the idea a **subjective design experiment**, never an Apple mandate.
+
 - Never claim visual PASS without a real screenshot of the current commit. An image description or old screenshot is not proof.
 - Never ship proprietary Apple UI kit screenshots, fonts, logos or SF Symbols as repo assets without verified redistribution rights. External source links are welcome.
 - Don't fabricate tool runs, screenshots, measurements or passing tests. Record unavailable checks as UNVERIFIED.
 
 ## Team workflow
+Owner decision (2026-11-07): **ART-01 classic A is chosen as the main style**; experimental B is not approved as the new default. The choice and its implementation constraints are in `docs/design-system/ART01.md`. Do not silently switch to B in later redesign tasks.
+
+
 1. Delegate bounded research to `apple_researcher` (high) when needed; reuse its findings for subsequent changes.
 2. Give `ui_builder` (medium) one narrowly scoped UI issue, requirements and acceptance criteria.
 3. After the change, run `functional_tester` (medium), separately run `visual_critic` (high), and use `accessibility_critic` (medium) for interactive or layout changes.
