@@ -161,6 +161,167 @@ private slots:
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
     }
+    void previewArt02Capture() {
+        QTemporaryDir state; QVERIFY(state.isValid());
+        write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
+        Backend backend(engine,data,state.path());
+        backend.setDark(qEnvironmentVariable("OBSIDIAN_CAPTURE_MODE")=="dark");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml"));
+        QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first()); QVERIFY(window);
+        window->show(); QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate(); QTRY_VERIFY(window->isActive());
+        window->setWidth(1440); window->setHeight(900);
+        auto evaluate=[&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression);
+            const auto value=script.evaluate();
+            if(script.hasError())qFatal("%s",qPrintable(script.error().toString()));
+            return value;
+        };
+        auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
+        QTRY_VERIFY(tokens->property("fontsReady").toBool());
+        tokens->setProperty("reduceMotion",true);
+        QCOMPARE(window->property("geometryTextureStyle").toString(),QString("zebra"));
+        QCOMPARE(window->property("resourceSelectionStyle").toString(),QString("classic"));
+        auto *menu=window->findChild<QObject*>("commandsMenu"); QVERIFY(menu);
+        auto *a=window->findChild<QQuickItem*>("geometryTextureZebra"); QVERIFY(a);
+        auto *b=window->findChild<QQuickItem*>("geometryTextureUniform"); QVERIFY(b);
+        auto *resourceA=window->findChild<QQuickItem*>("resourceStyleClassic"); QVERIFY(resourceA);
+        auto *commands=visualItem(window->contentItem(),"commandsButton"); QVERIFY(commands);
+        backend.exportConfig(QUrl::fromLocalFile(state.path()+"/before.txt"));
+        QFile before(state.path()+"/before.txt"); QVERIFY(before.open(QIODevice::ReadOnly));
+        const auto config=before.readAll();
+        const auto revision=backend.revision();
+        for(auto *choice:{a,a,b,b,a}) {
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,commands->mapToScene(QPointF(commands->width()/2,commands->height()/2)).toPoint());
+            QTRY_VERIFY(menu->property("opened").toBool());
+            QTest::qWait(80);
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,choice->mapToScene(QPointF(choice->width()/2,choice->height()/2)).toPoint());
+            QTRY_VERIFY(!menu->property("visible").toBool());
+            QCOMPARE(a->property("checked").toBool(),choice==a);
+            QCOMPARE(b->property("checked").toBool(),choice==b);
+            QCOMPARE(resourceA->property("checked").toBool(),true);
+            QCOMPARE(window->property("geometryTextureStyle").toString(),QString(choice==a ? "zebra" : "uniform"));
+        }
+        auto rows=[&]() {
+            QList<QQuickItem*> result;
+            std::function<void(QQuickItem*)> visit=[&](QQuickItem *item) {
+                if(item->objectName().startsWith("optionRow_"))result.append(item);
+                for(auto *child:item->childItems())visit(child);
+            };
+            visit(window->contentItem()); return result;
+        };
+        // Both off-scope categories and search results retain their original surfaces.
+        for(const auto &section:{"combat","resources","geometry"}) {
+            window->setProperty("section",section);
+            if(QString(section)=="geometry")window->setProperty("query","liquids");
+            window->setProperty("geometryTextureStyle","uniform"); QTest::qWait(100);
+            for(auto *row:rows()) {
+                const bool target=QString(section)=="geometry" && row->property("moduleId").toString()=="ui_arch";
+                QCOMPARE(row->property("uniformSurface").toBool(),target);
+                if(!target) {
+                    auto *surface=visualItem(row,"rowSurface"); QVERIFY(surface);
+                    auto *separator=visualItem(row,"rowSeparator"); QVERIFY(separator);
+                    QVERIFY(!separator->isVisible());
+                    QCOMPARE(surface->property("color").value<QColor>(),tokens->property(row->property("stripeIndex").toInt()%2 ? "alternateRow" : "rowBase").value<QColor>());
+                }
+            }
+        }
+        window->setProperty("query",""); window->setProperty("section","geometry");
+        evaluate("selectInitial()"); QTest::qWait(200);
+        auto *groupTitle=visualItem(window->contentItem(),"groupTitle_ui_arch"); QVERIFY(groupTitle);
+        QCOMPARE(groupTitle->property("text").toString(),QString::fromUtf8("Структура уровня"));
+        const auto options=evaluate("JSON.stringify(modules())").toString();
+        const auto destination=qEnvironmentVariable("OBSIDIAN_CAPTURE_DIR");
+        QJsonArray shots;
+        const bool core=qEnvironmentVariable("OBSIDIAN_ART02_CORE_ONLY")=="1";
+        for(const QString scenario: core ? QStringList{"normal"} : QStringList{"normal","large-text","narrow","focus","popup"}) {
+            window->setWidth(scenario=="narrow" ? 1050 : 1440);
+            window->setHeight(scenario=="narrow" ? 640 : 900);
+            tokens->setProperty("textScale",scenario=="large-text" ? 1.25 : 1.0);
+            QTest::qWait(180);
+            QJsonArray baseline;
+            for(const QString style:{"zebra","uniform"}) {
+                window->setProperty("geometryTextureStyle",style);
+                commands->forceActiveFocus(Qt::OtherFocusReason); QTest::mouseMove(window,QPoint(2,2));
+                QTest::qWait(150);
+                auto currentRows=rows(); QVERIFY(!currentRows.isEmpty());
+                QList<QQuickItem*> targetRows;
+                for(auto *row:currentRows)if(row->property("moduleId").toString()=="ui_arch")targetRows.append(row);
+                QVERIFY(targetRows.size()>2);
+                QQuickItem *control=nullptr;
+                std::function<void(QQuickItem*)> findCombo=[&](QQuickItem *item) {
+                    if(!control && item->isVisible() && item->property("popup").isValid())control=item;
+                    for(auto *child:item->childItems())findCombo(child);
+                };
+                findCombo(targetRows.first()); QVERIFY(control);
+                auto *popup=control->property("popup").value<QObject*>(); QVERIFY(popup);
+                if(scenario=="focus" || scenario=="popup") {
+                    control->forceActiveFocus(Qt::TabFocusReason);
+                    QTRY_VERIFY(control->hasActiveFocus());
+                    QTRY_VERIFY(control->property("visualFocus").toBool());
+                    if(scenario=="popup") { QTest::keyClick(window,Qt::Key_Space); QTRY_VERIFY(popup->property("opened").toBool()); }
+                }
+                QTest::qWait(120);
+                QJsonArray geometry;
+                for(auto *row:currentRows) {
+                    const bool target=row->property("moduleId").toString()=="ui_arch";
+                    QCOMPARE(row->property("uniformSurface").toBool(),target && style=="uniform");
+                    auto *surface=visualItem(row,"rowSurface"); QVERIFY(surface);
+                    auto *separator=visualItem(row,"rowSeparator"); QVERIFY(separator);
+                    const bool separated=target && style=="uniform" && row!=targetRows.last();
+                    QCOMPARE(separator->isVisible(),separated);
+                    QCOMPARE(surface->property("color").value<QColor>(),tokens->property(target && style=="uniform" ? "surface" : row->property("stripeIndex").toInt()%2 ? "alternateRow" : "rowBase").value<QColor>());
+                    QJsonArray children;
+                    std::function<void(QQuickItem*)> record=[&](QQuickItem *item) {
+                        if(item!=surface && item!=separator && item->isVisible()) {
+                            const auto pos=item->mapToScene(QPointF());
+                            QJsonObject detail{{"type",QString(item->metaObject()->className())},{"x",pos.x()},{"y",pos.y()},{"w",item->width()},{"h",item->height()}};
+                            for(const auto key:{"text","currentIndex","value","checked"})if(item->property(key).isValid())detail[key]=QJsonValue::fromVariant(item->property(key));
+                            children.append(detail);
+                        }
+                        for(auto *child:item->childItems())record(child);
+                    };
+                    record(row);
+                    geometry.append(QJsonObject{{"id",row->objectName()},{"value",row->property("value").toString()},{"items",children}});
+                }
+                if(style=="zebra")baseline=geometry; else QCOMPARE(geometry,baseline);
+                QCOMPARE(window->property("section").toString(),QString("geometry"));
+                QCOMPARE(window->property("query").toString(),QString());
+                QCOMPARE(window->property("resourceSelectionStyle").toString(),QString("classic"));
+                QCOMPARE(backend.revision(),revision);
+                QCOMPARE(evaluate("JSON.stringify(modules())").toString(),options);
+                QCOMPARE(backend.value("","seed"),QString("12345"));
+                if(!destination.isEmpty()) {
+                    window->update(); QCoreApplication::processEvents();
+                    const auto image=window->grabWindow(); QVERIFY(!image.isNull());
+                    QCOMPARE(image.size(),QSize(qRound(window->width()*window->devicePixelRatio()),qRound(window->height()*window->devicePixelRatio())));
+                    const auto filename=scenario+"-"+style+".png"; QVERIFY(image.save(destination+"/"+filename));
+                    QFile png(destination+"/"+filename); QVERIFY(png.open(QIODevice::ReadOnly));
+                    shots.append(QJsonObject{{"file",filename},{"sha256",QString(QCryptographicHash::hash(png.readAll(),QCryptographicHash::Sha256).toHex())},
+                        {"theme",backend.dark()?"dark":"light"},{"style",style},{"section","geometry"},{"group","ui_arch"},{"resourceSelectionStyle","classic"},
+                        {"scenario",scenario},{"textScale",tokens->property("textScale").toDouble()},{"logicalWidth",window->width()},{"logicalHeight",window->height()},
+                        {"pixelWidth",image.width()},{"pixelHeight",image.height()},{"dpr",window->devicePixelRatio()},
+                        {"controlFocus",control->hasActiveFocus()},{"visualFocus",control->property("visualFocus").toBool()},{"popupOpen",popup->property("opened").toBool()},
+                        {"qtVersion",qVersion()},{"seed",backend.value("","seed")},{"focusReason",control->property("focusReason").toInt()},
+                        {"selectedText",control->property("currentText").toString()},{"selectedIndex",control->property("currentIndex").toInt()},{"inspectedId",evaluate("inspected.id").toString()},{"rows",geometry}});
+                }
+                if(scenario=="popup") { QTest::keyClick(window,Qt::Key_Escape); QTRY_VERIFY(!popup->property("visible").toBool()); }
+            }
+        }
+        backend.exportConfig(QUrl::fromLocalFile(state.path()+"/after.txt"));
+        QFile after(state.path()+"/after.txt"); QVERIFY(after.open(QIODevice::ReadOnly)); QCOMPARE(after.readAll(),config);
+        // A new actual QML window always starts at A even after this session chose B.
+        QQmlApplicationEngine fresh; fresh.rootContext()->setContextProperty("backend",&backend);
+        fresh.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!fresh.rootObjects().isEmpty());
+        QCOMPARE(fresh.rootObjects().first()->property("geometryTextureStyle").toString(),QString("zebra"));
+        QCOMPARE(fresh.rootObjects().first()->property("resourceSelectionStyle").toString(),QString("classic"));
+        if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
+    }
     void previewArt01Capture() {
         QTemporaryDir state; QVERIFY(state.isValid());
         write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");

@@ -38,6 +38,8 @@ ApplicationWindow {
     property string resourceViewMode: "grid"
     // Session-only experiment: classic remains the default on every launch.
     property string resourceSelectionStyle: "classic"
+    // ART-02 is session-local; the retained zebra remains the launch default.
+    property string geometryTextureStyle: "zebra"
     readonly property bool reduceMotion: design.reduceMotion
     readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running
     readonly property bool resourceGameCompatible: {
@@ -325,6 +327,9 @@ ApplicationWindow {
     ButtonGroup {
         id: resourceSelectionGroup
     }
+    ButtonGroup {
+        id: geometryTextureGroup
+    }
     PreviewMenu {
         id: commands
         tokens: design
@@ -409,6 +414,24 @@ ApplicationWindow {
             checkable: true
             checked: window.resourceSelectionStyle === "art01"
             onTriggered: window.resourceSelectionStyle = "art01"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "geometryTextureZebra"
+            ButtonGroup.group: geometryTextureGroup
+            text: "Структура: A · Полосы"
+            checkable: true
+            checked: window.geometryTextureStyle === "zebra"
+            onTriggered: window.geometryTextureStyle = "zebra"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "geometryTextureUniform"
+            ButtonGroup.group: geometryTextureGroup
+            text: "Структура: B · ART-02 (эксперимент)"
+            checkable: true
+            checked: window.geometryTextureStyle === "uniform"
+            onTriggered: window.geometryTextureStyle = "uniform"
         }
         PreviewMenuItem {
             tokens: design
@@ -1020,6 +1043,8 @@ ApplicationWindow {
                                                 required property var modelData
                                                 required property int index
                                                 stripeIndex: index
+                                                uniformSurface: window.section === "geometry" && group.modelData.id === "ui_arch" && window.geometryTextureStyle === "uniform"
+                                                separatorAfter: uniformSurface && index < group.modelData.options.length - 1
                                                 tokens: design
                                                 option: modelData
                                                 moduleId: group.modelData.id

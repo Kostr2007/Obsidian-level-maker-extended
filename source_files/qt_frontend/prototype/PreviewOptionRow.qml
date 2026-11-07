@@ -9,6 +9,8 @@ Item {
     required property var option
     required property string moduleId
     property int stripeIndex: 0
+    property bool uniformSurface: false
+    property bool separatorAfter: false
     property bool selected: false
     property string value: {
         backend.revision;
@@ -21,12 +23,22 @@ Item {
     objectName: "optionRow_" + moduleId + "_" + option.id
     implicitHeight: rowBody.implicitHeight + 16
     Rectangle {
+        objectName: "rowSurface"
         anchors.fill: parent
         anchors.leftMargin: 4
         anchors.rightMargin: 4
         radius: 5
         z: -1
-        color: row.stripeIndex % 2 ? row.tokens.alternateRow : row.tokens.rowBase
+        color: row.uniformSurface ? row.tokens.surface : row.stripeIndex % 2 ? row.tokens.alternateRow : row.tokens.rowBase
+    }
+    Rectangle {
+        objectName: "rowSeparator"
+        visible: row.separatorAfter
+        x: 16
+        y: parent.height - height
+        width: Math.max(0, parent.width - 32)
+        height: 1
+        color: row.tokens.line
     }
     function choiceIndex(items, value) {
         for (let i = 0; i < items.length; i++)

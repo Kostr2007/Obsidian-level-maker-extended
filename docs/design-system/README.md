@@ -25,6 +25,12 @@ reasoning introspection. These are not implied by the baseline acceptance.
 
 No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the repo. External pages serve as visual sources; approved assets can be added later with license/source metadata.
 
+## Artistic experiments
+
+- [ART-01: Resources](ART01.md) — the user chose A (classic selected-title pill).
+- [ART-02: Settings texture](ART02.md) — matched zebra/grouped-row experiment;
+  final choice pending independent reviews and the user's decision.
+
 ## First run
 From repository root:
 ```sh
