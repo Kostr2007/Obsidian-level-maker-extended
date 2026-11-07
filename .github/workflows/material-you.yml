@@ -23,6 +23,7 @@ jobs:
           path: Obsidian source(1)
       - name: Validate release metadata and publisher
         run: |
+          python3 scripts/dev/check-design-agent-setup.py
           python3 scripts/dev/capture-gameplay.py --verify-assets
           python3 scripts/dev/extract-freedoom-assets.py --verify
           python3 scripts/dev/check-font-assets.py
@@ -69,6 +70,7 @@ jobs:
             Obsidian source(1)/build/design-preview-check/*.png
             Obsidian source(1)/build/design-preview-check/*/*.png
             Obsidian source(1)/build/design-preview-check/*/*.log
+            Obsidian source(1)/build/design-preview-check/*/*.json
 
   release:
     name: Publish versioned release

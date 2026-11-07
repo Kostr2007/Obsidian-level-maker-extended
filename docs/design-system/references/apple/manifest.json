@@ -1,0 +1,413 @@
+{
+  "schema_version": 2,
+  "policy": "external-link-only-until-license-verified",
+  "entries": [
+    {
+      "id": "MAC-01",
+      "name": "macOS design",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/designing-for-macos",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Desktop density, window resizing and input context",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/designing-for-macos.json"
+    },
+    {
+      "id": "MAC-02",
+      "name": "Sidebar",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/sidebars",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Navigation hierarchy, sidebar sizing and discoverability",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/sidebars.json"
+    },
+    {
+      "id": "MAC-03",
+      "name": "Toolbar",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/toolbars",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Command hierarchy, grouping and narrow-window overflow",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/toolbars.json"
+    },
+    {
+      "id": "MAC-04",
+      "name": "Typography",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/typography",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Legible semantic typography and text-size adaptation",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/typography.json"
+    },
+    {
+      "id": "MAC-05",
+      "name": "Dark mode and color",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/color",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Color and dark-appearance research roadmap",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "index-only; content/visual applicability unverified",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "HTTP 200 response only; not a substantive review",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/color.json"
+    },
+    {
+      "id": "MAC-06",
+      "name": "Layout",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Alignment, grouping and variable window layouts",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/layout.json"
+    },
+    {
+      "id": "MAC-07",
+      "name": "Buttons",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/buttons",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Button roles, labels and interaction states",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/buttons.json"
+    },
+    {
+      "id": "MAC-08",
+      "name": "macOS windows",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/windows",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Window behavior research roadmap",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "index-only; content/visual applicability unverified",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "HTTP 200 response only; not a substantive review",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/windows.json"
+    },
+    {
+      "id": "MAC-09",
+      "name": "Motion",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/motion",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "normative-guidance",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Purposeful optional motion and interruptibility",
+      "asset_url": null,
+      "visual_locator": "Text article; concrete viewed app screenshots are MAC-13 through MAC-17",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "high for article text",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "article text read via DocC JSON",
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/motion.json"
+    },
+    {
+      "id": "MAC-10",
+      "name": "UI kits",
+      "url": "https://developer.apple.com/design/resources/",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "discovery-index",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Component resource discovery and license review",
+      "asset_url": null,
+      "visual_locator": "Landing page only; no concrete visual selected in this entry",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "index-only; content/visual applicability unverified",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "HTTP 200 response only; not a substantive review"
+    },
+    {
+      "id": "MAC-11",
+      "name": "macOS guide",
+      "url": "https://support.apple.com/guide/mac-help/welcome/mac",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "discovery-index",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Locate real macOS app screenshots",
+      "asset_url": null,
+      "visual_locator": "Landing page only; no concrete visual selected in this entry",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "index-only; content/visual applicability unverified",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "HTTP 200 response only; not a substantive review"
+    },
+    {
+      "id": "MAC-12",
+      "name": "WWDC design sessions",
+      "url": "https://developer.apple.com/videos/design/",
+      "local_image": null,
+      "rights": "link-only; redistribution rights not verified",
+      "reference_kind": "discovery-index",
+      "retrieved_on": "2026-11-06",
+      "purpose": "Locate demonstrated interaction and motion examples",
+      "asset_url": null,
+      "visual_locator": "Landing page only; no concrete visual selected in this entry",
+      "observed_design_details": [],
+      "applicability": "Guidance for Qt desktop review; platform-specific APIs and materials do not transfer directly",
+      "macos_context": "Current source as retrieved; cross-platform guidance must be filtered to macOS",
+      "confidence": "index-only; content/visual applicability unverified",
+      "not_observable": [
+        "No image inspected for this roadmap entry",
+        "Runtime behavior and effective font metrics not established"
+      ],
+      "verification": "HTTP 200 response only; not a substantive review"
+    },
+    {
+      "id": "MAC-13",
+      "name": "Finder — Documents icon view",
+      "url": "https://support.apple.com/guide/mac-help/get-to-know-the-finder-mchlp2605/mac",
+      "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/e52e5620-baa3-41cc-8102-8d7f9ef2cebb",
+      "visual_locator": "Main Finder window illustration; alt begins A Finder window with the Finder sidebar on the left",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "purpose": "Navigation/content/toolbar hierarchy",
+      "observed_design_details": [
+        "Gray sidebar separated from white content; compact icon-plus-text rows under subdued group headings",
+        "Documents selected with rounded gray fill and heavier label; blue outlined icon remains visible",
+        "Top controls are grouped by navigation, view mode and actions; thumbnails carry most content color",
+        "Long file names can elide in the middle; this alone is not evidence of a defect"
+      ],
+      "applicability": "Compare resource sidebar selection and grouped command hierarchy; avoid copying file-browser content density",
+      "macos_context": "Support page metadata identifies macOS 27 Golden Gate; exact screenshot OS build/capture date not observable. Assets can be reused across guide revisions.",
+      "retrieved_on": "2026-11-06",
+      "local_image": null,
+      "inspection_artifact": "/tmp/apple-research-2026-11-06/finder.png",
+      "inspection_method": "Downloaded official asset; opened with tools.view_image",
+      "sha256": "f1190c555eda1c85578759bf0e5d789e54b78032b55dde06598bd7485a9bff01",
+      "rights": "link-only; Apple proprietary screenshot; redistribution rights not verified",
+      "confidence": "high for visible composition/states; moderate for generation association",
+      "not_observable": [
+        "Actual font family, point sizes, dimensions at native scale and contrast ratios",
+        "Hover/press transitions, keyboard traversal, screen-reader semantics and animation timing",
+        "Exact OS build and screenshot creation date"
+      ]
+    },
+    {
+      "id": "MAC-14",
+      "name": "System Settings — Menu Bar",
+      "url": "https://support.apple.com/guide/mac-help/change-system-settings-mh15217/mac",
+      "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/40bd24b5-d964-4cb9-8248-1d8bad524aba",
+      "visual_locator": "Main System Settings illustration; Menu Bar selected in sidebar",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "purpose": "Grouped editable settings and selection",
+      "observed_design_details": [
+        "Selected sidebar row combines blue fill, white label and icon; unselected categories retain distinct labels/icons",
+        "Main pane aligns setting labels left and values/toggles right within quiet rounded groups",
+        "Section heading is heavier; descriptive text is secondary; secondary actions use neutral buttons",
+        "On/off toggles and checked/unchecked controls are visible together"
+      ],
+      "applicability": "Compare parameter inspector grouping, label/value alignment and semantic emphasis; category icon colors are contextual, not a mandate",
+      "macos_context": "Support page metadata identifies macOS 27 Golden Gate; exact screenshot OS build/capture date not observable. Assets can be reused across guide revisions.",
+      "retrieved_on": "2026-11-06",
+      "local_image": null,
+      "inspection_artifact": "/tmp/apple-research-2026-11-06/settings.png",
+      "inspection_method": "Downloaded official asset; opened with tools.view_image",
+      "sha256": "896debf2e9412c1b575e36b5de84b7e60bad2c970308047841877dadfd7cfa55",
+      "rights": "link-only; Apple proprietary screenshot; redistribution rights not verified",
+      "confidence": "high for visible composition/states; moderate for generation association",
+      "not_observable": [
+        "Actual font family, point sizes, dimensions at native scale and contrast ratios",
+        "Hover/press transitions, keyboard traversal, screen-reader semantics and animation timing",
+        "Exact OS build and screenshot creation date"
+      ]
+    },
+    {
+      "id": "MAC-15",
+      "name": "Preview — signature popover",
+      "url": "https://support.apple.com/guide/preview/welcome/mac",
+      "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/852f6fc5-175c-43cd-8376-6f3708f277f8",
+      "visual_locator": "Sign documents section; PDF showing signature tool",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "purpose": "Toolbar, popover and inactive controls",
+      "observed_design_details": [
+        "Compact document title and secondary page/status metadata occupy leading toolbar area",
+        "Toolbar groups separate zoom, markup and other actions; active markup tool is blue",
+        "Signature popover overlays document with selected Trackpad segment and focused Click Here to Begin action",
+        "Clear and Done are visibly faded while Cancel remains available"
+      ],
+      "applicability": "Compare command grouping, contextual panels and inactive-state distinction; PDF content typography is document content, not UI typography",
+      "macos_context": "Support page metadata identifies macOS 27 Golden Gate; exact screenshot OS build/capture date not observable. Assets can be reused across guide revisions.",
+      "retrieved_on": "2026-11-06",
+      "local_image": null,
+      "inspection_artifact": "/tmp/apple-research-2026-11-06/preview.png",
+      "inspection_method": "Downloaded official asset; opened with tools.view_image",
+      "sha256": "4872efab4c74cbe93b7b28058b19cec9f3baafb34a2dbbc9642d17cf3cf00347",
+      "rights": "link-only; Apple proprietary screenshot; redistribution rights not verified",
+      "confidence": "high for visible composition/states; moderate for generation association",
+      "not_observable": [
+        "Actual font family, point sizes, dimensions at native scale and contrast ratios",
+        "Hover/press transitions, keyboard traversal, screen-reader semantics and animation timing",
+        "Exact OS build and screenshot creation date"
+      ]
+    },
+    {
+      "id": "MAC-16",
+      "name": "Notes — audio recording and transcript",
+      "url": "https://support.apple.com/guide/notes/welcome/mac",
+      "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/40d54ad6-0c18-47c8-93f5-6212d1b637f0",
+      "visual_locator": "Record and transcribe audio section; Mac window with right transcription panel",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "purpose": "Content/inspector balance",
+      "observed_design_details": [
+        "White note content occupies most of the window, with quieter gray recording/transcript panel at right",
+        "Compact toolbar groups use mostly monochrome symbols; secondary record/date metadata is subdued",
+        "Recording attachment is a small contained card; playback controls stay near associated content",
+        "Mac desktop/menu bar surrounds the app; the reference is a full-desktop illustration rather than equal-scale component specimen"
+      ],
+      "applicability": "Compare right inspector role and content-forward composition; do not infer tiny UI text sizes from scaled desktop illustration",
+      "macos_context": "Support page metadata identifies macOS 27 Golden Gate; exact screenshot OS build/capture date not observable. Assets can be reused across guide revisions.",
+      "retrieved_on": "2026-11-06",
+      "local_image": null,
+      "inspection_artifact": "/tmp/apple-research-2026-11-06/notes.png",
+      "inspection_method": "Downloaded official asset; opened with tools.view_image",
+      "sha256": "41b1307f3adfde866cf5909372a23f0315a6a66f3aca471169016a3205d9c824",
+      "rights": "link-only; Apple proprietary screenshot; redistribution rights not verified",
+      "confidence": "high for visible composition/states; moderate for generation association",
+      "not_observable": [
+        "Actual font family, point sizes, dimensions at native scale and contrast ratios",
+        "Hover/press transitions, keyboard traversal, screen-reader semantics and animation timing",
+        "Exact OS build and screenshot creation date"
+      ]
+    },
+    {
+      "id": "MAC-17",
+      "name": "TextEdit — Save sheet and format popup",
+      "url": "https://support.apple.com/guide/textedit/welcome/mac",
+      "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/507f9c99-aad6-4cbd-a17a-c68d5c389bad",
+      "visual_locator": "Convert rich text documents to other formats section; Save As dialog with format popup open",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "purpose": "Form focus, selection and button hierarchy",
+      "observed_design_details": [
+        "Save sheet dims document behind it and aligns labels with editable fields",
+        "Name field has a clear blue focus outline and selected text",
+        "Open File Format menu marks selected value with checkmark and blue row; alternate option stays neutral",
+        "Cancel and Save share approximate visual size; blue fill distinguishes primary Save; checkbox shows persistent selected state"
+      ],
+      "applicability": "Compare combo popup selection, keyboard-focus visibility and primary/secondary dialog actions; background document formatting controls are inactive",
+      "macos_context": "Support page metadata identifies macOS 27 Golden Gate; exact screenshot OS build/capture date not observable. Assets can be reused across guide revisions.",
+      "retrieved_on": "2026-11-06",
+      "local_image": null,
+      "inspection_artifact": "/tmp/apple-research-2026-11-06/textedit.png",
+      "inspection_method": "Downloaded official asset; opened with tools.view_image",
+      "sha256": "f07dbe3a95d8b999e8d82f5045920002dc474de5b49398eecf4dbfeda5a84b91",
+      "rights": "link-only; Apple proprietary screenshot; redistribution rights not verified",
+      "confidence": "high for visible composition/states; moderate for generation association",
+      "not_observable": [
+        "Actual font family, point sizes, dimensions at native scale and contrast ratios",
+        "Hover/press transitions, keyboard traversal, screen-reader semantics and animation timing",
+        "Exact OS build and screenshot creation date"
+      ]
+    }
+  ],
+  "research_date": "2026-11-06"
+}

@@ -1,0 +1,32 @@
+# Loaded by Codex for trusted projects. Do not force a model unsupported by the account.
+# Levels below control reasoning EFFORT, not the model: medium/high are not model names.
+# Each agent's model_reasoning_effort overrides this default when the Codex client honors it.
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+max_depth = 1
+default_subagent_reasoning_effort = "medium"
+
+[agents.apple_researcher]
+description = "Apple HIG/macOS source investigator; read-only research."
+config_file = "agents/apple_researcher.toml"
+
+[agents.ui_builder]
+description = "Only agent allowed to implement scoped Qt/QML design changes."
+config_file = "agents/ui_builder.toml"
+
+[agents.art_director]
+description = "Art direction: proactively identify visual improvement opportunities even when visual QA passes; read-only proposals."
+config_file = "agents/art_director.toml"
+
+[agents.visual_critic]
+description = "Independent screenshot comparison and macOS design critique; no code edits."
+config_file = "agents/visual_critic.toml"
+
+[agents.functional_tester]
+description = "Qt behavior, smoke and regression test specialist."
+config_file = "agents/functional_tester.toml"
+
+[agents.accessibility_critic]
+description = "Keyboard, focus, zoom, semantics and contrast reviewer; no code edits."
+config_file = "agents/accessibility_critic.toml"
