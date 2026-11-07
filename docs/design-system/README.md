@@ -29,8 +29,9 @@ No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the re
 
 - [ART-01: Resources](ART01.md) — the user chose A (classic selected-title pill).
 - [ART-02: Settings texture](ART02.md) — the user chose A (zebra rows).
-- [ART-03: Resource inspector](ART03.md) — matched current/value-first experiment;
-  final choice pending independent reviews and the user's decision.
+- [ART-03: Resource inspector](ART03.md) — the user chose A (original gallery
+  before the current value, with individual illustration tiles).
+- [ART-04: Sidebar icons](ART04.md) — approved A/B prototype; final choice pending.
 
 ## First run
 From repository root:

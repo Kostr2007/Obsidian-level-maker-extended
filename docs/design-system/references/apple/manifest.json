@@ -407,7 +407,247 @@
         "Hover/press transitions, keyboard traversal, screen-reader semantics and animation timing",
         "Exact OS build and screenshot creation date"
       ]
+    },
+    {
+      "id": "MAC-18",
+      "name": "Outline views — complete HIG article and structural diagram",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/outline-views",
+      "local_image": null,
+      "rights": "link-only; Apple proprietary image; redistribution rights not verified",
+      "reference_kind": "normative-guidance-with-inspected-illustration",
+      "retrieved_on": "2026-11-07",
+      "purpose": "Distinguish real hierarchical data from flat resource navigation",
+      "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/components-outline-view-intro@2x.png",
+      "visual_locator": "Outline views — complete HIG article and structural diagram",
+      "observed_design_details": [
+        "Stylized red diagram has four columns, first-column indentation and disclosure triangles",
+        "Child Image A has full-row selection; other attribute columns have no hierarchy",
+        "Complete guidance says use a table for nonhierarchical data, retain expansion choices, and consider alternating colors for multi-column outlines"
+      ],
+      "applicability": "Current resource categories are flat: no outline conversion justified. Use this guidance only if genuine parent/child data is introduced. Existing zebra form texture is a separate user choice.",
+      "macos_context": "HIG metadata supports macOS only; screenshot is an abstract diagram, not actual Finder UI or a pixel specification.",
+      "confidence": "high for complete article text and observed diagram",
+      "inspection_method": "Complete article read where identified; selected images personally opened with tools.view_image",
+      "inspected_assets": [
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/components-outline-view-intro@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/outline-intro.png",
+          "sha256": "d7f3117991695a99b5221acb9bcf7360d3b06a3b443c3d07584d4a733bb6ecda",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        }
+      ],
+      "not_observable": [
+        "Exact screenshot creation date and OS build",
+        "Native typography metrics, effective interaction targets, runtime focus and assistive-technology behavior"
+      ],
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/outline-views.json"
+    },
+    {
+      "id": "MAC-19",
+      "name": "Split views — complete HIG article and macOS diagrams",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/split-views",
+      "local_image": null,
+      "rights": "link-only; Apple proprietary image; redistribution rights not verified",
+      "reference_kind": "normative-guidance-with-inspected-illustrations",
+      "retrieved_on": "2026-11-07",
+      "purpose": "Adjacent content, navigation and supplementary inspector roles",
+      "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/components-split-view-intro@2x.png",
+      "visual_locator": "Split views — complete HIG article and macOS diagrams",
+      "observed_design_details": [
+        "Intro diagram separates Sidebar, Canvas and Inspector",
+        "Laptop diagrams show side-by-side, stacked and combined pane arrangements",
+        "macOS text discusses reasonable pane size limits, optional hide/reveal and thin dividers; persistent navigation selection links panes"
+      ],
+      "applicability": "Existing three-zone editor composition is applicable; opacity, proportions and Qt divider interaction remain project decisions. tvOS third/two-thirds ratios and visionOS title rules are not macOS rules.",
+      "macos_context": "Cross-platform article, with macOS-specific subsection. Latest listed change June 9, 2025 adds iOS/iPadOS considerations; diagrams do not verify an OS build.",
+      "confidence": "high for complete article text and observed diagrams",
+      "inspection_method": "Complete article read where identified; selected images personally opened with tools.view_image",
+      "inspected_assets": [
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/components-split-view-intro@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/components-split-view-intro.png",
+          "sha256": "923fc67a2543b78efc0f5deff384e80e99f247b7f481f2de2aae68332ec21ac7",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        },
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/horizontal-split-view@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/horizontal-split-view.png",
+          "sha256": "ac01fcb4f0adef5ed60ede6800d1fce2f5d5bf4ec8b8e4442a1e4d685e196992",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        },
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/vertical-split-view@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/vertical-split-view.png",
+          "sha256": "06c97bef907b3263ad644326723a387eb7451c8d6912071bf57f0ede0dd7df43",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        },
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/multiple-split-view@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/multiple-split-view.png",
+          "sha256": "87eaa54c6ceb248435505db6a401350a96452b678877fb9c5cce7d759765e2c1",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        }
+      ],
+      "not_observable": [
+        "Exact screenshot creation date and OS build",
+        "Native typography metrics, effective interaction targets, runtime focus and assistive-technology behavior"
+      ],
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/split-views.json"
+    },
+    {
+      "id": "MAC-20",
+      "name": "Sliders — HIG macOS specimens and Energy Saver crop",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/sliders",
+      "local_image": null,
+      "rights": "link-only; Apple proprietary image; redistribution rights not verified",
+      "reference_kind": "normative-guidance-with-inspected-control-examples",
+      "retrieved_on": "2026-11-07",
+      "purpose": "Thumb/track clarity and precise value entry",
+      "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/sliders-no-tick-marks@2x.png",
+      "visual_locator": "Sliders — HIG macOS specimens and Energy Saver crop",
+      "observed_design_details": [
+        "Four selected images show filled leading track, white rounded thumb, optional ticks and exact 50% text field with stepper",
+        "Energy Saver partial screenshot labels nonlinear time ticks from 1 min through Never",
+        "Article supports familiar direction, exact value entry, meaningful ticks and live feedback",
+        "Images show circular-looking thumbs while current macOS prose describes a narrow lozenge; exact contour is context/version dependent"
+      ],
+      "applicability": "Existing custom PreviewOptionRow slider already has a numeric value field. Any finish change is an optional artistic comparison; preserve range, CONFIG semantics, keyboard access and effective hit area.",
+      "macos_context": "Cross-platform article; macOS subsection reviewed. Energy Saver image is a historical settings crop, exact build unknown. No whole-window current System Settings slider image established.",
+      "confidence": "high for article and observed specimens; moderate for generation; current whole-window Settings slider evidence unverified",
+      "inspection_method": "Complete article read where identified; selected images personally opened with tools.view_image",
+      "inspected_assets": [
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/sliders-no-tick-marks@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/sliders-no-tick-marks.png",
+          "sha256": "3597210dfb9a19fcd57072d3296656fe82ca4154057865304cddc63717abc5ac",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        },
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/sliders-tick-marks@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/sliders-tick-marks.png",
+          "sha256": "6a4d7a8913d3fa9e8067a24c11b13bfd2d797f64f35d45f84d657a0c490a5c73",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        },
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/sliders-labels@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/sliders-labels.png",
+          "sha256": "0be677ec931028bae5d37ff68d88f31a64ba2e41a0768dd01b1b53d5c287564a",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        },
+        {
+          "asset_url": "https://developer.apple.com/tutorials/images/com.apple.HIG/sliders-text-field@2x.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/sliders-text-field.png",
+          "sha256": "00bd24e1b6afd717247225fa4abf09632f4cb6ccb432e57ed6d9fd19dbe030d0",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        }
+      ],
+      "not_observable": [
+        "Exact screenshot creation date and OS build",
+        "Native typography metrics, effective interaction targets, runtime focus and assistive-technology behavior"
+      ],
+      "documentation_payload_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/sliders.json"
+    },
+    {
+      "id": "MAC-21",
+      "name": "Finder — Gallery with right metadata pane",
+      "url": "https://support.apple.com/guide/mac-help/change-how-folders-are-displayed-in-the-finder-mchldaafb302/mac",
+      "local_image": null,
+      "rights": "link-only; Apple proprietary image; redistribution rights not verified",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "retrieved_on": "2026-11-07",
+      "purpose": "Actual navigation/content/inspector composition",
+      "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/c92ae0db-5f72-471b-818c-b01fd3aa3a46",
+      "visual_locator": "Finder — Gallery with right metadata pane",
+      "observed_design_details": [
+        "Grouped gray leading sidebar with Desktop selected",
+        "Large central image and bottom thumbnail strip carry primary content",
+        "Quieter right pane contains file identity, metadata, tags and contextual actions"
+      ],
+      "applicability": "Supports content-forward composition and optional light inspector surface distinction. This is Gallery, not an outline or proof that flat categories should become a file tree.",
+      "macos_context": "Unversioned guide metadata identifies macOS 27 Golden Gate; image OS build and capture date unknown.",
+      "confidence": "high for visible composition; moderate for guide-generation association",
+      "inspection_method": "Complete article read where identified; selected images personally opened with tools.view_image",
+      "inspected_assets": [
+        {
+          "asset_url": "https://ipcdn-web.apple.com/assets/v2/web/c92ae0db-5f72-471b-818c-b01fd3aa3a46",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/finder-gallery.png",
+          "sha256": "7427e44228ecdf3cb95e2b93dcfdef049bff15ef299214401aaec677c7dc5b41",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        }
+      ],
+      "not_observable": [
+        "Exact screenshot creation date and OS build",
+        "Native typography metrics, effective interaction targets, runtime focus and assistive-technology behavior"
+      ]
+    },
+    {
+      "id": "MAC-22",
+      "name": "System Settings — Sequoia Appearance and category tiles",
+      "url": "https://support.apple.com/guide/mac-help/change-system-settings-mh15217/15/mac/15",
+      "local_image": null,
+      "rights": "link-only; Apple proprietary image; redistribution rights not verified",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "retrieved_on": "2026-11-07",
+      "purpose": "Rounded colorful category icon backgrounds before latest material treatment",
+      "asset_url": "https://help.apple.com/assets/67D1B1065D0706C4AD080C54/67D1B10E5D0706C4AD080C79/en_US/9d447c4b1ecc39663a72d63e67093be5.png",
+      "visual_locator": "System Settings — Sequoia Appearance and category tiles",
+      "observed_design_details": [
+        "Colored rounded-square category tiles accompany readable labels",
+        "Blue selected Appearance row surrounds a black category tile and white label",
+        "Connectivity categories share blue tiles while Battery is green and General gray",
+        "Main pane groups settings with aligned values and quiet surfaces"
+      ],
+      "applicability": "Optional original category tiles may increase visual weight while preserving existing glyphs, label text and selected-row semantics. No Apple icon or exact hue/radius required.",
+      "macos_context": "Version-specific guide for macOS Sequoia 15; artwork capture date and exact OS build not independently verified. MAC-22 is a catalog ID.",
+      "confidence": "high for visible tile/selection pattern; moderate for exact screenshot generation",
+      "inspection_method": "Complete article read where identified; selected images personally opened with tools.view_image",
+      "inspected_assets": [
+        {
+          "asset_url": "https://help.apple.com/assets/67D1B1065D0706C4AD080C54/67D1B10E5D0706C4AD080C79/en_US/9d447c4b1ecc39663a72d63e67093be5.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/settings-sequoia.png",
+          "sha256": "f3470df1d9ae9264efc4a1aec32471857dc9829c20ff8cee8782ead94fbcfc61",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        }
+      ],
+      "not_observable": [
+        "Exact screenshot creation date and OS build",
+        "Native typography metrics, effective interaction targets, runtime focus and assistive-technology behavior"
+      ]
+    },
+    {
+      "id": "MAC-23",
+      "name": "System Settings — Tahoe Appearance and category tiles",
+      "url": "https://support.apple.com/guide/mac-help/change-system-settings-mh15217/26/mac/26",
+      "local_image": null,
+      "rights": "link-only; Apple proprietary image; redistribution rights not verified",
+      "reference_kind": "observed-official-app-example; descriptive, not normative",
+      "retrieved_on": "2026-11-07",
+      "purpose": "Separate enduring category tile pattern from newer materials",
+      "asset_url": "https://help.apple.com/assets/69DD569682238CF8EC0621E2/69DD569982238CF8EC0621E9/en_US/1a55c8ea0fef87ffd5215a0ef88a615c.png",
+      "visual_locator": "System Settings — Tahoe Appearance and category tiles",
+      "observed_design_details": [
+        "Rounded colorful category tiles and adjacent text remain visible",
+        "Selected Appearance row remains blue with black icon tile",
+        "Newer settings include Liquid Glass appearance options and icon/widget styles",
+        "Sidebar material and grouped content surfaces differ from Sequoia without changing the basic tile/label pattern"
+      ],
+      "applicability": "Confirms tile inspiration spans guide generations. Use original Obsidian tiles without importing Liquid Glass, translucent composition, Apple artwork or source pixels.",
+      "macos_context": "Version-specific guide for macOS Tahoe 26; exact artwork capture/build unknown. MAC-23 is a catalog ID.",
+      "confidence": "high for visible pattern; moderate for exact screenshot generation",
+      "inspection_method": "Complete article read where identified; selected images personally opened with tools.view_image",
+      "inspected_assets": [
+        {
+          "asset_url": "https://help.apple.com/assets/69DD569682238CF8EC0621E2/69DD569982238CF8EC0621E9/en_US/1a55c8ea0fef87ffd5215a0ef88a615c.png",
+          "inspection_artifact": "/tmp/apple-research-2026-11-07/settings-tahoe.png",
+          "sha256": "359b1ef70c405712cc161fb80a3f6cd2cccac2808f9257bc1d4425728bf70a93",
+          "inspection_method": "Downloaded official asset; personally opened with tools.view_image on 2026-11-07"
+        }
+      ],
+      "not_observable": [
+        "Exact screenshot creation date and OS build",
+        "Native typography metrics, effective interaction targets, runtime focus and assistive-technology behavior"
+      ]
     }
   ],
-  "research_date": "2026-11-06"
+  "research_date": "2026-11-07"
 }
