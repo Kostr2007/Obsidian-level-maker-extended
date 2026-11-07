@@ -33,9 +33,9 @@ No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the re
   before the current value, with individual illustration tiles).
 - [ART-04: Sidebar icons](ART04.md) — the user chose B (colored rounded backplates).
 - [ART-05: Slider handle](ART05.md) — the user chose C, with a dark capsule fill
-  requested for dark appearance; verify that refinement before ART-06.
-- [ART-06: Inspector surface](ART06.md) — four light-pane backgrounds, implemented
-  only after the capsule refinement passes its independent gates; final choice open.
+  verified in [the independent refinement gates](reports/2026-11-07-art05-c-result.md).
+- [ART-06: Inspector surface](ART06.md) — four light-pane backgrounds; the
+  prerequisite capsule gates passed, implementation authorized, final choice open.
 
 Starting with ART-05, new artistic comparisons offer four scoped options: the
 current component A and three alternatives B/C/D. Each receives independent

@@ -25,6 +25,7 @@ User preference, 2026-11-07: new artistic experiments present **four** options,
 not a fixed two-option comparison. Use A as the current component/control and
 B/C/D as three distinct, scoped alternatives. Keep all previous accepted choices
 fixed; for ART-05 these are ART-01 A, ART-02 A, ART-03 A and ART-04 B.
+For ART-06, also retain the accepted ART-05 C with its verified dark fill.
 
 - Define the visual hypothesis, reference, expected benefit and cost for each
   alternative before implementation. Do not manufacture three unrelated redesigns.
