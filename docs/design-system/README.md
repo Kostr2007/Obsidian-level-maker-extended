@@ -31,7 +31,9 @@ No Apple-owned screenshot, UI kit, SF font or symbol has been copied into the re
 - [ART-02: Settings texture](ART02.md) — the user chose A (zebra rows).
 - [ART-03: Resource inspector](ART03.md) — the user chose A (original gallery
   before the current value, with individual illustration tiles).
-- [ART-04: Sidebar icons](ART04.md) — approved A/B prototype; final choice pending.
+- [ART-04: Sidebar icons](ART04.md) — the user chose B (colored rounded backplates).
+- [ART-05: Slider handle](ART05.md) — approved four-option prototype A/B/C/D;
+  final choice pending independent reviews and the user's decision.
 
 ## First run
 From repository root:

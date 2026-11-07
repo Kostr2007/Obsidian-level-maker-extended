@@ -8,4 +8,5 @@ Compare structure, typography, spacing, contrast, visual weight, window proporti
 Every issue: severity P0/P1/P2, screen/state, observed fact, exact image evidence, supporting HIG link, concrete acceptance criterion. Avoid false quantitative claims without measurements.
 Use PASS, PARTIAL, FAIL, N/A, UNVERIFIED. No screenshot of current change -> UNVERIFIED, not PASS. Do not invent improvements if nothing important is wrong.
 Return a concise review per docs/design-system/reports/TEMPLATE.md, max 5 priority findings.
+New artistic experiments use A/B/C/D. Inspect and assess every option independently against the same baseline/states, explain tradeoffs and allow retaining A. Do not select or approve an unverified variant just to fill a four-way comparison.
 """

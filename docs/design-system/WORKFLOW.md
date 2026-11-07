@@ -19,6 +19,33 @@ Keep the inherited model unless the user separately requests another model.
 The shared [runtime observability note](reports/2026-11-06-agent-runtime.md)
 documents the environment limitation once; ordinary reports need not repeat it.
 
+## Four-option artistic comparisons
+
+User preference, 2026-11-07: new artistic experiments present **four** options,
+not a fixed two-option comparison. Use A as the current component/control and
+B/C/D as three distinct, scoped alternatives. Keep all previous accepted choices
+fixed; for ART-05 these are ART-01 A, ART-02 A, ART-03 A and ART-04 B.
+
+- Define the visual hypothesis, reference, expected benefit and cost for each
+  alternative before implementation. Do not manufacture three unrelated redesigns.
+- Expose A/B/C/D with an exclusive session-local control. Keep the current
+  component as the launch default until the user selects its replacement.
+- Capture all four in light/dark at identical data, window/DPR, text scale, focus,
+  scroll and state. Include the changed component's relevant disabled/focus states.
+  Compare B/C/D to A for deterministic invariants; six pairwise pixel audits are
+  unnecessary when each alternative passes the same baseline contract.
+- Visual Critic independently gives a verdict and tradeoffs for **each** option;
+  Art Director independently ranks the acceptable options with reasons. Neither
+  reviewer must pick a new design, or accept a broken option merely to keep four.
+- Functional/accessibility gates cover all four. Repair confirmed regressions,
+  then repeat affected gates on current source before presentation. Separate
+  aesthetic preference from a failure requiring a fix.
+- Present a four-up comparison, optional pair/solo views, original PNGs and
+  independent reports to the user. Record the choice and make it the accepted
+  baseline for later work. Historical A/B reports remain historical evidence.
+
+Routine bug fixes are validated fixes, not new artistic competitions.
+
 ## Loop (max 3 iterations per scoped finding)
 1. Researcher maps relevant official guidance and source-linked screenshots (one-time or cached; not every iteration).
 2. Coordinator defines **one** specific problem, exact screen/state/size, acceptance criteria and baseline.

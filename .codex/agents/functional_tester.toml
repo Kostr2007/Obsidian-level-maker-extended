@@ -11,4 +11,5 @@ python3 scripts/dev/check-design-preview.py
 Only claim checks passed if executed successfully with exit code 0. Retain logs and screenshot artifact locations. Report missing dependencies and platform limits explicitly.
 Normally do not edit production code. Add tests only with a task-specific scoped assignment and without racing the UI builder.
 Do not treat an image as proof of interaction behavior.
+For new artistic experiments verify all four A/B/C/D variants against equal data and interaction contracts. Check exclusive session switching, accepted launch defaults, CONFIG preservation and changed control states; retain current-commit captures for independent reviewers.
 """

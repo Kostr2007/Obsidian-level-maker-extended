@@ -22,6 +22,9 @@ Read `docs/design-system/REVIEW_CHECKLIST.md` and write each review using `docs/
 Use the existing `scripts/dev/check-design-preview.py`, `scripts/dev/check-qt.py`, and Qt core tests. The independent critic must not edit source files.
 
 ## Evidence and cost
+- New artistic experiments offer four variants A/B/C/D: the current component as
+  control A and three distinct alternatives. Keep previously accepted choices
+  fixed. Review every variant; the user selects the result. See WORKFLOW.md.
 - Prefer mechanical scripts/tests for deterministic checks; reserve vision inspection for composition, hierarchy and visual defects.
 - Don't launch every agent on trivial changes. Keep research/audits focused on the diff, not all ~6k repository files.
 - Agent profile efforts are requested defaults; check effective child settings in Codex runtime because some surfaces inherit parent settings.
