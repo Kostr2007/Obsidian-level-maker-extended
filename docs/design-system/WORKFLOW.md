@@ -6,16 +6,26 @@ The coordinator is the primary Codex thread; the roles live in `.codex/config.to
 |---|---|---|
 | Coordinator | high (set in current Codex session) | Prioritize, integrate evidence, decide approval |
 | apple_researcher | high | Official docs/references only; no production QML edits |
+| art_director | high | Seek artistic improvement opportunities even when QA passes; read-only, needs owner approval |
 | ui_builder | medium | Scoped production QML implementation |
 | visual_critic | high | Independent visual PASS/FAIL and screenshot comparison, read-only |
 | functional_tester | medium | Run builds, smoke and regression tests, report actual logs |
 | accessibility_critic | medium | Keyboard, zoom, contrast, reduced motion, read-only |
 
-Use xhigh only when the coordinator must resolve architectural conflicts or difficult regressions; ultra only for exceptional research/architecture if the client/model supports it. Per-agent effort is advisory until confirmed by the active Codex runtime.
+**The labels high/medium/xhigh/ultra mean reasoning effort, NOT model names.** `model_reasoning_effort` in each agent TOML requests that cognitive budget for that role without selecting a different model. `agents.default_subagent_reasoning_effort` is a fallback for unspecified subagents. Explicit spawn settings and role settings have precedence per the Codex runtime; always distinguish requested from observed effort. Do not assert actual runtime level when introspection is unavailable (UNVERIFIED). See https://developers.openai.com/codex/multi-agent and https://developers.openai.com/codex/config-reference.
+
+Use xhigh only when the coordinator must resolve architectural conflicts or difficult regressions; ultra only for exceptional research/architecture if the client/model supports it. The coordinator's own effort belongs to its current session; the role table does not change it.
+
+## Two independent tracks
+
+1. **Quality gate (mandatory for changed UI):** `visual_critic` validates against accepted requirements; `functional_tester` verifies behavior. PASS means no proven defect in inspected states, not that the design cannot be improved.
+2. **Art direction (optional and distinct):** `art_director` produces up to three high-impact proposals, even after PASS. It does not label good UI as broken, and it does not edit code. The coordinator forwards proposals to the **user/owner for explicit approval**. Only approved proposals are passed to `ui_builder` and then receive normal QA.
+
+See [ART_DIRECTION.md](ART_DIRECTION.md) for the decision format. Neither a research report nor an art-direction suggestion is itself permission to redesign.
 
 ## Loop (max 3 iterations per scoped finding)
 1. Researcher maps relevant official guidance and source-linked screenshots (one-time or cached; not every iteration).
-2. Coordinator defines **one** specific problem, exact screen/state/size, acceptance criteria and baseline.
+2. Coordinator defines **one** specific problem OR one **owner-approved** art-direction proposal, exact screen/state/size, acceptance criteria and baseline.
 3. Builder edits limited QML, builds, captures identical screenshots at changed commit.
 4. Functional tester checks runtime, logging, persistence and tests. If FAIL, fix before styling.
 5. Visual critic inspects actual current screenshot + historical baseline + linked Apple/macOS reference, with 1–5 actionable issues.
