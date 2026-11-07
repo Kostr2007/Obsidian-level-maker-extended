@@ -243,8 +243,8 @@ Item {
                             width: row.sliderStyle === "disc" ? 19 : row.sliderStyle === "capsule" ? 9 : row.sliderStyle === "tile" ? 16 : 15
                             height: row.sliderStyle === "capsule" ? 21 : width
                             radius: row.sliderStyle === "tile" ? 4 : row.sliderStyle === "original" ? 8 : width / 2
-                            color: row.sliderStyle === "original" ? row.tokens.surface : row.sliderStyle === "tile" ? row.tokens.accent : row.tokens.dark ? "#f4f4f6" : "#ffffff"
-                            border.color: row.sliderStyle === "original" ? (level.visualFocus ? row.tokens.accent : row.tokens.dark ? "#a8a8b0" : "#a3a3ae") : row.sliderStyle === "tile" ? row.tokens.accent : row.tokens.dark ? "#b9b9c2" : "#94949e"
+                            color: row.sliderStyle === "original" ? row.tokens.surface : row.sliderStyle === "tile" ? row.tokens.accent : row.tokens.dark ? (row.sliderStyle === "capsule" ? "#55555e" : "#f4f4f6") : "#ffffff"
+                            border.color: row.sliderStyle === "original" ? (level.visualFocus ? row.tokens.accent : row.tokens.dark ? "#a8a8b0" : "#a3a3ae") : row.sliderStyle === "tile" ? row.tokens.accent : row.tokens.dark ? (row.sliderStyle === "capsule" ? "#92929c" : "#b9b9c2") : "#94949e"
                             border.width: row.sliderStyle === "original" && level.visualFocus ? 2 : 1
                             opacity: row.sliderStyle !== "original" && !level.enabled ? 0.4 : 1
                         }

@@ -45,7 +45,7 @@ ApplicationWindow {
     // ART-04 B is accepted; the original icons remain available for comparison.
     property string sidebarIconStyle: "badges"
     // ART-05 affects only the level-size numeric handle and is never persisted.
-    property string levelSizeSliderStyle: "original"
+    property string levelSizeSliderStyle: "capsule"
     readonly property bool priorityAmmoInspector: ammoInspectorStyle === "priority" && section === "resources" && inspectedModule === "ui_pickups" && inspected && inspected.id === "ammo" && resourceGameCompatible
     readonly property bool reduceMotion: design.reduceMotion
     readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running

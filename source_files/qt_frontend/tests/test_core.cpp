@@ -5,6 +5,7 @@
 #include <QQmlContext>
 #include <QQmlComponent>
 #include <QQmlExpression>
+#include <QQmlProperty>
 #include <QQuickStyle>
 #include <QImage>
 #include <QPainter>
@@ -182,7 +183,7 @@ private slots:
         };
         auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
         QTRY_VERIFY(tokens->property("fontsReady").toBool()); tokens->setProperty("reduceMotion",true);
-        QCOMPARE(window->property("levelSizeSliderStyle").toString(),QString("original"));
+        QCOMPARE(window->property("levelSizeSliderStyle").toString(),QString("capsule"));
         QCOMPARE(window->property("sidebarIconStyle").toString(),QString("badges"));
         evaluate("go('geometry')"); QTest::qWait(200);
         auto *row=visualItem(window->contentItem(),"optionRow_ui_arch_float_size"); QVERIFY(row);
@@ -284,6 +285,21 @@ private slots:
                 QCOMPARE(wrapper->width(),15.0); QCOMPARE(wrapper->height(),15.0);
                 QCOMPARE(visual->mapToScene(QPointF(visual->width()/2,visual->height()/2)),wrapper->mapToScene(QPointF(7.5,7.5)));
                 QCOMPARE(row->property("sliderStyle").toString(),style);
+                if(style=="capsule" && backend.dark()) {
+                    const auto fill=visual->property("color").value<QColor>();
+                    QVERIFY(fill.alpha()==255 && fill.lightnessF()<0.4 && fill.saturationF()<0.15);
+                    auto luminance=[](QColor color) {
+                        auto linear=[](double c){return c<=0.04045 ? c/12.92 : std::pow((c+0.055)/1.055,2.4);};
+                        return 0.2126*linear(color.redF())+0.7152*linear(color.greenF())+0.0722*linear(color.blueF());
+                    };
+                    const auto background=luminance(row->property("rowColor").value<QColor>());
+                    const auto border=QQmlProperty(visual,"border.color").read().value<QColor>();
+                    QVERIFY((luminance(border)+0.05)/(background+0.05)>=3.0);
+                    if(scenario=="focus") {
+                        const auto focus=QQmlProperty(ring,"border.color").read().value<QColor>();
+                        QVERIFY((luminance(focus)+0.05)/(background+0.05)>=3.0);
+                    }
+                }
                 QJsonArray editor,scroll;
                 std::function<void(QQuickItem*)> record=[&](QQuickItem *item) {
                     if(item->objectName().startsWith("optionRow_") || item->objectName()=="pageTitle")editor.append(QJsonObject{{"id",item->objectName()},{"rect",rect(item)}});
@@ -319,7 +335,7 @@ private slots:
         QVERIFY(visualItem(otherRow,"levelSizeSlider")); QCOMPARE(otherRow->property("sliderStyle").toString(),QString("original"));
 
         QQmlApplicationEngine fresh; fresh.rootContext()->setContextProperty("backend",&backend); fresh.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!fresh.rootObjects().isEmpty());
-        QCOMPARE(fresh.rootObjects().first()->property("levelSizeSliderStyle").toString(),QString("original")); QCOMPARE(fresh.rootObjects().first()->property("sidebarIconStyle").toString(),QString("badges"));
+        QCOMPARE(fresh.rootObjects().first()->property("levelSizeSliderStyle").toString(),QString("capsule")); QCOMPARE(fresh.rootObjects().first()->property("sidebarIconStyle").toString(),QString("badges"));
         if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
     }
     void previewArt04Capture() {
