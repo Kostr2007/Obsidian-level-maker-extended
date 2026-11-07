@@ -7,6 +7,8 @@
 #include <QQmlExpression>
 #include <QQuickStyle>
 #include <QImage>
+#include <QPainter>
+#include <cmath>
 #include <QCryptographicHash>
 #include <QFontInfo>
 #include <QRawFont>
@@ -161,6 +163,159 @@ private slots:
         backend.setGeneral("port","limit_enforcing");
         QTRY_VERIFY_WITH_TIMEOUT(!backend.loading(),30000);
         QVERIFY(!evaluate("selectedModules(true).some(function(m){return m.id==='ui_arch'})").toBool());
+    }
+    void previewArt04Capture() {
+        QTemporaryDir state; QVERIFY(state.isValid());
+        write(state.path()+"/CONFIG.txt", "engine = idtech_1\ngame = doom2\nport = boom\nlength = single\nseed = 12345\n@compress_output = 0\n");
+        Backend backend(engine,data,state.path());
+        backend.setDark(qEnvironmentVariable("OBSIDIAN_CAPTURE_MODE")=="dark");
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        if(QQuickStyle::name().isEmpty())QQuickStyle::setStyle("Fusion");
+        if(qmlTypeId("Obsidian",1,0,"WadView")<0)qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        qml.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!qml.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow*>(qml.rootObjects().first()); QVERIFY(window);
+        window->setWidth(1440); window->setHeight(900); window->show();
+        QVERIFY(QTest::qWaitForWindowExposed(window)); window->requestActivate(); QTRY_VERIFY(window->isActive());
+        auto evaluate=[&](const QString &expression) {
+            QQmlExpression script(qml.rootContext(),window,expression); const auto value=script.evaluate();
+            if(script.hasError())qFatal("%s",qPrintable(script.error().toString())); return value;
+        };
+        auto *tokens=window->findChild<QObject*>("designTokens"); QVERIFY(tokens);
+        QTRY_VERIFY(tokens->property("fontsReady").toBool()); tokens->setProperty("reduceMotion",true);
+        auto *menu=window->findChild<QObject*>("commandsMenu"); QVERIFY(menu);
+        auto *a=window->findChild<QQuickItem*>("sidebarIconsOriginal"); QVERIFY(a);
+        auto *b=window->findChild<QQuickItem*>("sidebarIconsBadges"); QVERIFY(b);
+        auto *commands=visualItem(window->contentItem(),"commandsButton"); QVERIFY(commands);
+        QCOMPARE(window->property("sidebarIconStyle").toString(),QString("original"));
+        backend.exportConfig(QUrl::fromLocalFile(state.path()+"/before.txt"));
+        QFile before(state.path()+"/before.txt"); QVERIFY(before.open(QIODevice::ReadOnly)); const auto config=before.readAll();
+        const auto revision=backend.revision();
+        auto click=[&](QQuickItem *item) {
+            QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,item->mapToScene(QPointF(item->width()/2,item->height()/2)).toPoint());
+        };
+        // Real menu clicks, including repeated clicks on the checked entry.
+        for(auto *choice:{a,a,b,b,a}) {
+            click(commands); QTRY_VERIFY(menu->property("opened").toBool()); QTest::qWait(80);
+            click(choice); QTRY_VERIFY(!menu->property("visible").toBool());
+            QCOMPARE(a->property("checked").toBool(),choice==a); QCOMPARE(b->property("checked").toBool(),choice==b);
+            QCOMPARE(window->property("sidebarIconStyle").toString(),QString(choice==a ? "original" : "badges"));
+        }
+        const QStringList sections{"project","geometry","combat","resources","appearance","results"};
+        for(const QString style:{"original","badges"}) {
+            window->setProperty("sidebarIconStyle",style);
+            for(const auto &section:sections) {
+                auto *row=visualItem(window->contentItem(),"sidebarRow_"+section); QVERIFY(row); click(row);
+                QTRY_COMPARE(window->property("section").toString(),section);
+                for(const auto &key:sections) {
+                    auto *badge=visualItem(window->contentItem(),"sidebarIconBadge_"+key); QVERIFY(badge);
+                    QCOMPARE(badge->isVisible(),style=="badges");
+                }
+                // Return activates the same delegate using its existing keyboard behavior.
+                row->forceActiveFocus(Qt::TabFocusReason); QTest::keyClick(window,Qt::Key_Return);
+                QCOMPARE(window->property("section").toString(),section);
+            }
+        }
+        // Gallery keyboard navigation still works in both view modes with B selected.
+        evaluate("go('resources')"); QTest::qWait(100);
+        for(const QString mode:{"grid","list"}) {
+            window->setProperty("resourceViewMode",mode);
+            evaluate("selectResource('ammo',false)");
+            auto *ammo=visualItem(window->contentItem(),"resourceCard_ammo"); QVERIFY(ammo);
+            ammo->forceActiveFocus(Qt::TabFocusReason); QTest::keyClick(window,Qt::Key_Right);
+            QTRY_COMPARE(window->property("currentResourceId").toString(),QString("health"));
+            QTest::keyClick(window,Qt::Key_Left);
+            QTRY_COMPARE(window->property("currentResourceId").toString(),QString("ammo"));
+        }
+        window->setProperty("resourceViewMode","grid");
+        QTest::keyClick(window,Qt::Key_Tab); QVERIFY(window->activeFocusItem());
+        click(commands); QTRY_VERIFY(menu->property("opened").toBool());
+        QTest::keyClick(window,Qt::Key_Escape); QTRY_VERIFY(!menu->property("visible").toBool());
+        const auto destination=qEnvironmentVariable("OBSIDIAN_CAPTURE_DIR"); QJsonArray shots;
+        const bool core=qEnvironmentVariable("OBSIDIAN_ART04_CORE_ONLY")=="1";
+        auto rect=[](QQuickItem *item) {const auto p=item->mapToScene(QPointF());return QJsonArray{p.x(),p.y(),item->width(),item->height()};};
+        auto luminance=[](QColor color) {
+            auto linear=[](double c){return c<=0.04045 ? c/12.92 : std::pow((c+0.055)/1.055,2.4);};
+            return 0.2126*linear(color.redF())+0.7152*linear(color.greenF())+0.0722*linear(color.blueF());
+        };
+        for(const QString scenario:core ? QStringList{"normal"} : QStringList{"normal","minimum","large-text","focus"}) {
+            for(const QString section:scenario=="normal" ? QStringList{"geometry","resources"} : QStringList{"geometry"}) {
+                window->setWidth(scenario=="minimum" ? 900 : 1440); window->setHeight(scenario=="minimum" ? 540 : 900);
+                tokens->setProperty("textScale",scenario=="large-text" ? 1.25 : 1.0);
+                evaluate("go('"+section+"')"); QTest::qWait(1200); // Allow existing transient scrollbars to settle before pairing.
+                QJsonArray originalGeometry; QImage originalImage;
+                for(const QString style:{"original","badges"}) {
+                    window->setProperty("sidebarIconStyle",style);
+                    auto *focus= scenario=="focus" ? visualItem(window->contentItem(),"sidebarRow_geometry") : commands;
+                    QVERIFY(focus); focus->forceActiveFocus(scenario=="focus" ? Qt::TabFocusReason : Qt::OtherFocusReason);
+                    if(scenario=="focus")QVERIFY(focus->property("visualFocus").toBool());
+                    QTest::mouseMove(window,QPoint(2,2)); QTest::qWait(180);
+                    QJsonArray navigation, geometry, editor, scroll;
+                    for(const auto &key:sections) {
+                        auto *row=visualItem(window->contentItem(),"sidebarRow_"+key);
+                        auto *label=visualItem(window->contentItem(),"sidebarLabel_"+key);
+                        auto *slot=visualItem(window->contentItem(),"sidebarIconSlot_"+key);
+                        auto *glyph=visualItem(window->contentItem(),"sidebarIconGlyph_"+key);
+                        auto *badge=visualItem(window->contentItem(),"sidebarIconBadge_"+key);
+                        QVERIFY(row && label && slot && glyph && badge);
+                        const auto ink=glyph->property("ink").value<QColor>(), fill=badge->property("color").value<QColor>();
+                        const auto ratio=(qMax(luminance(ink),luminance(fill))+0.05)/(qMin(luminance(ink),luminance(fill))+0.05);
+                        if(style=="badges") {QVERIFY2(ratio>=3,qPrintable(key+" glyph contrast")); QVERIFY(badge->mapToScene(QPointF(badge->width(),0)).x()<label->mapToScene(QPointF()).x());}
+                        geometry.append(QJsonObject{{"id",key},{"row",rect(row)},{"label",rect(label)},{"slot",rect(slot)},{"glyph",rect(glyph)}});
+                        navigation.append(QJsonObject{{"id",key},{"selected",key==section},{"rowRect",rect(row)},{"labelRect",rect(label)},{"iconRect",rect(slot)},{"glyphRect",rect(glyph)},{"badgeRect",rect(badge)},
+                            {"glyphColor",ink.name()},{"badgeColor",fill.name()},{"glyphContrast",ratio},{"badgeVisible",badge->isVisible()},{"visualFocus",row->property("visualFocus").toBool()}});
+                    }
+                    std::function<void(QQuickItem*)> record=[&](QQuickItem *item) {
+                        if(item->objectName().startsWith("resourceCard_") || item->objectName().startsWith("optionRow_") || item->objectName()=="pageTitle")editor.append(QJsonObject{{"id",item->objectName()},{"rect",rect(item)}});
+                        if(item->inherits("QQuickFlickable"))scroll.append(QJsonObject{{"rect",rect(item)},{"contentX",item->property("contentX").toDouble()},{"contentY",item->property("contentY").toDouble()}});
+                        for(auto *child:item->childItems())record(child);
+                    }; record(window->contentItem());
+                    geometry.append(editor); geometry.append(scroll);
+                    if(style=="original")originalGeometry=geometry; else QCOMPARE(geometry,originalGeometry);
+                    QCOMPARE(backend.revision(),revision); QCOMPARE(backend.value("ui_pickups","ammo"),QString("normal"));
+                    QCOMPARE(window->property("resourceSelectionStyle").toString(),QString("classic"));
+                    QCOMPARE(window->property("geometryTextureStyle").toString(),QString("zebra"));
+                    QCOMPARE(window->property("ammoInspectorStyle").toString(),QString("original"));
+                    const auto image=window->grabWindow(); QVERIFY(!image.isNull());
+                    const auto acceptedPath=qEnvironmentVariable("OBSIDIAN_ART04_BASELINE_IMAGE");
+                    if(!acceptedPath.isEmpty() && scenario=="normal" && section=="resources" && style=="original" && window->devicePixelRatio()==1) {
+                        const QImage accepted(acceptedPath); QVERIFY(!accepted.isNull());
+                        // Accepted ART03 A sidebar, including all glyphs, labels and selected row.
+                        QCOMPARE(image.copy(QRect(0,62,210,390)).convertToFormat(QImage::Format_ARGB32),accepted.copy(QRect(0,62,210,390)).convertToFormat(QImage::Format_ARGB32));
+                    }
+                    // Pixel evidence restricts the actual rendered change to the six badge bounds.
+                    if(style=="original")originalImage=image; else {
+                        auto masked=image, baseline=originalImage;
+                        QPainter painter(&masked), basePainter(&baseline);
+                        for(const auto &key:sections) {
+                            auto *badge=visualItem(window->contentItem(),"sidebarIconBadge_"+key);
+                            const auto p=badge->mapToScene(QPointF(-1,-1)); const double dpr=window->devicePixelRatio();
+                            const QRect box(qFloor(p.x()*dpr),qFloor(p.y()*dpr),qCeil((badge->width()+2)*dpr),qCeil((badge->height()+2)*dpr));
+                            painter.fillRect(box,Qt::black); basePainter.fillRect(box,Qt::black);
+                        }
+                        painter.end();basePainter.end();
+                        if(masked!=baseline && !destination.isEmpty()) {masked.save(destination+"/difference-current.png");baseline.save(destination+"/difference-original.png");}
+                        QCOMPARE(masked,baseline);
+                    }
+                    if(!destination.isEmpty()) {
+                        const QString filename=scenario+"-"+section+"-"+style+".png"; QVERIFY(image.save(destination+"/"+filename));
+                        QFile png(destination+"/"+filename); QVERIFY(png.open(QIODevice::ReadOnly));
+                        auto *sidebar=visualItem(window->contentItem(),"sidebarPanel"); QVERIFY(sidebar);
+                        shots.append(QJsonObject{{"file",filename},{"sha256",QString(QCryptographicHash::hash(png.readAll(),QCryptographicHash::Sha256).toHex())},
+                            {"theme",backend.dark()?"dark":"light"},{"style",style},{"scenario",scenario},{"section",section},{"selectedResource",window->property("currentResourceId").toString()},
+                            {"inspectedId",evaluate("inspected ? inspected.id : ''").toString()},{"inspectedModule",window->property("inspectedModule").toString()},{"value",evaluate("inspected ? backend.value(inspectedModule, inspected.id) : ''").toString()},{"ammoValue",backend.value("ui_pickups","ammo")},{"revision",double(revision)},
+                            {"resourceSelectionStyle","classic"},{"geometryTextureStyle","zebra"},{"ammoInspectorStyle","original"},{"inspectorShown",window->property("inspectorShown").toBool()},{"inlineInspector",window->property("inlineInspector").toBool()},
+                            {"textScale",tokens->property("textScale").toDouble()},{"logicalWidth",window->width()},{"logicalHeight",window->height()},{"pixelWidth",image.width()},{"pixelHeight",image.height()},{"dpr",window->devicePixelRatio()},
+                            {"qtVersion",qVersion()},{"focus",window->activeFocusItem()?window->activeFocusItem()->objectName():QString()},{"sidebarRect",rect(sidebar)},{"navigation",navigation},{"editor",editor},{"scroll",scroll}});
+                    }
+                }
+            }
+        }
+        backend.exportConfig(QUrl::fromLocalFile(state.path()+"/after.txt")); QFile after(state.path()+"/after.txt"); QVERIFY(after.open(QIODevice::ReadOnly)); QCOMPARE(after.readAll(),config);
+        window->setProperty("sidebarIconStyle","badges");
+        QQmlApplicationEngine fresh; fresh.rootContext()->setContextProperty("backend",&backend); fresh.load(QUrl("qrc:/ui/prototype/Preview.qml")); QVERIFY(!fresh.rootObjects().isEmpty());
+        QCOMPARE(fresh.rootObjects().first()->property("sidebarIconStyle").toString(),QString("original"));
+        if(!destination.isEmpty())write(destination+"/states.json",QJsonDocument(shots).toJson());
     }
     void previewArt03Capture() {
         QTemporaryDir state; QVERIFY(state.isValid());

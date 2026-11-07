@@ -42,6 +42,8 @@ ApplicationWindow {
     property string geometryTextureStyle: "zebra"
     // ART-03 is limited to the selected Ammo inspector and never persisted.
     property string ammoInspectorStyle: "original"
+    // ART-04 only affects the six sidebar glyphs; each launch retains A.
+    property string sidebarIconStyle: "original"
     readonly property bool priorityAmmoInspector: ammoInspectorStyle === "priority" && section === "resources" && inspectedModule === "ui_pickups" && inspected && inspected.id === "ammo" && resourceGameCompatible
     readonly property bool reduceMotion: design.reduceMotion
     readonly property bool motionActive: navigationMotion.running || sidebarMotion.running || inspectorMotion.running
@@ -336,6 +338,9 @@ ApplicationWindow {
     ButtonGroup {
         id: geometryTextureGroup
     }
+    ButtonGroup {
+        id: sidebarIconGroup
+    }
     PreviewMenu {
         id: commands
         tokens: design
@@ -456,6 +461,24 @@ ApplicationWindow {
             checkable: true
             checked: window.ammoInspectorStyle === "priority"
             onTriggered: window.ammoInspectorStyle = "priority"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "sidebarIconsOriginal"
+            ButtonGroup.group: sidebarIconGroup
+            text: "Значки: A · Исходные"
+            checkable: true
+            checked: window.sidebarIconStyle === "original"
+            onTriggered: window.sidebarIconStyle = "original"
+        }
+        PreviewMenuItem {
+            tokens: design
+            objectName: "sidebarIconsBadges"
+            ButtonGroup.group: sidebarIconGroup
+            text: "Значки: B · ART-04 (эксперимент)"
+            checkable: true
+            checked: window.sidebarIconStyle === "badges"
+            onTriggered: window.sidebarIconStyle = "badges"
         }
         PreviewMenuItem {
             tokens: design
@@ -787,6 +810,7 @@ ApplicationWindow {
             spacing: 0
             Rectangle {
                 id: sidebarPanel
+                objectName: "sidebarPanel"
                 property real reveal: window.sidebarShown ? 1 : 0
                 Behavior on reveal {
                     NumberAnimation {
@@ -842,15 +866,18 @@ ApplicationWindow {
                                 model: window.categories
                                 ItemDelegate {
                                     required property var modelData
+                                    objectName: "sidebarRow_" + modelData.key
                                     Layout.fillWidth: true
                                     implicitHeight: Math.max(36, design.bodySize + 20)
                                     Accessible.name: modelData.title
                                     onClicked: window.go(modelData.key)
                                     contentItem: RowLayout {
                                         spacing: 10
-                                        PreviewIcon {
-                                            name: modelData.icon
-                                            ink: ({
+                                        Item {
+                                            objectName: "sidebarIconSlot_" + modelData.key
+                                            implicitWidth: 18
+                                            implicitHeight: 18
+                                            readonly property color originalInk: ({
                                                     project: "#77818d",
                                                     geometry: "#1686e8",
                                                     combat: "#ed625f",
@@ -858,8 +885,31 @@ ApplicationWindow {
                                                     appearance: "#a778d8",
                                                     results: "#1b9ec9"
                                                 })[modelData.key]
+                                            Rectangle {
+                                                objectName: "sidebarIconBadge_" + modelData.key
+                                                anchors.centerIn: parent
+                                                width: 22
+                                                height: 22
+                                                radius: 5
+                                                visible: window.sidebarIconStyle === "badges"
+                                                color: ({
+                                                        project: "#77818d",
+                                                        geometry: "#1678ce",
+                                                        combat: "#d44946",
+                                                        resources: "#b87512",
+                                                        appearance: "#9864c8",
+                                                        results: "#147fa3"
+                                                    })[modelData.key]
+                                            }
+                                            PreviewIcon {
+                                                objectName: "sidebarIconGlyph_" + modelData.key
+                                                anchors.fill: parent
+                                                name: modelData.icon
+                                                ink: window.sidebarIconStyle === "badges" ? "#ffffff" : parent.originalInk
+                                            }
                                         }
                                         Label {
+                                            objectName: "sidebarLabel_" + modelData.key
                                             text: modelData.title
                                             font: design.navigationFont
                                             color: window.section === modelData.key ? design.selectionText : design.text

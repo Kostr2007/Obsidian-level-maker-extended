@@ -56,6 +56,8 @@ jobs:
         run: python3 scripts/dev/check-art02.py
       - name: Compare current and ART-03 resource inspector
         run: python3 scripts/dev/check-art03.py
+      - name: Compare outline and ART-04 sidebar icons
+        run: python3 scripts/dev/check-art04.py
       - name: Package verified Qt build
         run: ./scripts/dev/package-linux.sh
       - uses: actions/upload-artifact@v4
@@ -77,6 +79,11 @@ jobs:
         with:
           name: art03-comparison
           path: Obsidian source(1)/build/art03/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: art04-comparison
+          path: Obsidian source(1)/build/art04/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
