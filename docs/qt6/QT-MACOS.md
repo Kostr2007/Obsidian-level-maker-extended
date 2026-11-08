@@ -19,12 +19,13 @@ scene and its accepted artistic choices.
 ## Reproducible build
 
 Use Qt 6.8.2 (the verified SDK) and a separate build directory. The dependency is
-not downloaded by CMake, and an OFF build needs no Qt-MacOS checkout.
+not downloaded by CMake. A minimal, pristine source snapshot is tracked in
+`third_party/Qt-MacOS`; no submodule checkout or cross-repository credentials are
+needed. An OFF build does not compile this snapshot.
 
 ```sh
-git submodule update --init third_party/Qt-MacOS
-git -C third_party/Qt-MacOS rev-parse HEAD
-# Expected: 9e113b16c827be17f04783b496c0354c639f88ec
+# Included snapshot: 9e113b16c827be17f04783b496c0354c639f88ec
+# Per-file SHA256 and source provenance: third_party/Qt-MacOS/UPSTREAM.json
 cmake -S . -B build/qt-macos -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DOBSIDIAN_QT=ON -DOBSIDIAN_QTMACOS_ROOT="$PWD/third_party/Qt-MacOS"
 cmake --build build/qt-macos --parallel 4
@@ -50,6 +51,17 @@ QT_QUICK_BACKEND=software ctest --test-dir build/qt \
 ```
 
 ## Provenance and limits
+
+The tracked snapshot contains upstream `CMakeLists.txt`, the public `qml/` tree,
+`assets/fonts/` (Inter, license and provenance), `LICENSE`,
+`THIRD_PARTY_NOTICES.md`, `README.md` and `AGENTS.md`, byte-for-byte from commit
+`9e113b16c827be17f04783b496c0354c639f88ec`. `UPSTREAM.json` records the source
+repository, pin and SHA256 of every included upstream file. It is the only added
+file; no upstream source was modified. Gallery, demo, tests, icons, screenshots
+and SDK files are excluded. Obsidian forces both upstream gallery and test build
+options OFF. The upstream README describes the full project; this reduced
+snapshot is intended to be built through Obsidian's CMake integration.
+
 
 The adaptation follows the dependency's cumulative
 [`layout.patch`](https://github.com/Kostr2007/Qt-MacOS/blob/9e113b16c827be17f04783b496c0354c639f88ec/integrations/obsidian/layout.patch),

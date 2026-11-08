@@ -45,7 +45,6 @@ jobs:
           QTMACOS_ENABLED: ${{ inputs.qtmacos }}
         run: |
           if [ "$QTMACOS_ENABLED" = "true" ]; then
-            git submodule update --init third_party/Qt-MacOS
             cmake -S . -B build/qt -G Ninja -DCMAKE_BUILD_TYPE=Release -DOBSIDIAN_QT=ON -DOBSIDIAN_QTMACOS_ROOT="$PWD/third_party/Qt-MacOS"
             cmake --build build/qt --parallel 4
           else

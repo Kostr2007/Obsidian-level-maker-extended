@@ -1,3 +1,0 @@
-[submodule "third_party/Qt-MacOS"]
-	path = third_party/Qt-MacOS
-	url = https://github.com/Kostr2007/Qt-MacOS.git
