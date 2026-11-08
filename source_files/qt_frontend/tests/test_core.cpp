@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "../backend.h"
+#ifdef OBSIDIAN_QTMACOS
+#include <QtQml/QQmlExtensionPlugin>
+Q_IMPORT_QML_PLUGIN(QtMacOSPlugin)
+#endif
 #include "../presentation.h"
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -75,6 +79,18 @@ private slots:
         qml.load(QUrl("qrc:/ui/Main.qml"));
         QVERIFY(!qml.rootObjects().isEmpty());
         auto *window = qml.rootObjects().first();
+#ifdef OBSIDIAN_QTMACOS
+        QVERIFY(window->property("qtMacOSPilot").toBool());
+        QCOMPARE(window->property("qtMacOSDark").toBool(), backend.dark());
+        backend.setDark(!backend.dark());
+        QTRY_COMPARE(window->property("qtMacOSDark").toBool(), backend.dark());
+        QQmlComponent buttonComponent(&qml,QUrl("qrc:/ui/ActionButton.qml"));
+        QScopedPointer<QObject> button(buttonComponent.createWithInitialProperties({{"highlighted",true}}));
+        QVERIFY2(button,qPrintable(buttonComponent.errorString()));
+        auto *background=qvariant_cast<QObject*>(button->property("background")); QVERIFY(background);
+        backend.setAccent("#c4a7ff");
+        QTRY_COMPARE(background->property("color").value<QColor>(),QColor(backend.accent()));
+#endif
         auto evaluate = [&](const QString &expression) {
             QQmlExpression script(qml.rootContext(),window,expression);
             auto result=script.evaluate();
@@ -1223,6 +1239,56 @@ private slots:
             QVERIFY(image.hasAlphaChannel());
         }
     }
+#ifdef OBSIDIAN_QTMACOS
+    void qtMacOSParameterInspectorUsesLiveSchema() {
+        QTemporaryDir state; Backend backend(engine,data,state.path());
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.loading() && !backend.schema().isEmpty(),30000);
+        QVariantMap selected; QString moduleId;
+        for (const auto &entry:backend.schema().value("modules").toList()) {
+            const auto module=entry.toMap();
+            if (!module.value("available").toBool()) continue;
+            for (const auto &value:module.value("options").toList()) {
+                const auto option=value.toMap();
+                if (option.value("kind")=="choice" && option.value("choices").toList().size()>1
+                    && !option.value("tooltip").toString().isEmpty()) {
+                    selected=option; moduleId=module.value("id").toString(); break;
+                }
+            }
+            if (!selected.isEmpty()) break;
+        }
+        QVERIFY(!selected.isEmpty());
+        if (QQuickStyle::name().isEmpty()) QQuickStyle::setStyle("Fusion");
+        if (qmlTypeId("Obsidian",1,0,"WadView")==-1) qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
+        QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        QQmlComponent component(&qml,QUrl("qrc:/ui/StudioInspector.qml"));
+        QScopedPointer<QObject> inspector(component.createWithInitialProperties({
+            {"option",selected},{"moduleId",moduleId},{"showPreview",false},{"width",312},{"height",700}}));
+        QVERIFY2(inspector,qPrintable(component.errorString()));
+        QVERIFY(inspector->property("qtMacOSLayoutPilot").toBool());
+        auto *group=inspector->findChild<QObject*>("inspectorValueGroup");
+        auto *valueLabel=inspector->findChild<QObject*>("inspectorCurrentValue");
+        auto *help=inspector->findChild<QObject*>("inspectorGeneratorHelp");
+        auto *helpText=inspector->findChild<QObject*>("inspectorGeneratorHelpText");
+        QVERIFY(group); QVERIFY(valueLabel); QVERIFY(help); QVERIFY(helpText);
+        const auto choices=selected.value("choices").toList();
+        const auto old=backend.value(moduleId,selected.value("id").toString());
+        const auto replacement=choices[choices[0].toMap().value("id").toString()==old ? 1 : 0].toMap();
+        backend.setOption(moduleId,selected.value("id").toString(),replacement.value("id").toString());
+        QTRY_COMPARE(valueLabel->property("text").toString(),replacement.value("text").toString());
+        QCOMPARE(backend.value(moduleId,selected.value("id").toString()),replacement.value("id").toString());
+        QCOMPARE(helpText->property("text").toString(),selected.value("tooltip").toString());
+        QVERIFY(!help->property("expanded").toBool());
+        auto *header=qvariant_cast<QObject*>(help->property("header")); QVERIFY(header);
+        QVERIFY(QMetaObject::invokeMethod(header,"clicked"));
+        QVERIFY(help->property("expanded").toBool());
+        QVERIFY(QMetaObject::invokeMethod(header,"clicked"));
+        QVERIFY(!help->property("expanded").toBool());
+        QCOMPARE(helpText,inspector->findChild<QObject*>("inspectorGeneratorHelpText"));
+        help->setProperty("expanded",true);
+        inspector->setProperty("option",QVariant::fromValue(nullptr));
+        QVERIFY(!help->property("expanded").toBool());
+    }
+#endif
     void configurationRoundTrip() {
         const QByteArray input = "-- legacy\nengine = idtech_1\ngame = doom2\nseed = 18446744073709551615\nfloat_size = 42\nfuture_key = custom value\n@custom = 1\n  detail = rare\n  future_option = retained\n";
         Configuration config, result; QString error;

@@ -12,6 +12,11 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 mkdir -p "$stage/Obsidian-Extended"
 cp -a obsidian obsidian-engine addons data docs engines games language modules ports scripts theme tools LICENSE.txt AUTHORS.md README.md CHANGELOG.md VERSION "$stage/Obsidian-Extended/"
+if test -f third_party/Qt-MacOS/LICENSE; then
+  mkdir -p "$stage/Obsidian-Extended/licenses/Qt-MacOS"
+  cp third_party/Qt-MacOS/LICENSE third_party/Qt-MacOS/THIRD_PARTY_NOTICES.md "$stage/Obsidian-Extended/licenses/Qt-MacOS/"
+  cp third_party/Qt-MacOS/assets/fonts/LICENSE.txt "$stage/Obsidian-Extended/licenses/Qt-MacOS/Inter-OFL.txt"
+fi
 cat > "$stage/Obsidian-Extended/start.sh" <<'EOF'
 #!/bin/sh
 set -eu

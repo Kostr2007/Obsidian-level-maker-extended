@@ -7,6 +7,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      qtmacos:
+        description: 'Build the pinned Qt-MacOS integration'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -36,7 +41,16 @@ jobs:
       - name: Verify virtual display readiness and ownership
         run: python3 -m unittest discover -s scripts/dev/tests -p 'test_xvfb_session.py' -v
       - name: Build Qt interface and console worker
-        run: ./scripts/dev/build-linux.sh
+        env:
+          QTMACOS_ENABLED: ${{ inputs.qtmacos }}
+        run: |
+          if [ "$QTMACOS_ENABLED" = "true" ]; then
+            git submodule update --init third_party/Qt-MacOS
+            cmake -S . -B build/qt -G Ninja -DCMAKE_BUILD_TYPE=Release -DOBSIDIAN_QT=ON -DOBSIDIAN_QTMACOS_ROOT="$PWD/third_party/Qt-MacOS"
+            cmake --build build/qt --parallel 4
+          else
+            ./scripts/dev/build-linux.sh
+          fi
       - name: Test configuration, preview, dependencies, generation and cancellation
         env:
           QT_QUICK_BACKEND: software
