@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "../backend.h"
+#include "../qmlsetup.h"
 #ifdef OBSIDIAN_QTMACOS
 #include <QtQml/QQmlExtensionPlugin>
 Q_IMPORT_QML_PLUGIN(QtMacOSPlugin)
@@ -76,6 +77,7 @@ private slots:
         QQuickStyle::setStyle("Fusion");
         qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
         QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        configureStudioQmlImports(qml);
         qml.load(QUrl("qrc:/ui/Main.qml"));
         QVERIFY(!qml.rootObjects().isEmpty());
         auto *window = qml.rootObjects().first();
@@ -85,6 +87,7 @@ private slots:
         backend.setDark(!backend.dark());
         QTRY_COMPARE(window->property("qtMacOSDark").toBool(), backend.dark());
         QQmlComponent buttonComponent(&qml,QUrl("qrc:/ui/ActionButton.qml"));
+        QVERIFY2(buttonComponent.isReady(),qPrintable(buttonComponent.errorString()));
         QScopedPointer<QObject> button(buttonComponent.createWithInitialProperties({{"highlighted",true}}));
         QVERIFY2(button,qPrintable(buttonComponent.errorString()));
         auto *background=qvariant_cast<QObject*>(button->property("background")); QVERIFY(background);
@@ -1260,10 +1263,16 @@ private slots:
         if (QQuickStyle::name().isEmpty()) QQuickStyle::setStyle("Fusion");
         if (qmlTypeId("Obsidian",1,0,"WadView")==-1) qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
         QQmlApplicationEngine qml; qml.rootContext()->setContextProperty("backend",&backend);
+        // Qt 6.4 does not add this resource prefix to the default import paths.
+        auto legacyImportPaths = qml.importPathList();
+        legacyImportPaths.removeAll(QStringLiteral("qrc:/qt/qml"));
+        qml.setImportPathList(legacyImportPaths);
+        configureStudioQmlImports(qml);
         QQmlComponent component(&qml,QUrl("qrc:/ui/StudioInspector.qml"));
+        QVERIFY2(component.isReady(),qPrintable(component.errorString()));
         QScopedPointer<QObject> inspector(component.createWithInitialProperties({
             {"option",selected},{"moduleId",moduleId},{"showPreview",false},{"width",312},{"height",700}}));
-        QVERIFY2(inspector,qPrintable(component.errorString()));
+        QVERIFY2(!inspector.isNull(),qPrintable(component.errorString()));
         QVERIFY(inspector->property("qtMacOSLayoutPilot").toBool());
         auto *group=inspector->findChild<QObject*>("inspectorValueGroup");
         auto *valueLabel=inspector->findChild<QObject*>("inspectorCurrentValue");

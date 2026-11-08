@@ -34,6 +34,11 @@ QT_QUICK_BACKEND=software ctest --test-dir build/qt-macos \
 ./obsidian
 ```
 
+The shared engine setup explicitly adds `qrc:/qt/qml`, the module’s resource
+prefix. Qt 6.4 requires this because that prefix became a default engine import
+path only in Qt 6.5. The inspector regression test also exercises an engine with
+the older default paths.
+
 The source path enables the integration; there is no runtime switch. The library
 is linked as a static QML plugin. The gallery and its demo models are excluded.
 The public module embeds the Inter variable font, though Studio retains its

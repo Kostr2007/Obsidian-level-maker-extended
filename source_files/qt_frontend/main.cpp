@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "backend.h"
+#include "qmlsetup.h"
 #ifdef OBSIDIAN_QTMACOS
 #include <QtQml/QQmlExtensionPlugin>
 Q_IMPORT_QML_PLUGIN(QtMacOSPlugin)
@@ -65,6 +66,7 @@ int main(int argc, char **argv) {
     qmlRegisterType<WadPreview>("Obsidian",1,0,"WadView");
     Backend backend(parser.isSet("engine") ? parser.value("engine") : enginePath(),parser.value("data-dir"),state);
     QQmlApplicationEngine qml;
+    configureStudioQmlImports(qml);
     qml.rootContext()->setContextProperty("backend",&backend);
     QObject::connect(&qml,&QQmlApplicationEngine::objectCreated,&app,[&app](QObject *object,const QUrl &) { if (!object) app.exit(1); },Qt::QueuedConnection);
     if (parser.isSet("smoke-output")) {
